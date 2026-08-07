@@ -165,3 +165,256 @@
   <button onclick="showScreen('home')" id="tabHome" class="active">🏠 Home</button>
   <button onclick="showScreen('admin')" id="tabAdmin" class="hidden">⚙️ Admin</button>
 </div>
+ <script>
+const API = ""; // same domain, so empty base
+let currentUser = null;
+
+// ---------- LOGIN / REGISTER TOGGLE ----------
+let isRegisterMode = false;
+function toggleLoginRegister() {
+  isRegisterMode = !isRegisterMode;
+  document.getElementById('loginFields').classList.toggle('hidden', isRegisterMode);
+  document.getElementById('registerFields').classList.toggle('hidden', !isRegisterMode);
+  document.getElementById('loginActionBtn').innerText = isRegisterMode ? 'Register' : 'Login';
+  document.getElementById('toggleBtn').innerText = isRegisterMode ? 'Already a member? Login' : 'New user? Register here';
+  document.getElementById('loginTitle').innerText = isRegisterMode ? 'Register' : 'Login';
+}
+
+async function handleLoginOrRegister() {
+  const msg = document.getElementById('loginMsg');
+  if (isRegisterMode) {
+    const name = document.getElementById('regName').value.trim();
+    const mobile = document.getElementById('regMobile').value.trim();
+    const password = document.getElementById('regPassword').value.trim();
+    const group = document.getElementById('regGroup').value;
+    if (!name || !mobile || !password) { msg.innerText = "Please fill all fields"; return; }
+    try {
+      const res = await fetch(API + '/api/register', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ name, mobile, password, group_type: group })
+      });
+      const data = await res.json();
+      msg.innerText = data.message || "Registered! Wait for admin approval.";
+      if (res.ok) toggleLoginRegister();
+    } catch(e) { msg.innerText = "Error connecting to server"; }
+  } else {
+    const mobile = document.getElementById('loginMobile').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    if (!mobile || !password) { msg.innerText = "Please enter mobile and password"; return; }
+    try {
+      const res = await fetch(API + '/api/state?mobile=' + encodeURIComponent(mobile) + '&password=' + encodeURIComponent(password));
+      const data = await res.json();
+      if (res.ok && data.user) {
+        if (data.user.status === 'pending') { msg.innerText = "Your account is pending approval."; return; }
+        if (data.user.status === 'rejected') { msg.innerText = "Your registration was rejected."; return; }
+        currentUser = data.user;
+        loginSuccess();
+      } else {
+        msg.innerText = data.message || "Invalid mobile or password";
+      }
+    } catch(e) { msg.innerText = "Error connecting to server"; }
+  }
+}
+
+function loginSuccess() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('mainApp').classList.remove('hidden');
+  document.getElementById('tabBar').classList.remove('hidden');
+  if (currentUser.role === 'admin') {
+    document.getElementById('tabAdmin').classList.remove('hidden');
+    loadAdminData();
+  }
+  loadClasses();
+  loadNotifications();
+  loadPrayerTimes();
+}
+
+function logout() {
+  currentUser = null;
+  document.getElementById('mainApp').classList.add('hidden');
+  document.getElementById('tabBar').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+}
+
+// ---------- SCREEN SWITCHING ----------
+function showScreen(name) {
+  document.getElementById('notificationsScreen').classList.add('hidden');
+  document.getElementById('adminScreen').classList.add('hidden');
+  document.getElementById('tabHome').classList.remove('active');
+  document.getElementById('tabAdmin').classList.remove('active');
+  if (name === 'notifications') {
+    document.getElementById('notificationsScreen').classList.remove('hidden');
+  } else if (name === 'admin') {
+    document.getElementById('adminScreen').classList.remove('hidden');
+    document.getElementById('tabAdmin').classList.add('active');
+    loadAdminData();
+  } else {
+    document.getElementById('tabHome').classList.add('active');
+  }
+}
+
+// ---------- CLASSES ----------
+let allClasses = [];
+async function loadClasses() {
+  try {
+    const res = await fetch(API + '/api/classes?group=' + currentUser.group_type);
+    const data = await res.json();
+    allClasses = data.classes || [];
+    renderClasses(allClasses);
+  } catch(e) { console.error(e); }
+}
+
+function renderClasses(list) {
+  const el = document.getElementById('classList');
+  if (!list.length) { el.innerHTML = '<p style="font-size:13px;">No classes available yet.</p>'; return; }
+  el.innerHTML = list.map(c => `
+    <div class="list-item">
+      <div class="row" style="justify-content:space-between;">
+        <strong>${c.title}</strong>
+        <span class="badge">${c.type.toUpperCase()}</span>
+      </div>
+      <div style="margin-top:8px;">
+        ${c.type === 'audio' ? `<audio controls style="width:100%;" src="${c.file_url}"></audio>` : ''}
+        ${c.type === 'video' ? `<video controls style="width:100%;" src="${c.file_url}"></video>` : ''}
+        ${c.type === 'pdf' ? `<a href="${c.file_url}" target="_blank">📄 Open PDF</a> <button style="width:auto; margin-left:8px;" onclick="speakPdf('${c.file_url}')">🔊 Listen</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterClasses() {
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  renderClasses(allClasses.filter(c => c.title.toLowerCase().includes(q)));
+}
+
+function startVoiceSearch() {
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Rec) { alert("Voice search not supported on this browser"); return; }
+  const rec = new Rec();
+  rec.lang = 'ur-IN';
+  rec.onresult = (e) => {
+    document.getElementById('searchBox').value = e.results[0][0].transcript;
+    filterClasses();
+  };
+  rec.start();
+}
+
+function speakPdf(url) {
+  const utter = new SpeechSynthesisUtterance("Opening PDF for reading. Please wait while it loads.");
+  speechSynthesis.speak(utter);
+  window.open(url, '_blank');
+}
+
+// ---------- NOTIFICATIONS ----------
+async function loadNotifications() {
+  try {
+    const res = await fetch(API + '/api/state?notifications=1&role=' + currentUser.role);
+    const data = await res.json();
+    const list = data.notifications || [];
+    const badge = document.getElementById('notifBadge');
+    const unread = list.filter(n => !n.is_read).length;
+    if (unread > 0) { badge.classList.remove('hidden'); badge.innerText = unread; }
+    else { badge.classList.add('hidden'); }
+    document.getElementById('notifList').innerHTML = list.length ?
+      list.map(n => `<div class="list-item">${n.message}<div style="font-size:11px; color:#ccc;">${n.created_at}</div></div>`).join('')
+      : '<p style="font-size:13px;">No notifications yet.</p>';
+  } catch(e) { console.error(e); }
+}
+
+// ---------- PRAYER TIMES ----------
+async function loadPrayerTimes() {
+  try {
+    const res = await fetch('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
+    const data = await res.json();
+    const t = data.data.timings;
+    document.getElementById('prayerTimes').innerHTML = `
+      <div class="row"><span>Fajr</span><span>${t.Fajr}</span></div>
+      <div class="row"><span>Zuhr</span><span>${t.Dhuhr}</span></div>
+      <div class="row"><span>Asr</span><span>${t.Asr}</span></div>
+      <div class="row"><span>Maghrib</span><span>${t.Maghrib}</span></div>
+      <div class="row"><span>Isha</span><span>${t.Isha}</span></div>
+    `;
+  } catch(e) {
+    document.getElementById('prayerTimes').innerHTML = '<p style="font-size:13px;">Unable to load prayer times.</p>';
+  }
+}
+
+function toggleAlarm() {
+  const on = document.getElementById('alarmToggle').checked;
+  localStorage.setItem('alarmOn', on ? '1' : '0');
+}
+
+// ---------- ADMIN PANEL ----------
+async function loadAdminData() {
+  try {
+    const res = await fetch(API + '/api/state?admin=1');
+    const data = await res.json();
+    document.getElementById('totalCount').innerText = data.total || 0;
+    document.getElementById('mardanaCount').innerText = data.mardana || 0;
+    document.getElementById('zananaCount').innerText = data.zanana || 0;
+    const pending = data.pending || [];
+    document.getElementById('pendingList').innerHTML = pending.length ?
+      pending.map(p => `
+        <div class="list-item">
+          <div><strong>${p.name}</strong> (${p.mobile}) - ${p.group_type}</div>
+          <div class="row" style="margin-top:6px;">
+            <button style="width:auto;" onclick="approveMureed(${p.id})">✅ Approve</button>
+            <button class="secondary" style="width:auto;" onclick="rejectMureed(${p.id})">❌ Reject</button>
+          </div>
+        </div>
+      `).join('') : '<p style="font-size:13px;">No pending requests.</p>';
+  } catch(e) { console.error(e); }
+}
+
+async function approveMureed(id) {
+  await fetch(API + '/api/approve', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+  loadAdminData();
+}
+async function rejectMureed(id) {
+  await fetch(API + '/api/reject', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+  loadAdminData();
+}
+async function directAddMureed() {
+  const name = document.getElementById('daName').value.trim();
+  const mobile = document.getElementById('daMobile').value.trim();
+  const password = document.getElementById('daPassword').value.trim();
+  const group = document.getElementById('daGroup').value;
+  if (!name || !mobile || !password) { alert("Fill all fields"); return; }
+  const res = await fetch(API + '/api/direct-add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, mobile, password, group_type: group }) });
+  const data = await res.json();
+  alert(data.message || "Added");
+  document.getElementById('daName').value = '';
+  document.getElementById('daMobile').value = '';
+  document.getElementById('daPassword').value = '';
+  loadAdminData();
+}
+async function bulkAddMureeds() {
+  const raw = document.getElementById('bulkData').value.trim();
+  if (!raw) { alert("Enter data first"); return; }
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  const entries = lines.map(l => {
+    const [name, mobile, password, group_type] = l.split(',').map(s => s.trim());
+    return { name, mobile, password, group_type };
+  });
+  const res = await fetch(API + '/api/bulk-add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ entries }) });
+  const data = await res.json();
+  alert(data.message || "Bulk add done");
+  document.getElementById('bulkData').value = '';
+  loadAdminData();
+}
+async function uploadClass() {
+  const title = document.getElementById('classTitle').value.trim();
+  const type = document.getElementById('classType').value;
+  const file_url = document.getElementById('classUrl').value.trim();
+  const group_type = document.getElementById('classGroup').value;
+  if (!title || !file_url) { alert("Fill all fields"); return; }
+  const res = await fetch(API + '/api/classes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title, type, file_url, group_type }) });
+  const data = await res.json();
+  alert(data.message || "Class uploaded");
+  document.getElementById('classTitle').value = '';
+  document.getElementById('classUrl').value = '';
+  loadClasses();
+}
+</script>
+</body>
+</html>
