@@ -32,3 +32,17 @@ CREATE TABLE IF NOT EXISTS notifications (
 -- Default admin account (mobile: 9999999999, password: change_this_password)
 INSERT OR IGNORE INTO mureeds (name, mobile, password, group_type, role, status)
 VALUES ('Admin', '9999999999', 'change_this_password', 'mardana', 'admin', 'approved');
+
+-- Alarm settings table (Admin control ke liye)
+CREATE TABLE IF NOT EXISTS alarm_settings (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  start_alarm_enabled INTEGER NOT NULL DEFAULT 1,
+  start_alarm_duration_seconds INTEGER NOT NULL DEFAULT 60,
+  end_reminder_enabled INTEGER NOT NULL DEFAULT 1,
+  end_reminder_minutes_before INTEGER NOT NULL DEFAULT 10,
+  end_reminder_repeat_count INTEGER NOT NULL DEFAULT 3,
+  end_reminder_beep_seconds INTEGER NOT NULL DEFAULT 2,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+INSERT OR IGNORE INTO alarm_settings (id) VALUES (1);
