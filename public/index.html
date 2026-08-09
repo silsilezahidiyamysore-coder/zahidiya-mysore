@@ -154,6 +154,25 @@
           <option value="zanana">Zanana</option>
         </select>
         <button onclick="uploadClass()">Upload Class</button>
+      </div
+       <div class="card">
+        <h3>⏰ Alarm Settings</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Namaz shuru hone par alarm, aur khatam hone se pehle reminder — yahan control karein.</p>
+        <label style="font-size:13px;">Start Alarm (Namaz shuru hone par)</label>
+        <div class="row">
+          <input type="checkbox" id="startAlarmEnabled" style="width:auto;">
+          <span style="font-size:13px;">On/Off</span>
+        </div>
+        <input type="number" id="startAlarmDuration" placeholder="Kitne second tak baje (e.g. 60)">
+        <label style="font-size:13px; margin-top:8px; display:block;">End Reminder (Namaz khatam hone se pehle)</label>
+        <div class="row">
+          <input type="checkbox" id="endReminderEnabled" style="width:auto;">
+          <span style="font-size:13px;">On/Off</span>
+        </div>
+        <input type="number" id="endReminderMinutesBefore" placeholder="Kitne minute pehle (e.g. 10)">
+        <input type="number" id="endReminderRepeatCount" placeholder="Kitni baar baje (e.g. 3)">
+        <input type="number" id="endReminderBeepSeconds" placeholder="Har baar kitne second (e.g. 2)">
+        <button onclick="saveAlarmSettings()">Save Alarm Settings</button>
       </div>
     </div>
 
@@ -415,6 +434,141 @@ async function uploadClass() {
   document.getElementById('classUrl').value = '';
   loadClasses();
 }
+// ===== ALARM SETTINGS (Admin Control) =====
+let alarmSettings = {
+  start_alarm_enabled: 1,
+  start_alarm_duration_seconds: 60,
+  end_reminder_enabled: 1,
+  end_reminder_minutes_before: 10,
+  end_reminder_repeat_count: 3,
+  end_reminder_beep_seconds: 2
+};
+
+async function loadAlarmSettings() {
+  try {
+    const res = await fetch(API + '/api/alarm-settings');
+    const data = await res.json();
+    if (data.settings) {
+      alarmSettings = data.settings;
+      const s = document.getElementById('startAlarmEnabled');
+      const su = document.getElementById('startAlarmDuration');
+      const e = document.getElementById('endReminderEnabled');
+      const em = document.getElementById('endReminderMinutesBefore');
+      const er = document.getElementById('endReminderRepeatCount');
+      const eb = document.getElementById('endReminderBeepSeconds');
+      if (s) s.checked = !!alarmSettings.start_alarm_enabled;
+      if (su) su.value = alarmSettings.start_alarm_duration_seconds;
+      if (e) e.checked = !!alarmSettings.end_reminder_enabled;
+      if (em) em.value = alarmSettings.end_reminder_minutes_before;
+      if (er) er.value = alarmSettings.end_reminder_repeat_count;
+      if (eb) eb.value = alarmSettings.end_reminder_beep_seconds;
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function saveAlarmSettings() {
+  const body = {
+    start_alarm_enabled: document.getElementById('startAlarmEnabled').checked,
+    start_alarm_duration_seconds: parseInt(document.getElementById('startAlarmDuration').value) || 60,
+    end_reminder_enabled: document.getElementById('endReminderEnabled').checked,
+    end_reminder_minutes_before: parseInt(document.getElementById('endReminderMinutesBefore').value) || 10,
+    end_reminder_repeat_count: parseInt(document.getElementById('endReminderRepeatCount').value) || 3,
+    end_reminder_beep_seconds: parseInt(document.getElementById('endReminderBeepSeconds').value) || 2
+  };
+  try {
+    const res = await fetch(API + '/api/alarm-settings', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    alert(data.message || 'Settings saved');
+    loadAlarmSettings();
+  } catch (e) { alert('Error saving settings'); }
+}
+
+function beep(durationMs) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 800;
+    osc.start();
+    setTimeout(() => { osc.stop(); ctx.close(); }, durationMs);
+  } catch (e) { console.error('Beep error', e); }
+}
+
+let alarmSilenced = {};
+
+function silenceAlarm(key) {
+  alarmSilenced[key] = true;
+  const bar = document.getElementById('alarmBanner');
+  if (bar) bar.classList.add('hidden');
+}
+
+function showAlarmBanner(text) {
+  let bar = document.getElementById('alarmBanner');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'alarmBanner';
+    bar.style.cssText = 'position:fixed; top:0; left:0; right:0; background:#ffd700; color:#0f3d2e; padding:14px; text-align:center; font-weight:bold; z-index:9999;';
+    document.body.prepend(bar);
+  }
+  bar.innerHTML = text + ' <button style="width:auto; margin-left:10px; padding:6px 14px;" onclick="silenceAlarm(currentAlarmKey)">Silence</button>';
+  bar.classList.remove('hidden');
+}
+
+let currentAlarmKey = '';
+let lastCheckedMinute = '';
+
+function checkNamazAlarms() {
+  if (!window.namazTimesToday) return;
+  const now = new Date();
+  const hhmm = now.toTimeString().slice(0,5);
+  if (hhmm === lastCheckedMinute) return;
+  lastCheckedMinute = hhmm;
+
+  const names = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+  names.forEach((name, idx) => {
+    const t = window.namazTimesToday[name];
+    if (!t) return;
+
+    if (alarmSettings.start_alarm_enabled && t === hhmm) {
+      const key = 'start-' + name + '-' + now.toDateString();
+      if (!alarmSilenced[key]) {
+        currentAlarmKey = key;
+        showAlarmBanner('🕌 ' + name + ' ki namaz ka waqt ho gaya hai');
+        beep(Math.min(alarmSettings.start_alarm_duration_seconds * 1000, 5000));
+      }
+    }
+
+    const nextName = names[idx + 1];
+    const nextTime = nextName ? window.namazTimesToday[nextName] : null;
+    if (alarmSettings.end_reminder_enabled && nextTime) {
+      const [nh, nm] = nextTime.split(':').map(Number);
+      const endDate = new Date(now);
+      endDate.setHours(nh, nm, 0, 0);
+      const reminderDate = new Date(endDate.getTime() - alarmSettings.end_reminder_minutes_before * 60000);
+      const reminderHHMM = reminderDate.toTimeString().slice(0,5);
+      if (reminderHHMM === hhmm) {
+        const key = 'end-' + name + '-' + now.toDateString();
+        if (!alarmSilenced[key]) {
+          currentAlarmKey = key;
+          showAlarmBanner('⏳ ' + name + ' ki namaz khatam hone wali hai (' + alarmSettings.end_reminder_minutes_before + ' min)');
+          let count = 0;
+          const beepInterval = setInterval(() => {
+            beep(alarmSettings.end_reminder_beep_seconds * 1000);
+            count++;
+            if (count >= alarmSettings.end_reminder_repeat_count) clearInterval(beepInterval);
+          }, (alarmSettings.end_reminder_beep_seconds + 1) * 1000);
+        }
+      }
+    }
+  });
+}
+
+setInterval(checkNamazAlarms, 15000);
 </script>
 </body>
 </html>
