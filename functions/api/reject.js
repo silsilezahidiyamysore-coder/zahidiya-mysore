@@ -12,7 +12,7 @@ export async function onRequestPost(context) {
     }
 
     await db
-      .prepare('DELETE FROM pending_mureeds WHERE mobile = ?')
+      .prepare("UPDATE mureeds SET status = 'rejected' WHERE mobile = ?")
       .bind(mobile)
       .run();
 
