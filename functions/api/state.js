@@ -2,7 +2,7 @@
 // Alag alag query params ke hisaab se alag data deta hai:
 // 1) mobile & password -> login check
 // 2) notifications=1 -> notifications ki list
-// 3) admin=1 -> admin stats + pending list
+// 3) admin=1 -> admin stats + pending list + sabhi mureeds ki list (drill-down ke liye)
 // 4) kuch nahi -> bas classes ki list
 
 export async function onRequestGet(context) {
@@ -45,18 +45,20 @@ export async function onRequestGet(context) {
       return Response.json({ notifications: notifRes.results });
     }
 
-    // 3) ADMIN STATS + PENDING LIST
+    // 3) ADMIN STATS + PENDING LIST + FULL MUREED LIST
     if (admin) {
       const totalRes = await db.prepare('SELECT COUNT(*) as count FROM mureeds WHERE role = "mureed"').first();
       const mardanaRes = await db.prepare("SELECT COUNT(*) as count FROM mureeds WHERE role = 'mureed' AND group_type = 'mardana'").first();
       const zananaRes = await db.prepare("SELECT COUNT(*) as count FROM mureeds WHERE role = 'mureed' AND group_type = 'zanana'").first();
       const pendingRes = await db.prepare("SELECT * FROM mureeds WHERE status = 'pending' ORDER BY created_at ASC").all();
+      const allRes = await db.prepare("SELECT id, name, mobile, group_type, status FROM mureeds WHERE role = 'mureed' ORDER BY name ASC").all();
 
       return Response.json({
         total: totalRes.count,
         mardana: mardanaRes.count,
         zanana: zananaRes.count,
-        pending: pendingRes.results
+        pending: pendingRes.results,
+        all: allRes.results
       });
     }
 
