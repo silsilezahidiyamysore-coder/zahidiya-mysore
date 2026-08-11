@@ -1,19 +1,19 @@
 // POST /api/reject
-// Body: { mobile }
+// Body: { id }
 
 export async function onRequestPost(context) {
   const db = context.env.DB;
 
   try {
     const body = await context.request.json();
-    const mobile = (body.mobile || '').trim();
-    if (!mobile) {
-      return Response.json({ error: 'Mobile zaroori hai' }, { status: 400 });
+    const id = body.id;
+    if (!id) {
+      return Response.json({ error: 'id zaroori hai' }, { status: 400 });
     }
 
     await db
-      .prepare("UPDATE mureeds SET status = 'rejected' WHERE mobile = ?")
-      .bind(mobile)
+      .prepare("UPDATE mureeds SET status = 'rejected' WHERE id = ?")
+      .bind(id)
       .run();
 
     return Response.json({ success: true });
