@@ -367,6 +367,7 @@ function toggleAlarm() {
 }
 
 // ---------- ADMIN PANEL ----------
+let allMureedsData = [];
 async function loadAdminData() {
   try {
     const res = await fetch(API + '/api/state?admin=1');
@@ -374,6 +375,7 @@ async function loadAdminData() {
     document.getElementById('totalCount').innerText = data.total || 0;
     document.getElementById('mardanaCount').innerText = data.mardana || 0;
     document.getElementById('zananaCount').innerText = data.zanana || 0;
+    allMureedsData = data.all || [];
     const pending = data.pending || [];
     document.getElementById('pendingList').innerHTML = pending.length ?
       pending.map(p => `
@@ -386,6 +388,25 @@ async function loadAdminData() {
         </div>
       `).join('') : '<p style="font-size:13px;">No pending requests.</p>';
   } catch(e) { console.error(e); }
+}
+
+function showMureedList(type) {
+  const area = document.getElementById('mureedListArea');
+  let list = allMureedsData;
+  let title = 'Sabhi Mureed';
+  if (type === 'mardana') { list = allMureedsData.filter(m => m.group_type === 'mardana'); title = 'Mardana Mureed'; }
+  if (type === 'zanana') { list = allMureedsData.filter(m => m.group_type === 'zanana'); title = 'Zanana Mureed'; }
+  if (!list.length) { area.innerHTML = `<p style="font-size:13px;">Koi ${title} nahi mila.</p>`; return; }
+  area.innerHTML = `<h3 style="font-size:14px; margin-bottom:8px;">${title} (${list.length})</h3>` +
+    list.map(m => `
+      <div class="list-item">
+        <div class="row" style="justify-content:space-between;">
+          <strong>${m.name}</strong>
+          <span class="badge">${m.status}</span>
+        </div>
+        <div style="font-size:13px; margin-top:4px;">📱 ${m.mobile} — ${m.group_type}</div>
+      </div>
+    `).join('');
 }
 
 async function approveMureed(id) {
