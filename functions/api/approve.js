@@ -1,20 +1,19 @@
 // POST /api/approve
-// Body: { mobile }
-// Mureed ki status 'pending' se 'approved' karta hai, notification bhejta hai
+// Body: { id }
 
 export async function onRequestPost(context) {
   const db = context.env.DB;
 
   try {
     const body = await context.request.json();
-    const mobile = (body.mobile || '').trim();
-    if (!mobile) {
-      return Response.json({ error: 'Mobile zaroori hai' }, { status: 400 });
+    const id = body.id;
+    if (!id) {
+      return Response.json({ error: 'id zaroori hai' }, { status: 400 });
     }
 
     const mureed = await db
-      .prepare("SELECT * FROM mureeds WHERE mobile = ? AND status = 'pending'")
-      .bind(mobile)
+      .prepare("SELECT * FROM mureeds WHERE id = ? AND status = 'pending'")
+      .bind(id)
       .first();
 
     if (!mureed) {
@@ -22,8 +21,8 @@ export async function onRequestPost(context) {
     }
 
     await db
-      .prepare("UPDATE mureeds SET status = 'approved' WHERE mobile = ?")
-      .bind(mobile)
+      .prepare("UPDATE mureeds SET status = 'approved' WHERE id = ?")
+      .bind(id)
       .run();
 
     await db
