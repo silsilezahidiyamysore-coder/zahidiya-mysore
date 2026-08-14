@@ -25,12 +25,12 @@ export async function onRequestPost(context) {
       .bind(id)
       .run();
 
-    await db
+  await db
       .prepare(
-        `INSERT INTO notifications (message, target_role, is_read)
-         VALUES (?, 'mureed', 0)`
+        `INSERT INTO notifications (message, target_role, is_read, target_mobile)
+         VALUES (?, 'mureed', 0, ?)`
       )
-      .bind('🎉 Aapko access mil gaya! Ab aap saari classes dekh sakte hain.')
+      .bind('🎉 Aapko access mil gaya! Ab aap saari classes dekh sakte hain.', mureed.mobile)
       .run();
 
     return Response.json({ success: true });
