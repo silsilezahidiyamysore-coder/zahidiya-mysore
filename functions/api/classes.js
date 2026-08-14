@@ -1,6 +1,30 @@
+// GET /api/classes?group=mardana|zanana|both
+// Us group ke saare classes wapas karta hai (unke group + 'both' waale)
 // POST /api/classes
-// Body: { title, audioDataUrl, videoDataUrl, videoType, pdfDataUrl }
-// Nayi class database mein save karta hai aur ek notification bhi banata hai
+// Body: { title, type, file_url, group_type }
+// Nayi class save karta hai aur ek notification bhi banata hai (sabhi approved mureeds ke liye)
+
+export async function onRequestGet(context) {
+  const db = context.env.DB;
+  try {
+    const url = new URL(context.request.url);
+    const group = url.searchParams.get('group') || 'both';
+
+    const { results } = await db
+      .prepare(
+        `SELECT id, title, type, file_url, group_type, uploaded_at
+         FROM classes
+         WHERE group_type = ? OR group_type = 'both'
+         ORDER BY uploaded_at DESC`
+      )
+      .bind(group)
+      .all();
+
+    return Response.json({ classes: results });
+  } catch (err) {
+    return Response.json({ error: String(err) }, { status: 500 });
+  }
+}
 
 export async function onRequestPost(context) {
   const db = context.env.DB;
@@ -8,53 +32,40 @@ export async function onRequestPost(context) {
   try {
     const body = await context.request.json();
     const title = (body.title || '').trim();
+    const type = body.type;
+    const file_url = (body.file_url || '').trim();
+    const group_type = body.group_type || 'both';
+
     if (!title) {
       return Response.json({ error: 'Title zaroori hai' }, { status: 400 });
     }
-
-    const id = 'c-' + Date.now() + '-' + Math.floor(Math.random() * 10000);
-    const now = Date.now();
-    const dateLabel = new Date(now).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-
-    await db
-      .prepare(
-        `INSERT INTO classes (id, title, date_label, badge, audio_data_url, video_data_url, video_type, pdf_data_url, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .bind(
-        id,
-        title,
-        dateLabel,
-        'Nayi',
-        body.audioDataUrl || null,
-        body.videoDataUrl || null,
-        body.videoType || null,
-        body.pdfDataUrl || null,
-        now
-      )
-      .run();
-
-    // Notification bhi bana den taake sab dekh sakein
-    const notifText = `Nayi class upload hui: "${title}"` +
-      (body.audioDataUrl ? ' (Audio)' : '') +
-      (body.videoDataUrl ? ' (Video)' : '') +
-      (body.pdfDataUrl ? ' (PDF)' : '');
+    if (!['audio', 'video', 'pdf'].includes(type)) {
+      return Response.json({ error: 'Type sahi nahi hai' }, { status: 400 });
+    }
+    if (!file_url) {
+      return Response.json({ error: 'File URL zaroori hai' }, { status: 400 });
+    }
 
     await db
       .prepare(
-        `INSERT INTO notifications (id, text, time_label, class_id, for_admin_only, is_registration, for_mobile, created_at)
-         VALUES (?, ?, ?, ?, 0, 0, NULL, ?)`
+        `INSERT INTO classes (title, type, file_url, group_type)
+         VALUES (?, ?, ?, ?)`
       )
-      .bind(
-        'n-' + Date.now() + '-' + Math.floor(Math.random() * 10000),
-        notifText,
-        new Date(now).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-        id,
-        now
-      )
+      .bind(title, type, file_url, group_type)
       .run();
 
-    return Response.json({ success: true, id });
+    // Notification bhi banayen taake sab approved mureeds ko dikhe
+    const notifText = `Nayi class upload hui: "${title}"`;
+
+    await db
+      .prepare(
+        `INSERT INTO notifications (message, target_role, is_read, target_mobile)
+         VALUES (?, 'mureed', 0, NULL)`
+      )
+      .bind(notifText)
+      .run();
+
+    return Response.json({ success: true });
   } catch (err) {
     return Response.json({ error: String(err) }, { status: 500 });
   }
