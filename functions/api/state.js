@@ -37,10 +37,26 @@ export async function onRequestGet(context) {
       });
     }
 
-    // 2) NOTIFICATIONS
+   // 2) NOTIFICATIONS
     if (notifications) {
+      const role = url.searchParams.get('role');
+      const userMobile = url.searchParams.get('mobile');
+
+      if (role === 'admin') {
+        const notifRes = await db
+          .prepare("SELECT * FROM notifications WHERE target_role = 'admin' ORDER BY created_at DESC LIMIT 100")
+          .all();
+        return Response.json({ notifications: notifRes.results });
+      }
+
+      // mureed: sirf apni relevant notifications (target_mobile khaali ho ya unki apni ho)
       const notifRes = await db
-        .prepare('SELECT * FROM notifications ORDER BY created_at DESC LIMIT 100')
+        .prepare(
+          `SELECT * FROM notifications
+           WHERE target_role = 'mureed' AND (target_mobile IS NULL OR target_mobile = ?)
+           ORDER BY created_at DESC LIMIT 100`
+        )
+        .bind(userMobile || '')
         .all();
       return Response.json({ notifications: notifRes.results });
     }
