@@ -302,7 +302,8 @@ function renderClasses(list) {
         ${c.type === 'audio' ? `<audio controls style="width:100%;" src="${c.file_url}"></audio>` : ''}
         ${c.type === 'video' ? `<video controls style="width:100%;" src="${c.file_url}"></video>` : ''}
         ${c.type === 'pdf' ? `<a href="${c.file_url}" target="_blank">📄 Open PDF</a> <button style="width:auto; margin-left:8px;" onclick="speakPdf('${c.file_url}')">🔊 Listen</button>` : ''}
-      </div>
+    ${c.type === 'pdf' ? `<a href="${c.file_url}" target="_blank">📄 Open PDF</a> <button style="width:auto; margin-left:8px;" onclick="speakPdf('${c.file_url}')">🔊 Listen</button>` : ''}
+        ${c.type === 'link' ? `<a href="${c.file_url}" target="_blank" style="display:inline-block; background:#ffcc00; color:#1a3a1a; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">🔗 Open Link</a>` : ''}  </div>
     </div>
   `).join('');
 }
