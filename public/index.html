@@ -334,7 +334,7 @@ function speakPdf(url) {
 // ---------- NOTIFICATIONS ----------
 async function loadNotifications() {
   try {
-    const res = await fetch(API + '/api/state?notifications=1&role=' + currentUser.role);
+   const res = await fetch(API + '/api/state?notifications=1&role=' + currentUser.role + '&mobile=' + currentUser.mobile);
     const data = await res.json();
     const list = data.notifications || [];
     const badge = document.getElementById('notifBadge');
