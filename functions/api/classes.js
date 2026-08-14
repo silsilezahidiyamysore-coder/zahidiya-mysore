@@ -39,7 +39,7 @@ export async function onRequestPost(context) {
     if (!title) {
       return Response.json({ error: 'Title zaroori hai' }, { status: 400 });
     }
-    if (!['audio', 'video', 'pdf'].includes(type)) {
+  if (!['audio', 'video', 'pdf', 'link'].includes(type)) {
       return Response.json({ error: 'Type sahi nahi hai' }, { status: 400 });
     }
     if (!file_url) {
