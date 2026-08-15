@@ -146,13 +146,14 @@
       <div class="card">
         <h3>📤 Upload New Class</h3>
         <input type="text" id="classTitle" placeholder="Class Title">
-      <select id="classType">
+    <select id="classType" onchange="toggleClassUrlOrFile()">
           <option value="audio">Audio (MP3)</option>
           <option value="video">Video</option>
           <option value="pdf">PDF</option>
           <option value="link">Link (WhatsApp/Website)</option>
         </select>
-        <input type="text" id="classUrl" placeholder="File URL (link)">
+    <input type="text" id="classUrl" placeholder="File URL (link)" style="display:none;">
+        <input type="file" id="classFile">
         <select id="classGroup">
           <option value="both">Both</option>
           <option value="mardana">Mardana</option>
