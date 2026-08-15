@@ -450,7 +450,15 @@ async function bulkAddMureeds() {
   document.getElementById('bulkData').value = '';
   loadAdminData();
 }
-function toggleClassUrlOrFile() {
+function autoFillTitle() {
+  const fileInput = document.getElementById('classFile');
+  const titleBox = document.getElementById('classTitle');
+  if (fileInput.files[0] && !titleBox.value.trim()) {
+    let name = fileInput.files[0].name;
+    name = name.replace(/\.[^/.]+$/, ''); // extension hata do
+    titleBox.value = name;
+  }
+}function toggleClassUrlOrFile() {
   const type = document.getElementById('classType').value;
   const urlBox = document.getElementById('classUrl');
   const fileBox = document.getElementById('classFile');
