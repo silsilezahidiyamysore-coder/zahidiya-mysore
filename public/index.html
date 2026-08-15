@@ -274,8 +274,9 @@ function showScreen(name) {
   document.getElementById('adminScreen').classList.add('hidden');
   document.getElementById('tabHome').classList.remove('active');
   document.getElementById('tabAdmin').classList.remove('active');
-  if (name === 'notifications') {
+ if (name === 'notifications') {
     document.getElementById('notificationsScreen').classList.remove('hidden');
+    markNotificationsRead();
   } else if (name === 'admin') {
     document.getElementById('adminScreen').classList.remove('hidden');
     document.getElementById('tabAdmin').classList.add('active');
