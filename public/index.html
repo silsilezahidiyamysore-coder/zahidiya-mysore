@@ -351,7 +351,18 @@ async function loadNotifications() {
     else { badge.classList.add('hidden'); }
     document.getElementById('notifList').innerHTML = list.length ?
       list.map(n => `<div class="list-item">${n.message}<div style="font-size:11px; color:#ccc;">${n.created_at}</div></div>`).join('')
-      : '<p style="font-size:13px;">No notifications yet.</p>';
+    : '<p style="font-size:13px;">No notifications yet.</p>';
+  } catch(e) { console.error(e); }
+}
+
+async function markNotificationsRead() {
+  try {
+    await fetch(API + '/api/mark-read', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ role: currentUser.role, mobile: currentUser.mobile })
+    });
+    document.getElementById('notifBadge').classList.add('hidden');
+    loadNotifications();
   } catch(e) { console.error(e); }
 }
 
