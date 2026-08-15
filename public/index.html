@@ -644,6 +644,38 @@ function checkNamazAlarms() {
 }
 
 setInterval(checkNamazAlarms, 15000);
-</script>
+// ---------- AUTO LOGIN (dobara refresh karne par login yaad rahe) ----------
+async function tryAutoLogin() {
+  const savedMobile = localStorage.getItem('zahidiya_mobile');
+  const savedPassword = localStorage.getItem('zahidiya_password');
+  if (!savedMobile || !savedPassword) return;
+  try {
+    const res = await fetch(API + '/api/state?mobile=' + encodeURIComponent(savedMobile) + '&password=' + encodeURIComponent(savedPassword));
+    const data = await res.json();
+    if (res.ok && data.user && !['pending','rejected','blocked'].includes(data.user.status)) {
+      currentUser = data.user;
+      loginSuccess();
+    } else {
+      localStorage.removeItem('zahidiya_mobile');
+      localStorage.removeItem('zahidiya_password');
+    }
+  } catch(e) { console.error(e); }
+}
+window.addEventListener('DOMContentLoaded', tryAutoLogin);
+
+// ---------- AUTO REFRESH (bina refresh kiye naya class/notification dikhna) ----------
+let autoRefreshTimer = null;
+function startAutoRefresh() {
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(() => {
+    if (currentUser) {
+      loadClasses();
+      loadNotifications();
+    }
+  }, 15000); // har 15 second mein naya data check karega
+}
+function stopAutoRefresh() {
+  if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+}</script>
 </body>
 </html>
