@@ -450,18 +450,51 @@ async function bulkAddMureeds() {
   document.getElementById('bulkData').value = '';
   loadAdminData();
 }
+function toggleClassUrlOrFile() {
+  const type = document.getElementById('classType').value;
+  const urlBox = document.getElementById('classUrl');
+  const fileBox = document.getElementById('classFile');
+  if (type === 'link') {
+    urlBox.style.display = '';
+    fileBox.style.display = 'none';
+  } else {
+    urlBox.style.display = '';
+    fileBox.style.display = '';
+    urlBox.style.display = 'none';
+    fileBox.style.display = '';
+  }
+}
+
 async function uploadClass() {
   const title = document.getElementById('classTitle').value.trim();
   const type = document.getElementById('classType').value;
-  const file_url = document.getElementById('classUrl').value.trim();
   const group_type = document.getElementById('classGroup').value;
-  if (!title || !file_url) { alert("Fill all fields"); return; }
+  let file_url = document.getElementById('classUrl').value.trim();
+  const fileInput = document.getElementById('classFile');
+
+  if (!title) { alert("Title bharo"); return; }
+
+  if (type === 'link') {
+    if (!file_url) { alert("URL bharo"); return; }
+  } else {
+    const file = fileInput.files[0];
+    if (!file) { alert("File choose karo"); return; }
+    const formData = new FormData();
+    formData.append('file', file);
+    const uploadRes = await fetch(API + '/api/upload', { method: 'POST', body: formData });
+    const uploadData = await uploadRes.json();
+    if (!uploadData.url) { alert(uploadData.error || "File upload fail ho gaya"); return; }
+    file_url = uploadData.url;
+  }
+
   const res = await fetch(API + '/api/classes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title, type, file_url, group_type }) });
   const data = await res.json();
   alert(data.message || "Class uploaded");
   document.getElementById('classTitle').value = '';
   document.getElementById('classUrl').value = '';
+  fileInput.value = '';
   loadClasses();
+}
 }
 // ===== ALARM SETTINGS (Admin Control) =====
 let alarmSettings = {
