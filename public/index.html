@@ -252,13 +252,17 @@ function loginSuccess() {
     document.getElementById('tabAdmin').classList.remove('hidden');
     loadAdminData();
   }
-  loadClasses();
+ loadClasses();
   loadNotifications();
   loadPrayerTimes();
+  startAutoRefresh();
 }
 
 function logout() {
   currentUser = null;
+  localStorage.removeItem('zahidiya_mobile');
+  localStorage.removeItem('zahidiya_password');
+  stopAutoRefresh();
   document.getElementById('mainApp').classList.add('hidden');
   document.getElementById('tabBar').classList.add('hidden');
   document.getElementById('loginScreen').classList.remove('hidden');
