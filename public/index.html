@@ -320,6 +320,9 @@ async function loadClasses() {
 
 function renderClasses(list) {
   const el = document.getElementById('classList');
+  document.getElementById('classCount').innerText = list.length;
+  const liveCount = list.filter(c => c.is_live).length;
+  document.getElementById('liveIndicator').innerText = liveCount > 0 ? `🔴 ${liveCount} Live` : '';
   if (!list.length) { el.innerHTML = '<p style="font-size:13px;">No classes available yet.</p>'; return; }
   el.innerHTML = list.map(c => `
     <div class="list-item" style="${c.is_live ? 'border:2px solid #ff3333;' : ''}">
@@ -334,9 +337,54 @@ function renderClasses(list) {
         ${c.type === 'pdf' ? `<a href="${c.file_url}" target="_blank">📄 Open PDF</a> <button style="width:auto; margin-left:8px;" onclick="speakPdf('${c.file_url}')">🔊 Listen</button>` : ''}
         ${c.type === 'link' ? `<a href="${c.file_url}" target="_blank" style="display:inline-block; background:#ffcc00; color:#1a3a1a; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">🔗 Open Link</a>` : ''}
         ${currentUser.role === 'admin' && c.type === 'link' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px;" onclick="toggleLive(${c.id}, ${c.is_live ? 0 : 1})">${c.is_live ? '⏹ Live Band Karo' : '🔴 Live Shuru Karo'}</button>` : ''}
+        ${currentUser.role === 'admin' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px;" onclick="editClass(${c.id})">✏️ Edit</button>` : ''}
+        ${currentUser.role === 'admin' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px; background:#8b1a1a;" onclick="deleteClass(${c.id})">🗑️ Delete</button>` : ''}
       </div>
     </div>
   `).join('');
+}
+
+function toggleClassList() {
+  const el = document.getElementById('classList');
+  const icon = document.getElementById('classToggleIcon');
+  el.classList.toggle('hidden');
+  icon.textContent = el.classList.contains('hidden') ? '▼' : '▲';
+}
+
+function findClassById(id) {
+  return allClasses.find(c => c.id === id);
+}
+
+async function deleteClass(id) {
+  const c = findClassById(id);
+  if (!c) return;
+  if (!confirm('Kya aap sach mein "' + c.title + '" delete karna chahte hain? Yeh wapas nahi aayegi.')) return;
+  try {
+    await fetch(API + '/api/delete-class', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id })
+    });
+    loadClasses();
+  } catch(e) { console.error(e); }
+}
+
+async function editClass(id) {
+  const c = findClassById(id);
+  if (!c) return;
+  const newTitle = prompt('Class ka naya naam likho:', c.title);
+  if (newTitle === null || !newTitle.trim()) return;
+  const newGroup = prompt('Group likho (both / mardana / zanana):', c.group_type);
+  if (newGroup === null || !['both','mardana','zanana'].includes(newGroup.trim())) {
+    alert('Group sahi nahi hai — sirf "both", "mardana" ya "zanana" likhna hai.');
+    return;
+  }
+  try {
+    await fetch(API + '/api/update-class', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id, title: newTitle.trim(), group_type: newGroup.trim() })
+    });
+    loadClasses();
+  } catch(e) { console.error(e); }
 }
 
 async function toggleLive(id, is_live) {
