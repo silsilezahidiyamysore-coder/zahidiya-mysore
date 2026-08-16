@@ -154,7 +154,8 @@ a { color: #ffd700; }
       </div>
 
       <div class="card">
-        <h3>📤 Upload New Class</h3>
+      <h3 id="uploadCardTitle">📤 Upload New Class</h3>
+        <input type="hidden" id="editingClassId" value="">
         <input type="text" id="classTitle" placeholder="Class Title">
     <select id="classType" onchange="toggleClassUrlOrFile()">
           <option value="audio">Audio (MP3)</option>
@@ -164,6 +165,7 @@ a { color: #ffd700; }
         </select>
 <input type="text" id="classUrl" placeholder="File URL (link)" style="display:none;">
         <input type="file" id="classFile" onchange="autoFillTitle()">
+        <p id="editFileNote" style="font-size:11px; color:#ffd700; display:none;">Naya file sirf tab choose karo agar file badalni ho, warna purani file wahi rahegi.</p>
         <div class="row" id="liveCheckRow" style="display:none; margin:6px 0;">
           <input type="checkbox" id="classIsLive" style="width:auto;">
           <span style="font-size:13px;">🔴 Yeh abhi Live hai (YouTube/Zoom link)</span>
@@ -173,7 +175,8 @@ a { color: #ffd700; }
           <option value="mardana">Mardana</option>
           <option value="zanana">Zanana</option>
         </select>
-        <button onclick="uploadClass()">Upload Class</button>
+        <button id="uploadClassBtn" onclick="uploadClass()">Upload Class</button>
+        <button class="secondary" id="cancelEditBtn" style="display:none;" onclick="cancelEditClass()">Cancel Edit</button>
       </div>
        <div class="card">
         <h3>⏰ Alarm Settings</h3>
