@@ -28,7 +28,14 @@
   .stat-box .num { font-size: 24px; font-weight: bold; color: #ffd700; }
   #notifBadge { background: red; border-radius: 50%; padding: 2px 7px; font-size: 11px; margin-left: 6px; }
   .content-area { padding-bottom: 70px; }
-  a { color: #ffd700; }
+a { color: #ffd700; }
+
+  /* Laptop/bade screen par wide layout aur boxes wali grid */
+  @media (min-width: 900px) {
+    .container { max-width: 1100px; }
+    #classList, #notifList { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+    #classList .list-item, #notifList .list-item { margin-bottom: 0; }
+  }
 </style>
 </head>
 <body>
