@@ -536,6 +536,7 @@ async function uploadClass() {
   const group_type = document.getElementById('classGroup').value;
   let file_url = document.getElementById('classUrl').value.trim();
   const fileInput = document.getElementById('classFile');
+  const is_live = type === 'link' && document.getElementById('classIsLive').checked;
 
   if (!title) { alert("Title bharo"); return; }
 
@@ -552,13 +553,14 @@ async function uploadClass() {
     file_url = uploadData.url;
   }
 
-  const res = await fetch(API + '/api/classes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title, type, file_url, group_type }) });
+  const res = await fetch(API + '/api/classes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title, type, file_url, group_type, is_live }) });
   const data = await res.json();
   alert(data.message || "Class uploaded");
   document.getElementById('classTitle').value = '';
   document.getElementById('classUrl').value = '';
+  document.getElementById('classIsLive').checked = false;
   fileInput.value = '';
- loadClasses();
+  loadClasses();
 }
 // ===== ALARM SETTINGS (Admin Control) =====
 let alarmSettings = {
