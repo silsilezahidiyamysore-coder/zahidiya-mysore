@@ -176,24 +176,7 @@ a { color: #ffd700; }
           <option value="zanana">Zanana</option>
         </select>
         <button id="uploadClassBtn" onclick="uploadClass()">Upload Class</button>
-        <button class="secondary" id="cancelEditBtn" style="display:none;" onclick="cancelasync function editClass(id) {
-  const c = findClassById(id);
-  if (!c) return;
-  const newTitle = prompt('Class ka naya naam likho:', c.title);
-  if (newTitle === null || !newTitle.trim()) return;
-  const newGroup = prompt('Group likho (both / mardana / zanana):', c.group_type);
-  if (newGroup === null || !['both','mardana','zanana'].includes(newGroup.trim())) {
-    alert('Group sahi nahi hai — sirf "both", "mardana" ya "zanana" likhna hai.');
-    return;
-  }
-  try {
-    await fetch(API + '/api/update-class', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ id, title: newTitle.trim(), group_type: newGroup.trim() })
-    });
-    loadClasses();
-  } catch(e) { console.error(e); }
-}async function editClass(id) {()">Cancel Edit</button>
+        <button class="secondary" id="cancelEditBtn" style="display:none;" onclick="cancelEditClass()">Cancel Edit</button>
       </div>
        <div class="card">
         <h3>⏰ Alarm Settings</h3>
@@ -402,23 +385,38 @@ async function deleteClass(id) {
   } catch(e) { console.error(e); }
 }
 
-async function editClass(id) {
+function editClass(id) {
   const c = findClassById(id);
   if (!c) return;
-  const newTitle = prompt('Class ka naya naam likho:', c.title);
-  if (newTitle === null || !newTitle.trim()) return;
-  const newGroup = prompt('Group likho (both / mardana / zanana):', c.group_type);
-  if (newGroup === null || !['both','mardana','zanana'].includes(newGroup.trim())) {
-    alert('Group sahi nahi hai — sirf "both", "mardana" ya "zanana" likhna hai.');
-    return;
+  document.getElementById('editingClassId').value = id;
+  document.getElementById('uploadCardTitle').innerText = '✏️ Edit Class: ' + c.title;
+  document.getElementById('classTitle').value = c.title;
+  document.getElementById('classType').value = c.type;
+  document.getElementById('classGroup').value = c.group_type;
+  document.getElementById('classIsLive').checked = !!c.is_live;
+  toggleClassUrlOrFile();
+  if (c.type === 'link') {
+    document.getElementById('classUrl').value = c.file_url;
+  } else {
+    document.getElementById('classUrl').value = '';
+    document.getElementById('editFileNote').style.display = '';
   }
-  try {
-    await fetch(API + '/api/update-class', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ id, title: newTitle.trim(), group_type: newGroup.trim() })
-    });
-    loadClasses();
-  } catch(e) { console.error(e); }
+  document.getElementById('uploadClassBtn').innerText = 'Update Class';
+  document.getElementById('cancelEditBtn').style.display = '';
+  showScreen('admin');
+  document.getElementById('uploadCardTitle').scrollIntoView({behavior:'smooth'});
+}
+
+function cancelEditClass() {
+  document.getElementById('editingClassId').value = '';
+  document.getElementById('uploadCardTitle').innerText = '📤 Upload New Class';
+  document.getElementById('classTitle').value = '';
+  document.getElementById('classUrl').value = '';
+  document.getElementById('classFile').value = '';
+  document.getElementById('classIsLive').checked = false;
+  document.getElementById('editFileNote').style.display = 'none';
+  document.getElementById('uploadClassBtn').innerText = 'Upload Class';
+  document.getElementById('cancelEditBtn').style.display = 'none';
 }
 
 async function toggleLive(id, is_live) {
@@ -629,6 +627,7 @@ function autoFillTitle() {
 }
 
 async function uploadClass() {
+  const editingId = document.getElementById('editingClassId').value;
   const title = document.getElementById('classTitle').value.trim();
   const type = document.getElementById('classType').value;
   const group_type = document.getElementById('classGroup').value;
@@ -642,22 +641,31 @@ async function uploadClass() {
     if (!file_url) { alert("URL bharo"); return; }
   } else {
     const file = fileInput.files[0];
-    if (!file) { alert("File choose karo"); return; }
-    const formData = new FormData();
-    formData.append('file', file);
-    const uploadRes = await fetch(API + '/api/upload', { method: 'POST', body: formData });
-    const uploadData = await uploadRes.json();
-    if (!uploadData.url) { alert(uploadData.error || "File upload fail ho gaya"); return; }
-    file_url = uploadData.url;
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      const uploadRes = await fetch(API + '/api/upload', { method: 'POST', body: formData });
+      const uploadData = await uploadRes.json();
+      if (!uploadData.url) { alert(uploadData.error || "File upload fail ho gaya"); return; }
+      file_url = uploadData.url;
+    } else if (editingId) {
+      const existing = findClassById(Number(editingId));
+      file_url = existing ? existing.file_url : '';
+      if (!file_url) { alert("File choose karo"); return; }
+    } else {
+      alert("File choose karo"); return;
+    }
   }
 
-  const res = await fetch(API + '/api/classes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title, type, file_url, group_type, is_live }) });
+  const endpoint = editingId ? '/api/update-class' : '/api/classes';
+  const payload = editingId
+    ? { id: Number(editingId), title, type, file_url, group_type, is_live }
+    : { title, type, file_url, group_type, is_live };
+
+  const res = await fetch(API + endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
   const data = await res.json();
-  alert(data.message || "Class uploaded");
-  document.getElementById('classTitle').value = '';
-  document.getElementById('classUrl').value = '';
-  document.getElementById('classIsLive').checked = false;
-  fileInput.value = '';
+  alert(data.message || (editingId ? "Class update ho gayi" : "Class uploaded"));
+  cancelEditClass();
   loadClasses();
 }
 // ===== ALARM SETTINGS (Admin Control) =====
