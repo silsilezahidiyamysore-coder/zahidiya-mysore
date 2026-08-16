@@ -273,11 +273,12 @@ function logout() {
 
 // ---------- SCREEN SWITCHING ----------
 function showScreen(name) {
+  document.getElementById('homeScreen').classList.add('hidden');
   document.getElementById('notificationsScreen').classList.add('hidden');
   document.getElementById('adminScreen').classList.add('hidden');
   document.getElementById('tabHome').classList.remove('active');
   document.getElementById('tabAdmin').classList.remove('active');
- if (name === 'notifications') {
+  if (name === 'notifications') {
     document.getElementById('notificationsScreen').classList.remove('hidden');
     markNotificationsRead();
   } else if (name === 'admin') {
@@ -285,6 +286,7 @@ function showScreen(name) {
     document.getElementById('tabAdmin').classList.add('active');
     loadAdminData();
   } else {
+    document.getElementById('homeScreen').classList.remove('hidden');
     document.getElementById('tabHome').classList.add('active');
   }
 }
