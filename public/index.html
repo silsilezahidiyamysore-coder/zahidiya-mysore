@@ -162,8 +162,12 @@ a { color: #ffd700; }
           <option value="pdf">PDF</option>
           <option value="link">Link (WhatsApp/Website)</option>
         </select>
-    <input type="text" id="classUrl" placeholder="File URL (link)" style="display:none;">
+<input type="text" id="classUrl" placeholder="File URL (link)" style="display:none;">
         <input type="file" id="classFile" onchange="autoFillTitle()">
+        <div class="row" id="liveCheckRow" style="display:none; margin:6px 0;">
+          <input type="checkbox" id="classIsLive" style="width:auto;">
+          <span style="font-size:13px;">🔴 Yeh abhi Live hai (YouTube/Zoom link)</span>
+        </div>
         <select id="classGroup">
           <option value="both">Both</option>
           <option value="mardana">Mardana</option>
