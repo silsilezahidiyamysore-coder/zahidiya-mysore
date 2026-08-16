@@ -517,14 +517,16 @@ function autoFillTitle() {
   const type = document.getElementById('classType').value;
   const urlBox = document.getElementById('classUrl');
   const fileBox = document.getElementById('classFile');
+  const liveRow = document.getElementById('liveCheckRow');
   if (type === 'link') {
     urlBox.style.display = '';
     fileBox.style.display = 'none';
+    liveRow.style.display = '';
   } else {
-    urlBox.style.display = '';
-    fileBox.style.display = '';
     urlBox.style.display = 'none';
     fileBox.style.display = '';
+    liveRow.style.display = 'none';
+    document.getElementById('classIsLive').checked = false;
   }
 }
 
