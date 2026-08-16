@@ -1,7 +1,7 @@
 // GET /api/classes?group=mardana|zanana|both
 // Us group ke saare classes wapas karta hai (unke group + 'both' waale)
 // POST /api/classes
-// Body: { title, type, file_url, group_type }
+// Body: { title, type, file_url, group_type, is_live }
 // Nayi class save karta hai aur ek notification bhi banata hai (sabhi approved mureeds ke liye)
 
 export async function onRequestGet(context) {
@@ -12,10 +12,10 @@ export async function onRequestGet(context) {
 
     const { results } = await db
       .prepare(
-        `SELECT id, title, type, file_url, group_type, uploaded_at
+        `SELECT id, title, type, file_url, group_type, uploaded_at, is_live
          FROM classes
          WHERE group_type = ? OR group_type = 'both'
-         ORDER BY uploaded_at DESC`
+         ORDER BY is_live DESC, uploaded_at DESC`
       )
       .bind(group)
       .all();
@@ -35,11 +35,12 @@ export async function onRequestPost(context) {
     const type = body.type;
     const file_url = (body.file_url || '').trim();
     const group_type = body.group_type || 'both';
+    const is_live = body.is_live ? 1 : 0;
 
     if (!title) {
       return Response.json({ error: 'Title zaroori hai' }, { status: 400 });
     }
-  if (!['audio', 'video', 'pdf', 'link'].includes(type)) {
+    if (!['audio', 'video', 'pdf', 'link'].includes(type)) {
       return Response.json({ error: 'Type sahi nahi hai' }, { status: 400 });
     }
     if (!file_url) {
@@ -48,14 +49,16 @@ export async function onRequestPost(context) {
 
     await db
       .prepare(
-        `INSERT INTO classes (title, type, file_url, group_type)
-         VALUES (?, ?, ?, ?)`
+        `INSERT INTO classes (title, type, file_url, group_type, is_live)
+         VALUES (?, ?, ?, ?, ?)`
       )
-      .bind(title, type, file_url, group_type)
+      .bind(title, type, file_url, group_type, is_live)
       .run();
 
     // Notification bhi banayen taake sab approved mureeds ko dikhe
-    const notifText = `Nayi class upload hui: "${title}"`;
+    const notifText = is_live
+      ? `🔴 LIVE shuru hui: "${title}"`
+      : `Nayi class upload hui: "${title}"`;
 
     await db
       .prepare(
