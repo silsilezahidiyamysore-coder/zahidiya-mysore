@@ -311,16 +311,22 @@ function renderClasses(list) {
         <strong>${c.title}</strong>
         <span class="badge">${c.type.toUpperCase()}</span>
       </div>
+      <div style="font-size:11px; color:#ccc; margin-top:2px;">${formatDate(c.uploaded_at)}</div>
       <div style="margin-top:8px;">
         ${c.type === 'audio' ? `<audio controls style="width:100%;" src="${c.file_url}"></audio>` : ''}
         ${c.type === 'video' ? `<video controls style="width:100%;" src="${c.file_url}"></video>` : ''}
         ${c.type === 'pdf' ? `<a href="${c.file_url}" target="_blank">📄 Open PDF</a> <button style="width:auto; margin-left:8px;" onclick="speakPdf('${c.file_url}')">🔊 Listen</button>` : ''}
-    ${c.type === 'pdf' ? `<a href="${c.file_url}" target="_blank">📄 Open PDF</a> <button style="width:auto; margin-left:8px;" onclick="speakPdf('${c.file_url}')">🔊 Listen</button>` : ''}
         ${c.type === 'link' ? `<a href="${c.file_url}" target="_blank" style="display:inline-block; background:#ffcc00; color:#1a3a1a; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">🔗 Open Link</a>` : ''}  </div>
     </div>
   `).join('');
 }
 
+function formatDate(dt) {
+  if (!dt) return '';
+  const d = new Date(dt.replace(' ', 'T') + 'Z');
+  if (isNaN(d)) return dt;
+  return d.toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
 function filterClasses() {
   const q = document.getElementById('searchBox').value.toLowerCase();
   renderClasses(allClasses.filter(c => c.title.toLowerCase().includes(q)));
