@@ -304,11 +304,16 @@ function showScreen(name) {
 
 // ---------- CLASSES ----------
 let allClasses = [];
+let lastClassesSnapshot = '';
 async function loadClasses() {
   try {
     const res = await fetch(API + '/api/classes?group=' + currentUser.group_type);
     const data = await res.json();
-    allClasses = data.classes || [];
+    const newClasses = data.classes || [];
+    const snapshot = JSON.stringify(newClasses);
+    if (snapshot === lastClassesSnapshot) return; // kuch naya nahi aaya, screen ko chhedo mat
+    lastClassesSnapshot = snapshot;
+    allClasses = newClasses;
     renderClasses(allClasses);
   } catch(e) { console.error(e); }
 }
