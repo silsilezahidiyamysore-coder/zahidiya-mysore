@@ -360,9 +360,24 @@ async function loadNotifications() {
     const unread = list.filter(n => !n.is_read).length;
     if (unread > 0) { badge.classList.remove('hidden'); badge.innerText = unread; }
     else { badge.classList.add('hidden'); }
-    document.getElementById('notifList').innerHTML = list.length ?
-      list.map(n => `<div class="list-item">${n.message}<div style="font-size:11px; color:#ccc;">${n.created_at}</div></div>`).join('')
+ document.getElementById('notifList').innerHTML = list.length ?
+      list.map(n => `<div class="list-item">
+        <div class="row" style="justify-content:space-between; align-items:flex-start;">
+          <div>${n.message}<div style="font-size:11px; color:#ccc; margin-top:4px;">${formatDate(n.created_at)}</div></div>
+          <button class="secondary" style="width:auto; font-size:12px; padding:4px 10px; flex-shrink:0; margin-left:8px;" onclick="deleteNotification(${n.id})">🗑️ Clear</button>
+        </div>
+      </div>`).join('')
     : '<p style="font-size:13px;">No notifications yet.</p>';
+  } catch(e) { console.error(e); }
+}
+
+async function deleteNotification(id) {
+  try {
+    await fetch(API + '/api/delete-notification', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id })
+    });
+    loadNotifications();
   } catch(e) { console.error(e); }
 }
 
