@@ -176,7 +176,24 @@ a { color: #ffd700; }
           <option value="zanana">Zanana</option>
         </select>
         <button id="uploadClassBtn" onclick="uploadClass()">Upload Class</button>
-        <button class="secondary" id="cancelEditBtn" style="display:none;" onclick="cancelasync function editClass(id) {()">Cancel Edit</button>
+        <button class="secondary" id="cancelEditBtn" style="display:none;" onclick="cancelasync function editClass(id) {
+  const c = findClassById(id);
+  if (!c) return;
+  const newTitle = prompt('Class ka naya naam likho:', c.title);
+  if (newTitle === null || !newTitle.trim()) return;
+  const newGroup = prompt('Group likho (both / mardana / zanana):', c.group_type);
+  if (newGroup === null || !['both','mardana','zanana'].includes(newGroup.trim())) {
+    alert('Group sahi nahi hai — sirf "both", "mardana" ya "zanana" likhna hai.');
+    return;
+  }
+  try {
+    await fetch(API + '/api/update-class', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id, title: newTitle.trim(), group_type: newGroup.trim() })
+    });
+    loadClasses();
+  } catch(e) { console.error(e); }
+}async function editClass(id) {()">Cancel Edit</button>
       </div>
        <div class="card">
         <h3>⏰ Alarm Settings</h3>
