@@ -321,30 +321,44 @@ async function loadClasses() {
   } catch(e) { console.error(e); }
 }
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function renderClasses(list) {
   const el = document.getElementById('classList');
   document.getElementById('classCount').innerText = list.length;
   const liveCount = list.filter(c => c.is_live).length;
   document.getElementById('liveIndicator').innerText = liveCount > 0 ? `🔴 ${liveCount} Live` : '';
   if (!list.length) { el.innerHTML = '<p style="font-size:13px;">No classes available yet.</p>'; return; }
-  el.innerHTML = list.map(c => `
+  el.innerHTML = list.map(c => {
+    const safeTitle = escapeHtml(c.title);
+    const safeUrl = escapeHtml(c.file_url);
+    return `
     <div class="list-item" style="${c.is_live ? 'border:2px solid #ff3333;' : ''}">
       <div class="row" style="justify-content:space-between;">
-        <strong>${c.is_live ? '🔴 LIVE NOW — ' : ''}${c.title}</strong>
+        <strong>${c.is_live ? '🔴 LIVE NOW — ' : ''}${safeTitle}</strong>
         <span class="badge">${c.type.toUpperCase()}</span>
       </div>
       <div style="font-size:11px; color:#ccc; margin-top:2px;">${formatDate(c.uploaded_at)}</div>
       <div style="margin-top:8px;">
-        ${c.type === 'audio' ? `<audio controls style="width:100%;" src="${c.file_url}"></audio>` : ''}
-        ${c.type === 'video' ? `<video controls style="width:100%;" src="${c.file_url}"></video>` : ''}
-        ${c.type === 'pdf' ? `<a href="${c.file_url}" target="_blank">📄 Open PDF</a> <button style="width:auto; margin-left:8px;" onclick="speakPdf('${c.file_url}')">🔊 Listen</button>` : ''}
-        ${c.type === 'link' ? `<a href="${c.file_url}" target="_blank" style="display:inline-block; background:#ffcc00; color:#1a3a1a; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">🔗 Open Link</a>` : ''}
+        ${c.type === 'audio' ? `<audio controls style="width:100%;" src="${safeUrl}"></audio>` : ''}
+        ${c.type === 'video' ? `<video controls style="width:100%;" src="${safeUrl}"></video>` : ''}
+        ${c.type === 'pdf' ? `<a href="${safeUrl}" target="_blank">📄 Open PDF</a> <button style="width:auto; margin-left:8px;" onclick="speakPdf('${safeUrl}')">🔊 Listen</button>` : ''}
+        ${c.type === 'link' ? `<a href="${safeUrl}" target="_blank" style="display:inline-block; background:#ffcc00; color:#1a3a1a; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">🔗 Open Link</a>` : ''}
         ${currentUser.role === 'admin' && c.type === 'link' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px;" onclick="toggleLive(${c.id}, ${c.is_live ? 0 : 1})">${c.is_live ? '⏹ Live Band Karo' : '🔴 Live Shuru Karo'}</button>` : ''}
         ${currentUser.role === 'admin' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px;" onclick="editClass(${c.id})">✏️ Edit</button>` : ''}
         ${currentUser.role === 'admin' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px; background:#8b1a1a;" onclick="deleteClass(${c.id})">🗑️ Delete</button>` : ''}
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function toggleClassList() {
