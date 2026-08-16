@@ -317,9 +317,9 @@ function renderClasses(list) {
   const el = document.getElementById('classList');
   if (!list.length) { el.innerHTML = '<p style="font-size:13px;">No classes available yet.</p>'; return; }
   el.innerHTML = list.map(c => `
-    <div class="list-item">
+    <div class="list-item" style="${c.is_live ? 'border:2px solid #ff3333;' : ''}">
       <div class="row" style="justify-content:space-between;">
-        <strong>${c.title}</strong>
+        <strong>${c.is_live ? '🔴 LIVE NOW — ' : ''}${c.title}</strong>
         <span class="badge">${c.type.toUpperCase()}</span>
       </div>
       <div style="font-size:11px; color:#ccc; margin-top:2px;">${formatDate(c.uploaded_at)}</div>
@@ -327,11 +327,22 @@ function renderClasses(list) {
         ${c.type === 'audio' ? `<audio controls style="width:100%;" src="${c.file_url}"></audio>` : ''}
         ${c.type === 'video' ? `<video controls style="width:100%;" src="${c.file_url}"></video>` : ''}
         ${c.type === 'pdf' ? `<a href="${c.file_url}" target="_blank">📄 Open PDF</a> <button style="width:auto; margin-left:8px;" onclick="speakPdf('${c.file_url}')">🔊 Listen</button>` : ''}
-        ${c.type === 'link' ? `<a href="${c.file_url}" target="_blank" style="display:inline-block; background:#ffcc00; color:#1a3a1a; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">🔗 Open Link</a>` : ''}  </div>
+        ${c.type === 'link' ? `<a href="${c.file_url}" target="_blank" style="display:inline-block; background:#ffcc00; color:#1a3a1a; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">🔗 Open Link</a>` : ''}
+        ${currentUser.role === 'admin' && c.type === 'link' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px;" onclick="toggleLive(${c.id}, ${c.is_live ? 0 : 1})">${c.is_live ? '⏹ Live Band Karo' : '🔴 Live Shuru Karo'}</button>` : ''}
+      </div>
     </div>
   `).join('');
 }
 
+async function toggleLive(id, is_live) {
+  try {
+    await fetch(API + '/api/toggle-live', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id, is_live })
+    });
+    loadClasses();
+  } catch(e) { console.error(e); }
+}
 function formatDate(dt) {
   if (!dt) return '';
   const d = new Date(dt.replace(' ', 'T') + 'Z');
