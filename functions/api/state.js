@@ -67,8 +67,8 @@ export async function onRequestGet(context) {
       const totalRes = await db.prepare('SELECT COUNT(*) as count FROM mureeds WHERE role = "mureed"').first();
       const mardanaRes = await db.prepare("SELECT COUNT(*) as count FROM mureeds WHERE role = 'mureed' AND group_type = 'mardana'").first();
       const zananaRes = await db.prepare("SELECT COUNT(*) as count FROM mureeds WHERE role = 'mureed' AND group_type = 'zanana'").first();
-      const pendingRes = await db.prepare("SELECT * FROM mureeds WHERE status = 'pending' ORDER BY created_at ASC").all();
-      const allRes = await db.prepare("SELECT id, name, mobile, group_type, status, is_blocked FROM mureeds WHERE role = 'mureed' ORDER BY name ASC").all();
+      const pendingRes = await db.prepare("SELECT * FROM mureeds WHERE status = 'pending' AND password != '' ORDER BY created_at ASC").all();
+      const allRes = await db.prepare("SELECT id, name, mobile, group_type, status, is_blocked, CASE WHEN password = '' THEN 0 ELSE 1 END as has_registered FROM mureeds WHERE role = 'mureed' ORDER BY name ASC").all();
 
       return Response.json({
         total: totalRes.count,
