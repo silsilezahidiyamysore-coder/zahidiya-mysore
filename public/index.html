@@ -261,7 +261,7 @@ async function handleLoginOrRegister() {
       if (res.ok && data.user) {
         if (data.user.status === 'pending') { msg.innerText = "Your account is pending approval."; return; }
         if (data.user.status === 'rejected') { msg.innerText = "Your registration was rejected."; return; }
-        if (data.user.is_blocked) { msg.innerText = "Aapka account block kar diya gaya hai. Admin se sampark karein."; return; }
+        if (data.user.is_blocked) { msg.innerText = "Aapka account block kar diya gaya hai. Admin se contact karein."; return; }
       currentUser = data.user;
         localStorage.setItem('zahidiya_mobile', mobile);
         localStorage.setItem('zahidiya_password', password);
