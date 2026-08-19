@@ -88,6 +88,12 @@ a { color: #ffd700; }
         <button style="width:auto;" onclick="startVoiceSearch()">🎤</button>
       </div>
     </div>
+    <!-- Islamic Calendar -->
+    <div class="card">
+      <h3>📅 Islamic Calendar</h3>
+      <div id="islamicDateBox" style="font-size:14px;"></div>
+    </div>
+
     <!-- Namaz Times -->
     <div class="card">
       <h3>🕋 Namaz Timings</h3>
@@ -96,6 +102,11 @@ a { color: #ffd700; }
         <span style="font-size:13px;">Alarm</span>
         <input type="checkbox" id="alarmToggle" style="width:auto;" onchange="toggleAlarm()">
       </div>
+    </div>
+
+    <!-- Custom Alarm banner area (agar admin ne on kiya hai aur abhi time chal raha hai) -->
+    <div class="card hidden" id="customAlarmCard">
+      <h3 id="customAlarmTitle">🔔 Alarm</h3>
     </div>
 
 <!-- Classes List -->
@@ -217,6 +228,21 @@ a { color: #ffd700; }
         <input type="number" id="endReminderBeepSeconds" placeholder="Har baar kitne second (e.g. 2)">
         <button onclick="saveAlarmSettings()">Save Alarm Settings</button>
       </div>
+
+      <div class="card">
+        <h3>🔔 Custom Alarm (Start Time / End Time)</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Koi khaas alarm/reminder banane ke liye — jaise kisi event ka time. Jab start-end ke beech ka waqt chalega, sabhi mureedon ke home screen par yeh dikhega.</p>
+        <div class="row">
+          <input type="checkbox" id="customAlarmEnabled" style="width:auto;">
+          <span style="font-size:13px;">On/Off</span>
+        </div>
+        <input type="text" id="customAlarmTitleInput" placeholder="Alarm ka naam (jaise: Ijtema Time)">
+        <label style="font-size:13px;">Start Time</label>
+        <input type="time" id="customAlarmStart">
+        <label style="font-size:13px;">End Time</label>
+        <input type="time" id="customAlarmEnd">
+        <button onclick="saveCustomAlarm()">Save Custom Alarm</button>
+      </div>
     </div>
 
   </div>
@@ -293,6 +319,8 @@ function loginSuccess() {
  loadClasses();
   loadNotifications();
   loadPrayerTimes();
+  loadAlarmSettings();
+  showIslamicDate();
   startAutoRefresh();
 }
 
@@ -801,7 +829,11 @@ let alarmSettings = {
   end_reminder_enabled: 1,
   end_reminder_minutes_before: 10,
   end_reminder_repeat_count: 3,
-  end_reminder_beep_seconds: 2
+  end_reminder_beep_seconds: 2,
+  custom_alarm_enabled: 0,
+  custom_alarm_title: '',
+  custom_alarm_start: '',
+  custom_alarm_end: ''
 };
 
 async function loadAlarmSettings() {
@@ -822,8 +854,75 @@ async function loadAlarmSettings() {
       if (em) em.value = alarmSettings.end_reminder_minutes_before;
       if (er) er.value = alarmSettings.end_reminder_repeat_count;
       if (eb) eb.value = alarmSettings.end_reminder_beep_seconds;
+
+      const ce = document.getElementById('customAlarmEnabled');
+      const ct = document.getElementById('customAlarmTitleInput');
+      const cs = document.getElementById('customAlarmStart');
+      const cend = document.getElementById('customAlarmEnd');
+      if (ce) ce.checked = !!alarmSettings.custom_alarm_enabled;
+      if (ct) ct.value = alarmSettings.custom_alarm_title || '';
+      if (cs) cs.value = alarmSettings.custom_alarm_start || '';
+      if (cend) cend.value = alarmSettings.custom_alarm_end || '';
+
+      checkCustomAlarm();
     }
   } catch (e) { console.error(e); }
+}
+
+async function saveCustomAlarm() {
+  const body = {
+    custom_alarm_enabled: document.getElementById('customAlarmEnabled').checked,
+    custom_alarm_title: document.getElementById('customAlarmTitleInput').value.trim(),
+    custom_alarm_start: document.getElementById('customAlarmStart').value,
+    custom_alarm_end: document.getElementById('customAlarmEnd').value
+  };
+  try {
+    const res = await fetch(API + '/api/alarm-settings', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    alert(data.message || 'Custom alarm saved');
+    loadAlarmSettings();
+  } catch (e) { alert('Error saving custom alarm'); }
+}
+
+function checkCustomAlarm() {
+  const card = document.getElementById('customAlarmCard');
+  const titleEl = document.getElementById('customAlarmTitle');
+  if (!card) return;
+  if (!alarmSettings.custom_alarm_enabled || !alarmSettings.custom_alarm_start || !alarmSettings.custom_alarm_end) {
+    card.classList.add('hidden');
+    return;
+  }
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const [sh, sm] = alarmSettings.custom_alarm_start.split(':').map(Number);
+  const [eh, em2] = alarmSettings.custom_alarm_end.split(':').map(Number);
+  const startMinutes = sh * 60 + sm;
+  const endMinutes = eh * 60 + em2;
+  const active = startMinutes <= endMinutes
+    ? (nowMinutes >= startMinutes && nowMinutes <= endMinutes)
+    : (nowMinutes >= startMinutes || nowMinutes <= endMinutes); // raat paar hone wala case
+  if (active) {
+    titleEl.innerText = '🔔 ' + (alarmSettings.custom_alarm_title || 'Alarm') + ' — abhi chal raha hai';
+    card.classList.remove('hidden');
+  } else {
+    card.classList.add('hidden');
+  }
+}
+
+function showIslamicDate() {
+  const box = document.getElementById('islamicDateBox');
+  if (!box) return;
+  try {
+    const today = new Date();
+    const english = today.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' });
+    const hijri = new Intl.DateTimeFormat('en-u-ca-islamic', { day: 'numeric', month: 'long', year: 'numeric' }).format(today);
+    box.innerHTML = `<div>📆 ${english}</div><div style="margin-top:4px;">🌙 ${hijri} (Hijri)</div>`;
+  } catch (e) {
+    box.innerHTML = '';
+  }
 }
 
 async function saveAlarmSettings() {
@@ -947,6 +1046,7 @@ async function tryAutoLogin() {
   } catch(e) { console.error(e); }
 }
 window.addEventListener('DOMContentLoaded', tryAutoLogin);
+window.addEventListener('DOMContentLoaded', showIslamicDate);
 
 // ---------- AUTO REFRESH (bina refresh kiye naya class/notification dikhna) ----------
 let autoRefreshTimer = null;
@@ -957,6 +1057,7 @@ function startAutoRefresh() {
       loadClasses();
       loadNotifications();
       if (currentUser.role === 'admin') { loadAdminData(); }
+      checkCustomAlarm();
     }
   }, 15000); // har 15 second mein naya data check karega
 }
