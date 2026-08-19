@@ -147,6 +147,18 @@ a { color: #ffd700; }
       </div>
 
       <div class="card">
+        <h3>✅ Mureed Allow Karo (Register Khud Karega)</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Sirf naam aur mobile daalo — mureed khud Register screen se apna password set karega. Sirf yahan add kiya hua mobile number hi register ho payega.</p>
+        <input type="text" id="invName" placeholder="Full Name">
+        <input type="text" id="invMobile" placeholder="Mobile Number">
+        <select id="invGroup">
+          <option value="mardana">Mardana</option>
+          <option value="zanana">Zanana</option>
+        </select>
+        <button onclick="inviteMureed()">Allow Karo</button>
+      </div>
+
+      <div class="card">
         <h3>➕ Direct Add Mureed</h3>
         <input type="text" id="daName" placeholder="Full Name">
         <input type="text" id="daMobile" placeholder="Mobile Number">
@@ -575,7 +587,7 @@ function showMureedList(type) {
       <div class="list-item">
         <div class="row" style="justify-content:space-between;">
           <strong>${escapeHtml(m.name)}</strong>
-          <span class="badge">${m.is_blocked ? 'blocked' : m.status}</span>
+          <span class="badge">${m.has_registered ? (m.is_blocked ? 'blocked' : m.status) : 'Invite Kiya (Register Nahi Kiya)'}</span>
         </div>
         <div style="font-size:13px; margin-top:4px;">📱 ${escapeHtml(m.mobile)} — ${m.group_type}</div>
         <div class="row" style="margin-top:6px;">
@@ -641,6 +653,21 @@ async function approveMureed(id) {
 async function rejectMureed(id) {
   await fetch(API + '/api/reject', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
   loadAdminData();
+}
+async function inviteMureed() {
+  const name = document.getElementById('invName').value.trim();
+  const mobile = document.getElementById('invMobile').value.trim();
+  const group = document.getElementById('invGroup').value;
+  if (!name || !mobile) { alert("Naam aur mobile bharo"); return; }
+  try {
+    const res = await fetch(API + '/api/invite-mureed', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, mobile, group_type: group }) });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+    alert(data.message || "Allow ho gaya");
+    document.getElementById('invName').value = '';
+    document.getElementById('invMobile').value = '';
+    loadAdminData();
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
 }
 async function directAddMureed() {
   const name = document.getElementById('daName').value.trim();
