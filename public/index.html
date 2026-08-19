@@ -142,11 +142,6 @@ a { color: #ffd700; }
       </div>
 
       <div class="card">
-        <h3>⏳ Pending Approvals</h3>
-        <div id="pendingList"></div>
-      </div>
-
-      <div class="card">
         <h3>✅ Mureed Allow Karo (Register Khud Karega)</h3>
         <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Sirf naam aur mobile daalo — mureed khud Register screen se apna password set karega. Sirf yahan add kiya hua mobile number hi register ho payega.</p>
         <input type="text" id="invName" placeholder="Full Name">
@@ -172,9 +167,10 @@ a { color: #ffd700; }
 
       <div class="card">
         <h3>📥 Bulk Add Mureeds</h3>
-        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Format: Name,Mobile,Password,Group (one per line)</p>
-        <textarea id="bulkData" rows="5" placeholder="Ali Khan,9876543210,pass123,mardana"></textarea>
-        <button onclick="bulkAddMureeds()">Bulk Add</button>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Har row mein ek mureed ki details bharo. Zaroorat ho to "+ Row Add Karo" se aur row badha sakte ho.</p>
+        <div id="bulkRowsContainer"></div>
+        <button class="secondary" style="width:auto; margin-top:8px;" onclick="addBulkRow()">➕ Row Add Karo</button>
+        <button style="margin-top:8px;" onclick="bulkAddMureeds()">Bulk Add</button>
       </div>
 
       <div class="card">
@@ -559,17 +555,6 @@ async function loadAdminData() {
     document.getElementById('zananaCount').innerText = data.zanana || 0;
     allMureedsData = data.all || [];
     if (currentMureedListType) showMureedList(currentMureedListType);
-    const pending = data.pending || [];
-    document.getElementById('pendingList').innerHTML = pending.length ?
-      pending.map(p => `
-        <div class="list-item">
-          <div><strong>${p.name}</strong> (${p.mobile}) - ${p.group_type}</div>
-          <div class="row" style="margin-top:6px;">
-            <button style="width:auto;" onclick="approveMureed(${p.id})">✅ Approve</button>
-            <button class="secondary" style="width:auto;" onclick="rejectMureed(${p.id})">❌ Reject</button>
-          </div>
-        </div>
-      `).join('') : '<p style="font-size:13px;">No pending requests.</p>';
   } catch(e) { console.error(e); }
 }
 
@@ -697,19 +682,50 @@ async function directAddMureed() {
   document.getElementById('daPassword').value = '';
   loadAdminData();
 }
+let bulkRowCount = 0;
+function addBulkRow() {
+  bulkRowCount++;
+  const container = document.getElementById('bulkRowsContainer');
+  const rowId = 'bulkRow' + bulkRowCount;
+  const div = document.createElement('div');
+  div.id = rowId;
+  div.style = 'display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap; align-items:center;';
+  div.innerHTML = `
+    <input type="text" placeholder="Naam" class="bulkName" style="flex:1; min-width:100px; margin:0;">
+    <input type="text" placeholder="Mobile" class="bulkMobile" style="flex:1; min-width:100px; margin:0;">
+    <input type="text" placeholder="Password" class="bulkPassword" style="flex:1; min-width:100px; margin:0;">
+    <select class="bulkGroup" style="flex:1; min-width:100px; margin:0;">
+      <option value="mardana">Mardana</option>
+      <option value="zanana">Zanana</option>
+    </select>
+    <button class="secondary" style="width:auto; margin:0; padding:8px 12px;" onclick="document.getElementById('${rowId}').remove()">✖</button>
+  `;
+  container.appendChild(div);
+}
+addBulkRow(); // shuru mein ek row dikhe
+
 async function bulkAddMureeds() {
-  const raw = document.getElementById('bulkData').value.trim();
-  if (!raw) { alert("Enter data first"); return; }
-  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
-  const entries = lines.map(l => {
-    const [name, mobile, password, group_type] = l.split(',').map(s => s.trim());
-    return { name, mobile, password, group_type };
+  const rows = document.querySelectorAll('#bulkRowsContainer > div');
+  const entries = [];
+  rows.forEach(row => {
+    const name = row.querySelector('.bulkName').value.trim();
+    const mobile = row.querySelector('.bulkMobile').value.trim();
+    const password = row.querySelector('.bulkPassword').value.trim();
+    const group_type = row.querySelector('.bulkGroup').value;
+    if (name && mobile && password) {
+      entries.push({ name, mobile, password, group_type });
+    }
   });
-  const res = await fetch(API + '/api/bulk-add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ entries }) });
-  const data = await res.json();
-  alert(data.message || "Bulk add done");
-  document.getElementById('bulkData').value = '';
-  loadAdminData();
+  if (!entries.length) { alert("Kam se kam ek row poori bharo (Naam, Mobile, Password)"); return; }
+  try {
+    const res = await fetch(API + '/api/bulk-add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ entries }) });
+    const data = await res.json();
+    alert(data.message || "Bulk add done");
+    document.getElementById('bulkRowsContainer').innerHTML = '';
+    bulkRowCount = 0;
+    addBulkRow();
+    loadAdminData();
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
 }
 function autoFillTitle() {
   const fileInput = document.getElementById('classFile');
