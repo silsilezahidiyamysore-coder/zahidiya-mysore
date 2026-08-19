@@ -261,6 +261,7 @@ async function handleLoginOrRegister() {
       if (res.ok && data.user) {
         if (data.user.status === 'pending') { msg.innerText = "Your account is pending approval."; return; }
         if (data.user.status === 'rejected') { msg.innerText = "Your registration was rejected."; return; }
+        if (data.user.is_blocked) { msg.innerText = "Aapka account block kar diya gaya hai. Admin se sampark karein."; return; }
       currentUser = data.user;
         localStorage.setItem('zahidiya_mobile', mobile);
         localStorage.setItem('zahidiya_password', password);
@@ -573,14 +574,31 @@ function showMureedList(type) {
       <div class="list-item">
         <div class="row" style="justify-content:space-between;">
           <strong>${escapeHtml(m.name)}</strong>
-          <span class="badge">${m.status}</span>
+          <span class="badge">${m.is_blocked ? 'blocked' : m.status}</span>
         </div>
         <div style="font-size:13px; margin-top:4px;">📱 ${escapeHtml(m.mobile)} — ${m.group_type}</div>
-        <button class="secondary" style="width:auto; margin-top:6px;" onclick="editMureed(${m.id})">✏️ Edit</button>
+        <div class="row" style="margin-top:6px;">
+          <button class="secondary" style="width:auto;" onclick="editMureed(${m.id})">✏️ Edit</button>
+          <button class="secondary" style="width:auto;" onclick="toggleBlockMureed(${m.id}, ${m.is_blocked ? 1 : 0})">${m.is_blocked ? '✅ Unblock' : '🚫 Block'}</button>
+        </div>
       </div>
     `).join('');
 }
 
+async function toggleBlockMureed(id, currentlyBlocked) {
+  const newState = currentlyBlocked ? 0 : 1;
+  const action = newState ? 'Block' : 'Unblock';
+  if (!confirm(`Is mureed ko ${action} karna hai?`)) return;
+  try {
+    const res = await fetch(API + '/api/block', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id, blocked: newState })
+    });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+    loadAdminData();
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
 function editMureed(id) {
   const m = allMureedsData.find(x => x.id === id);
   if (!m) return;
