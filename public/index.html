@@ -365,6 +365,7 @@ function renderClasses(list) {
         ${c.type === 'video' ? `<video controls style="width:100%;" src="${safeUrl}"></video>` : ''}
         ${c.type === 'pdf' ? `<a href="${safeUrl}" target="_blank">📄 Open PDF</a> <button style="width:auto; margin-left:8px;" onclick="speakPdf('${safeUrl}')">🔊 Listen</button>` : ''}
         ${c.type === 'link' ? `<a href="${safeUrl}" target="_blank" style="display:inline-block; background:#ffcc00; color:#1a3a1a; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">🔗 Open Link</a>` : ''}
+        ${['audio','video','pdf'].includes(c.type) ? `<a href="${safeUrl}&download=1" style="display:inline-block; margin-left:8px; margin-top:8px; background:#2a6b2a; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">⬇️ Download</a>` : ''}
         ${currentUser.role === 'admin' && c.type === 'link' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px;" onclick="toggleLive(${c.id}, ${c.is_live ? 0 : 1})">${c.is_live ? '⏹ Live Band Karo' : '🔴 Live Shuru Karo'}</button>` : ''}
         ${currentUser.role === 'admin' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px;" onclick="editClass(${c.id})">✏️ Edit</button>` : ''}
         ${currentUser.role === 'admin' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px; background:#8b1a1a;" onclick="deleteClass(${c.id})">🗑️ Delete</button>` : ''}
