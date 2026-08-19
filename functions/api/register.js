@@ -13,7 +13,7 @@ export async function onRequestPost(context) {
     const existing = await db.prepare('SELECT * FROM mureeds WHERE mobile = ?').bind(mobile).first();
 
     if (!existing) {
-      return Response.json({ message: 'Yeh number admin ki list mein nahi hai. Pehle admin se sampark karein.' }, { status: 400 });
+      return Response.json({ message: 'Yeh number admin ki list mein nahi hai. Pehle admin se contact karein.' }, { status: 400 });
     }
 
     if (existing.password) {
