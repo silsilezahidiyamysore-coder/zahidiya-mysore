@@ -587,15 +587,29 @@ function showMureedList(type) {
       <div class="list-item">
         <div class="row" style="justify-content:space-between;">
           <strong>${escapeHtml(m.name)}</strong>
-          <span class="badge">${m.has_registered ? (m.is_blocked ? 'blocked' : m.status) : 'Invite Kiya (Register Nahi Kiya)'}</span>
+          <span class="badge">${m.has_registered ? (m.is_blocked ? 'blocked' : (m.status === 'approved' ? 'Active' : m.status)) : 'Invite Kiya (Register Nahi Kiya)'}</span>
         </div>
         <div style="font-size:13px; margin-top:4px;">📱 ${escapeHtml(m.mobile)} — ${m.group_type}</div>
         <div class="row" style="margin-top:6px;">
           <button class="secondary" style="width:auto;" onclick="editMureed(${m.id})">✏️ Edit</button>
           <button class="secondary" style="width:auto;" onclick="toggleBlockMureed(${m.id}, ${m.is_blocked ? 1 : 0})">${m.is_blocked ? '✅ Unblock' : '🚫 Block'}</button>
+          <button class="secondary" style="width:auto;" onclick="deleteMureed(${m.id})">🗑️ Delete</button>
         </div>
       </div>
     `).join('');
+}
+
+async function deleteMureed(id) {
+  if (!confirm('Pakka is mureed ko hamesha ke liye delete karna hai?')) return;
+  try {
+    const res = await fetch(API + '/api/delete-mureed', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id })
+    });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+    loadAdminData();
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
 }
 
 async function toggleBlockMureed(id, currentlyBlocked) {
@@ -926,6 +940,7 @@ function startAutoRefresh() {
     if (currentUser) {
       loadClasses();
       loadNotifications();
+      if (currentUser.role === 'admin') { loadAdminData(); }
     }
   }, 15000); // har 15 second mein naya data check karega
 }
