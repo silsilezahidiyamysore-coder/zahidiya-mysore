@@ -1,6 +1,7 @@
 // POST /api/update-class
 // Body: { id, title, type, file_url, group_type, is_live }
 // Kisi class ka naam, file/link, group, ya live status badal deta hai
+// aur mureedon ko notification bhi bhejta hai
 
 export async function onRequestPost(context) {
   const db = context.env.DB;
@@ -30,6 +31,19 @@ export async function onRequestPost(context) {
     await db
       .prepare('UPDATE classes SET title = ?, type = ?, file_url = ?, group_type = ?, is_live = ? WHERE id = ?')
       .bind(title, type, file_url, group_type, is_live, id)
+      .run();
+
+    // Notification bhi banayen taake sab approved mureeds ko pata chale class update hui hai
+    const notifText = is_live
+      ? `🔴 LIVE shuru hui: "${title}"`
+      : `Class update hui: "${title}"`;
+
+    await db
+      .prepare(
+        `INSERT INTO notifications (message, target_role, is_read, target_mobile)
+         VALUES (?, 'mureed', 0, NULL)`
+      )
+      .bind(notifText)
       .run();
 
     return Response.json({ message: 'updated' });
