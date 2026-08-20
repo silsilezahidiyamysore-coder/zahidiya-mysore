@@ -1,6 +1,7 @@
 // POST /api/direct-add
-// Body: { name, mobile, group }
-// Admin bina darkhwast ke seedha mureed add karta hai
+// Body: { name, mobile, password, group_type }
+// Admin seedha poora account bana deta hai (password bhi khud set karta hai)
+// Mureed turant login kar sakta hai, register karne ki zaroorat nahi.
 
 export async function onRequestPost(context) {
   const db = context.env.DB;
@@ -9,26 +10,30 @@ export async function onRequestPost(context) {
     const body = await context.request.json();
     const name = (body.name || '').trim();
     const mobile = (body.mobile || '').trim();
-    const group = body.group === 'Zanana' ? 'Zanana' : 'Mardana';
+    const password = (body.password || '').trim();
+    const group_type = body.group_type === 'zanana' ? 'zanana' : 'mardana';
 
-    if (!name || !mobile) {
-      return Response.json({ error: 'Naam aur mobile zaroori hain' }, { status: 400 });
+    if (!name || !mobile || !password) {
+      return Response.json({ error: 'Naam, mobile aur password zaroori hain' }, { status: 400 });
     }
 
     const already = await db
-      .prepare('SELECT mobile FROM approved_mureeds WHERE mobile = ?')
+      .prepare('SELECT id FROM mureeds WHERE mobile = ?')
       .bind(mobile)
       .first();
+
     if (already) {
-      return Response.json({ error: 'already_exists' }, { status: 409 });
+      return Response.json({ error: 'Yeh mobile number pehle se list mein hai' }, { status: 400 });
     }
 
     await db
-      .prepare('INSERT INTO approved_mureeds (mobile, name, group_name, created_at) VALUES (?, ?, ?, ?)')
-      .bind(mobile, name, group, Date.now())
+      .prepare(
+        'INSERT INTO mureeds (name, mobile, password, group_type, role, status) VALUES (?, ?, ?, ?, "mureed", "approved")'
+      )
+      .bind(name, mobile, password, group_type)
       .run();
 
-    return Response.json({ success: true });
+    return Response.json({ message: 'Mureed add ho gaya. Ab wo seedha login kar sakta hai.' });
   } catch (err) {
     return Response.json({ error: String(err) }, { status: 500 });
   }
