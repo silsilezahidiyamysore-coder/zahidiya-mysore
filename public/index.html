@@ -94,14 +94,25 @@ a { color: #ffd700; }
       <div id="islamicDateBox" style="font-size:14px;"></div>
     </div>
 
+    <div class="card hidden" id="calendarGridCard">
+      <div class="row" style="justify-content:space-between;">
+        <h3 id="calendarGridTitle" style="margin:0;"></h3>
+        <button class="secondary" style="width:auto;" onclick="closeCalendarGrid()">✖ Band Karo</button>
+      </div>
+      <div id="calendarGridBody" style="margin-top:10px;"></div>
+    </div>
+
     <!-- Namaz Times -->
     <div class="card">
-      <h3>🕋 Namaz Timings</h3>
-      <div id="prayerTimes"></div>
-      <div class="row" style="margin-top:8px;">
-        <span style="font-size:13px;">Alarm</span>
-        <input type="checkbox" id="alarmToggle" style="width:auto;" onchange="toggleAlarm()">
+      <div class="row" style="justify-content:space-between; align-items:center; flex-wrap:wrap;">
+        <div class="row" style="gap:8px; width:auto;">
+          <span style="font-size:13px;">Alarm</span>
+          <input type="checkbox" id="alarmToggle" style="width:auto;" onchange="toggleAlarm()">
+        </div>
+        <h3 style="margin:0;">🌙 Aaj ke Namaz Auqaat</h3>
       </div>
+      <div id="namazDateLabel" style="font-size:13px; color:#ffd700; margin-top:6px;"></div>
+      <div id="prayerTimes" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;"></div>
     </div>
 
     <!-- Custom Alarm banner area (agar admin ne on kiya hai aur abhi time chal raha hai) -->
@@ -130,6 +141,24 @@ a { color: #ffd700; }
 
     <!-- ============ ADMIN PANEL ============ -->
    <div id="adminScreen" class="hidden">
+      <div class="card">
+        <h3>👤 Meri Profile (Admin)</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Apna naam, mobile ya password badalne ke liye yahan bharo. Password khaali chhodo to purana wahi rahega.</p>
+        <input type="text" id="myProfileName" placeholder="Full Name">
+        <input type="text" id="myProfileMobile" placeholder="Mobile Number">
+        <input type="text" id="myProfilePassword" placeholder="Naya Password (khaali chhodo agar badalna nahi)">
+        <button onclick="saveMyProfile()">💾 Meri Profile Save Karo</button>
+      </div>
+
+      <div class="card">
+        <h3>🛡️ Naya Admin Banao</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Isse jo bhi mobile-password banaoge, wo bhi Admin Panel access kar sakega.</p>
+        <input type="text" id="newAdminName" placeholder="Full Name">
+        <input type="text" id="newAdminMobile" placeholder="Mobile Number">
+        <input type="text" id="newAdminPassword" placeholder="Password">
+        <button onclick="createNewAdmin()">➕ Admin Add Karo</button>
+      </div>
+
       <div class="card">
         <h3>📊 Mureed Stats (tap karke poori list dekhein)</h3>
         <div class="row">
@@ -550,18 +579,97 @@ async function markNotificationsRead() {
 }
 
 // ---------- PRAYER TIMES ----------
+function to12Hour(hhmm) {
+  if (!hhmm) return '';
+  let [h, m] = hhmm.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if (h === 0) h = 12;
+  return h + ':' + String(m).padStart(2, '0') + ' ' + ampm;
+}
+
+function getPrayerAlarm(name) {
+  const v = localStorage.getItem('prayerAlarm_' + name);
+  return v === null ? true : v === '1';
+}
+function setPrayerAlarm(name, on) {
+  localStorage.setItem('prayerAlarm_' + name, on ? '1' : '0');
+}
+
+function isPrayerActive(startHHMM, endHHMM) {
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const [sh, sm] = startHHMM.split(':').map(Number);
+  const [eh, em] = endHHMM.split(':').map(Number);
+  const startMin = sh * 60 + sm;
+  const endMin = eh * 60 + em;
+  return startMin <= endMin ? (nowMin >= startMin && nowMin < endMin) : (nowMin >= startMin || nowMin < endMin);
+}
+
+async function getNamazApiUrl() {
+  // Pehle phone ki GPS location try karo, na mile to Mysore default use karo
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        resolve(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=2`);
+      },
+      () => {
+        // permission nahi mila ya error aaya -> Mysore default
+        resolve('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
+      },
+      { timeout: 8000 }
+    );
+  });
+}
+
 async function loadPrayerTimes() {
   try {
-    const res = await fetch('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
+    const url = await getNamazApiUrl();
+    const res = await fetch(url);
     const data = await res.json();
     const t = data.data.timings;
-    document.getElementById('prayerTimes').innerHTML = `
-      <div class="row"><span>Fajr</span><span>${t.Fajr}</span></div>
-      <div class="row"><span>Zuhr</span><span>${t.Dhuhr}</span></div>
-      <div class="row"><span>Asr</span><span>${t.Asr}</span></div>
-      <div class="row"><span>Maghrib</span><span>${t.Maghrib}</span></div>
-      <div class="row"><span>Isha</span><span>${t.Isha}</span></div>
-    `;
+    const clean = s => (s || '').split(' ')[0]; // timezone suffix hata do
+    const usedGps = url.includes('latitude');
+
+    window.namazTimesToday = {
+      Fajr: clean(t.Fajr), Dhuhr: clean(t.Dhuhr), Asr: clean(t.Asr),
+      Maghrib: clean(t.Maghrib), Isha: clean(t.Isha)
+    };
+
+    const prayers = [
+      { key: 'Fajr', label: 'Fajr', start: clean(t.Fajr), end: clean(t.Sunrise) },
+      { key: 'Dhuhr', label: 'Zuhr', start: clean(t.Dhuhr), end: clean(t.Asr) },
+      { key: 'Asr', label: 'Asr', start: clean(t.Asr), end: clean(t.Maghrib) },
+      { key: 'Maghrib', label: 'Maghrib', start: clean(t.Maghrib), end: clean(t.Isha) },
+      { key: 'Isha', label: 'Isha', start: clean(t.Isha), end: clean(t.Fajr) }
+    ];
+
+    document.getElementById('namazDateLabel').innerText =
+      new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
+      (usedGps ? ' 📍 (Aapki current location)' : ' 📍 (Mysore - default)');
+
+    document.getElementById('prayerTimes').innerHTML = prayers.map(p => {
+      const active = isPrayerActive(p.start, p.end);
+      const alarmOn = getPrayerAlarm(p.key);
+      return `
+        <div style="flex:1; min-width:130px; border:1px solid ${active ? '#ffd700' : '#2a6b2a'}; border-radius:8px; padding:10px; text-align:center; background:${active ? '#1f4d1f' : '#0f2a0f'};">
+          <div style="font-weight:bold; color:#ffd700; font-size:14px;">${p.label}${active ? ' ●' : ''}</div>
+          <div style="font-size:15px; font-weight:bold; margin-top:6px;">${to12Hour(p.start)}</div>
+          <div style="font-size:11px; color:#cde;">Shuru</div>
+          <div style="font-size:15px; font-weight:bold; margin-top:6px;">${to12Hour(p.end)}</div>
+          <div style="font-size:11px; color:#cde;">Khatam</div>
+          <div class="row" style="justify-content:center; gap:6px; margin-top:8px; width:auto;">
+            <span style="font-size:11px;">Alarm</span>
+            <input type="checkbox" ${alarmOn ? 'checked' : ''} style="width:auto;" onchange="setPrayerAlarm('${p.key}', this.checked)">
+          </div>
+        </div>
+      `;
+    }).join('');
   } catch(e) {
     document.getElementById('prayerTimes').innerHTML = '<p style="font-size:13px;">Unable to load prayer times.</p>';
   }
@@ -583,7 +691,53 @@ async function loadAdminData() {
     document.getElementById('zananaCount').innerText = data.zanana || 0;
     allMureedsData = data.all || [];
     if (currentMureedListType) showMureedList(currentMureedListType);
+
+    const pn = document.getElementById('myProfileName');
+    const pm = document.getElementById('myProfileMobile');
+    if (pn && !pn.value) pn.value = currentUser.name;
+    if (pm && !pm.value) pm.value = currentUser.mobile;
   } catch(e) { console.error(e); }
+}
+
+async function saveMyProfile() {
+  const name = document.getElementById('myProfileName').value.trim();
+  const mobile = document.getElementById('myProfileMobile').value.trim();
+  const password = document.getElementById('myProfilePassword').value.trim();
+  if (!name || !mobile) { alert('Naam aur mobile zaroori hai'); return; }
+  try {
+    const res = await fetch(API + '/api/update-mureed', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id: currentUser.id, name, mobile, password })
+    });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+    alert('✅ Profile update ho gayi. Agli baar naye mobile/password se login karna.');
+    currentUser.name = name;
+    currentUser.mobile = mobile;
+    localStorage.setItem('zahidiya_mobile', mobile);
+    if (password) localStorage.setItem('zahidiya_password', password);
+    document.getElementById('myProfilePassword').value = '';
+    document.getElementById('welcomeUser').innerText = 'Welcome, ' + name;
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+
+async function createNewAdmin() {
+  const name = document.getElementById('newAdminName').value.trim();
+  const mobile = document.getElementById('newAdminMobile').value.trim();
+  const password = document.getElementById('newAdminPassword').value.trim();
+  if (!name || !mobile || !password) { alert('Sab fields bharo'); return; }
+  try {
+    const res = await fetch(API + '/api/create-admin', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ name, mobile, password })
+    });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+    alert(data.message || 'Naya admin ban gaya');
+    document.getElementById('newAdminName').value = '';
+    document.getElementById('newAdminMobile').value = '';
+    document.getElementById('newAdminPassword').value = '';
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
 }
 
 let currentMureedListType = null;
@@ -912,17 +1066,96 @@ function checkCustomAlarm() {
   }
 }
 
+const HIJRI_MONTHS = ['Muharram','Safar',"Rabi' al-Awwal","Rabi' al-Thani","Jumada al-Awwal","Jumada al-Thani","Rajab","Sha'ban","Ramadan","Shawwal","Dhu al-Qi'dah","Dhu al-Hijjah"];
+
+function getHijriParts(date) {
+  const parts = new Intl.DateTimeFormat('en-u-ca-islamic', { day: 'numeric', month: 'numeric', year: 'numeric' }).formatToParts(date);
+  const day = parseInt(parts.find(p => p.type === 'day').value, 10);
+  const month = parseInt(parts.find(p => p.type === 'month').value, 10);
+  const year = parts.find(p => p.type === 'year').value;
+  return { day, month, year };
+}
+
 function showIslamicDate() {
   const box = document.getElementById('islamicDateBox');
   if (!box) return;
   try {
     const today = new Date();
     const english = today.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' });
-    const hijri = new Intl.DateTimeFormat('en-u-ca-islamic', { day: 'numeric', month: 'long', year: 'numeric' }).format(today);
-    box.innerHTML = `<div>📆 ${english}</div><div style="margin-top:4px;">🌙 ${hijri} (Hijri)</div>`;
+    const h = getHijriParts(today);
+    const hijri = `${h.day} ${HIJRI_MONTHS[h.month - 1]} ${h.year} AH`;
+    box.innerHTML = `
+      <div style="cursor:pointer; text-decoration:underline; text-decoration-style:dotted;" onclick="openCalendarGrid('gregorian')">📆 ${english}</div>
+      <div style="margin-top:4px; cursor:pointer; text-decoration:underline; text-decoration-style:dotted;" onclick="openCalendarGrid('islamic')">🌙 ${hijri} (Hijri)</div>
+    `;
   } catch (e) {
     box.innerHTML = '';
   }
+}
+
+function getIslamicDayNumber(date) {
+  return getHijriParts(date).day;
+}
+function getIslamicMonthYear(date) {
+  const h = getHijriParts(date);
+  return { month: h.month, year: h.year };
+}
+
+function buildIslamicMonthDates(today) {
+  let d = new Date(today);
+  let guard = 0;
+  while (getIslamicDayNumber(d) !== 1 && guard < 40) { d.setDate(d.getDate() - 1); guard++; }
+  const { month, year } = getIslamicMonthYear(d);
+  const dates = [];
+  let cur = new Date(d);
+  guard = 0;
+  while (guard < 35) {
+    const my = getIslamicMonthYear(cur);
+    if (my.month !== month || my.year !== year) break;
+    dates.push(new Date(cur));
+    cur.setDate(cur.getDate() + 1);
+    guard++;
+  }
+  return { title: HIJRI_MONTHS[month - 1] + ' ' + year + ' AH', dates };
+}
+
+function buildGregorianMonthDates(today) {
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const last = new Date(year, month + 1, 0);
+  const dates = [];
+  for (let d = 1; d <= last.getDate(); d++) dates.push(new Date(year, month, d));
+  const title = today.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  return { title, dates };
+}
+
+function openCalendarGrid(type) {
+  const today = new Date();
+  const { title, dates } = type === 'islamic' ? buildIslamicMonthDates(today) : buildGregorianMonthDates(today);
+  document.getElementById('calendarGridTitle').innerText = (type === 'islamic' ? '🌙 ' : '📆 ') + title;
+
+  const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let html = '<div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; font-size:12px;">';
+  dayNames.forEach(dn => html += `<div style="color:#ffd700; font-weight:bold;">${dn}</div>`);
+
+  // pehle date ke din se pehle khaali boxes
+  const firstDow = dates[0].getDay();
+  for (let i = 0; i < firstDow; i++) html += '<div></div>';
+
+  dates.forEach((d, idx) => {
+    const isToday = d.toDateString() === today.toDateString();
+    const dayNum = type === 'islamic' ? (idx + 1) : d.getDate();
+    html += `<div style="padding:6px 0; border-radius:6px; ${isToday ? 'background:#ffd700; color:#1a3a1a; font-weight:bold;' : 'background:#0f2a0f;'}">${dayNum}</div>`;
+  });
+
+  html += '</div>';
+  document.getElementById('calendarGridBody').innerHTML = html;
+  document.getElementById('calendarGridCard').classList.remove('hidden');
+  document.getElementById('calendarGridCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeCalendarGrid() {
+  document.getElementById('calendarGridCard').classList.add('hidden');
 }
 
 async function saveAlarmSettings() {
@@ -993,7 +1226,7 @@ function checkNamazAlarms() {
     const t = window.namazTimesToday[name];
     if (!t) return;
 
-    if (alarmSettings.start_alarm_enabled && t === hhmm) {
+    if (alarmSettings.start_alarm_enabled && getPrayerAlarm(name) && t === hhmm) {
       const key = 'start-' + name + '-' + now.toDateString();
       if (!alarmSilenced[key]) {
         currentAlarmKey = key;
@@ -1004,7 +1237,7 @@ function checkNamazAlarms() {
 
     const nextName = names[idx + 1];
     const nextTime = nextName ? window.namazTimesToday[nextName] : null;
-    if (alarmSettings.end_reminder_enabled && nextTime) {
+    if (alarmSettings.end_reminder_enabled && getPrayerAlarm(name) && nextTime) {
       const [nh, nm] = nextTime.split(':').map(Number);
       const endDate = new Date(now);
       endDate.setHours(nh, nm, 0, 0);
@@ -1058,6 +1291,7 @@ function startAutoRefresh() {
       loadNotifications();
       if (currentUser.role === 'admin') { loadAdminData(); }
       checkCustomAlarm();
+      loadPrayerTimes();
     }
   }, 15000); // har 15 second mein naya data check karega
 }
