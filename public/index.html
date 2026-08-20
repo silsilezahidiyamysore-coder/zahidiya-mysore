@@ -104,13 +104,7 @@ a { color: #ffd700; }
 
     <!-- Namaz Times -->
     <div class="card">
-      <div class="row" style="justify-content:space-between; align-items:center; flex-wrap:wrap;">
-        <div class="row" style="gap:8px; width:auto;">
-          <span style="font-size:13px;">Alarm</span>
-          <input type="checkbox" id="alarmToggle" style="width:auto;" onchange="toggleAlarm()">
-        </div>
-        <h3 style="margin:0;">🌙 Aaj ke Namaz Auqaat</h3>
-      </div>
+      <h3 style="margin:0;">🌙 Aaj ke Namaz Auqaat</h3>
       <div id="namazDateLabel" style="font-size:13px; color:#ffd700; margin-top:6px;"></div>
       <div id="prayerTimes" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;"></div>
     </div>
@@ -351,6 +345,7 @@ function loginSuccess() {
   loadAlarmSettings();
   showIslamicDate();
   startAutoRefresh();
+  sendHeartbeat();
 }
 
 function logout() {
@@ -381,6 +376,25 @@ function showScreen(name) {
     document.getElementById('homeScreen').classList.remove('hidden');
     document.getElementById('tabHome').classList.add('active');
   }
+}
+
+function openClassFromNotification(classId) {
+  if (!classId) return;
+  showScreen('home');
+  document.getElementById('tabHome').classList.add('active');
+  // Classes section khula hona chahiye
+  const listEl = document.getElementById('classList');
+  if (listEl.classList.contains('hidden')) { toggleClassList(); }
+  setTimeout(() => {
+    const el = document.getElementById('class-' + classId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.style.transition = 'background 0.4s';
+      const oldBg = el.style.background;
+      el.style.background = '#ffd70055';
+      setTimeout(() => { el.style.background = oldBg; }, 1800);
+    }
+  }, 150);
 }
 
 // ---------- CLASSES ----------
@@ -419,7 +433,7 @@ function renderClasses(list) {
     const safeTitle = escapeHtml(c.title);
     const safeUrl = escapeHtml(c.file_url);
     return `
-    <div class="list-item" style="${c.is_live ? 'border:2px solid #ff3333;' : ''}">
+    <div class="list-item" id="class-${c.id}" style="${c.is_live ? 'border:2px solid #ff3333;' : ''}">
       <div class="row" style="justify-content:space-between;">
         <strong>${c.is_live ? '🔴 LIVE NOW — ' : ''}${safeTitle}</strong>
         <span class="badge">${c.type.toUpperCase()}</span>
@@ -513,6 +527,19 @@ function formatDate(dt) {
   if (isNaN(d)) return dt;
   return d.toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
 }
+function getOnlineStatusLabel(lastActive) {
+  if (!lastActive) return '⚪ Kabhi login nahi kiya';
+  const last = new Date(lastActive.replace(' ', 'T') + 'Z');
+  if (isNaN(last)) return '';
+  const diffSec = (Date.now() - last.getTime()) / 1000;
+  if (diffSec < 40) return '🟢 Online abhi';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `⚪ ${diffMin} minute pehle active tha`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `⚪ ${diffHr} ghante pehle active tha`;
+  const diffDay = Math.floor(diffHr / 24);
+  return `⚪ ${diffDay} din pehle active tha`;
+}
 function filterClasses() {
   const q = document.getElementById('searchBox').value.toLowerCase();
   renderClasses(allClasses.filter(c => c.title.toLowerCase().includes(q)));
@@ -549,8 +576,8 @@ async function loadNotifications() {
  document.getElementById('notifList').innerHTML = list.length ?
       list.map(n => `<div class="list-item">
         <div class="row" style="justify-content:space-between; align-items:flex-start;">
-          <div>${n.message}<div style="font-size:11px; color:#ccc; margin-top:4px;">${formatDate(n.created_at)}</div></div>
-          <button class="secondary" style="width:auto; font-size:12px; padding:4px 10px; flex-shrink:0; margin-left:8px;" onclick="deleteNotification(${n.id})">🗑️ Clear</button>
+          <div ${n.related_class_id ? `style="cursor:pointer; text-decoration:underline; text-decoration-style:dotted;" onclick="openClassFromNotification(${n.related_class_id})"` : ''}>${n.message}<div style="font-size:11px; color:#ccc; margin-top:4px;">${formatDate(n.created_at)}</div></div>
+          <button class="secondary" style="width:auto; font-size:12px; padding:4px 10px; flex-shrink:0; margin-left:8px;" onclick="event.stopPropagation(); deleteNotification(${n.id})">🗑️ Clear</button>
         </div>
       </div>`).join('')
     : '<p style="font-size:13px;">No notifications yet.</p>';
@@ -585,14 +612,6 @@ function to12Hour(hhmm) {
   const ampm = h >= 12 ? 'PM' : 'AM';
   h = h % 12; if (h === 0) h = 12;
   return h + ':' + String(m).padStart(2, '0') + ' ' + ampm;
-}
-
-function getPrayerAlarm(name) {
-  const v = localStorage.getItem('prayerAlarm_' + name);
-  return v === null ? true : v === '1';
-}
-function setPrayerAlarm(name, on) {
-  localStorage.setItem('prayerAlarm_' + name, on ? '1' : '0');
 }
 
 function isPrayerActive(startHHMM, endHHMM) {
@@ -655,7 +674,6 @@ async function loadPrayerTimes() {
 
     document.getElementById('prayerTimes').innerHTML = prayers.map(p => {
       const active = isPrayerActive(p.start, p.end);
-      const alarmOn = getPrayerAlarm(p.key);
       return `
         <div style="flex:1; min-width:130px; border:1px solid ${active ? '#ffd700' : '#2a6b2a'}; border-radius:8px; padding:10px; text-align:center; background:${active ? '#1f4d1f' : '#0f2a0f'};">
           <div style="font-weight:bold; color:#ffd700; font-size:14px;">${p.label}${active ? ' ●' : ''}</div>
@@ -663,21 +681,12 @@ async function loadPrayerTimes() {
           <div style="font-size:11px; color:#cde;">Shuru</div>
           <div style="font-size:15px; font-weight:bold; margin-top:6px;">${to12Hour(p.end)}</div>
           <div style="font-size:11px; color:#cde;">Khatam</div>
-          <div class="row" style="justify-content:center; gap:6px; margin-top:8px; width:auto;">
-            <span style="font-size:11px;">Alarm</span>
-            <input type="checkbox" ${alarmOn ? 'checked' : ''} style="width:auto;" onchange="setPrayerAlarm('${p.key}', this.checked)">
-          </div>
         </div>
       `;
     }).join('');
   } catch(e) {
     document.getElementById('prayerTimes').innerHTML = '<p style="font-size:13px;">Unable to load prayer times.</p>';
   }
-}
-
-function toggleAlarm() {
-  const on = document.getElementById('alarmToggle').checked;
-  localStorage.setItem('alarmOn', on ? '1' : '0');
 }
 
 // ---------- ADMIN PANEL ----------
@@ -757,6 +766,7 @@ function showMureedList(type) {
           <span class="badge">${m.has_registered ? (m.is_blocked ? 'blocked' : (m.status === 'approved' ? 'Active' : m.status)) : 'Invite Kiya (Register Nahi Kiya)'}</span>
         </div>
         <div style="font-size:13px; margin-top:4px;">📱 ${escapeHtml(m.mobile)} — ${m.group_type}</div>
+        <div style="font-size:12px; margin-top:4px;">${getOnlineStatusLabel(m.last_active)}</div>
         <div class="row" style="margin-top:6px;">
           <button class="secondary" style="width:auto;" onclick="editMureed(${m.id})">✏️ Edit</button>
           <button class="secondary" style="width:auto;" onclick="toggleBlockMureed(${m.id}, ${m.is_blocked ? 1 : 0})">${m.is_blocked ? '✅ Unblock' : '🚫 Block'}</button>
@@ -1226,7 +1236,7 @@ function checkNamazAlarms() {
     const t = window.namazTimesToday[name];
     if (!t) return;
 
-    if (alarmSettings.start_alarm_enabled && getPrayerAlarm(name) && t === hhmm) {
+    if (alarmSettings.start_alarm_enabled && t === hhmm) {
       const key = 'start-' + name + '-' + now.toDateString();
       if (!alarmSilenced[key]) {
         currentAlarmKey = key;
@@ -1237,7 +1247,7 @@ function checkNamazAlarms() {
 
     const nextName = names[idx + 1];
     const nextTime = nextName ? window.namazTimesToday[nextName] : null;
-    if (alarmSettings.end_reminder_enabled && getPrayerAlarm(name) && nextTime) {
+    if (alarmSettings.end_reminder_enabled && nextTime) {
       const [nh, nm] = nextTime.split(':').map(Number);
       const endDate = new Date(now);
       endDate.setHours(nh, nm, 0, 0);
@@ -1292,9 +1302,16 @@ function startAutoRefresh() {
       if (currentUser.role === 'admin') { loadAdminData(); }
       checkCustomAlarm();
       loadPrayerTimes();
+      sendHeartbeat();
     }
   }, 15000); // har 15 second mein naya data check karega
 }
+function sendHeartbeat() {
+  if (!currentUser) return;
+  fetch(API + '/api/heartbeat', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ mobile: currentUser.mobile })
+  }).catch(() => {});
 function stopAutoRefresh() {
   if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
 }</script>
