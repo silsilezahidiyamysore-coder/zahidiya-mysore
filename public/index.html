@@ -60,7 +60,7 @@ a { color: #ffd700; }
           <option value="zanana">Zanana</option>
         </select>
       </div>
-      <button onclick="handleLoginOrRegister()" id="loginActionBtn">Login</button>
+      <button onclick="unlockAudio(); handleLoginOrRegister()" id="loginActionBtn">Login</button>
       <button class="secondary" onclick="toggleLoginRegister()" id="toggleBtn">New user? Register here</button>
       <p id="loginMsg" style="margin-top:8px; font-size:13px; color:#ffd700;"></p>
     </div>
@@ -75,8 +75,21 @@ a { color: #ffd700; }
         <p id="welcomeUser" style="font-size:12px;color:#ffd700;margin-top:2px;"></p>
       </div>
       <div class="row" style="width:auto;">
+        <button class="secondary" style="width:auto;" onclick="openKhanqahLocation()" title="Khanqah Location">📍</button>
         <button class="secondary" style="width:auto;" onclick="showScreen('notifications')">🔔<span id="notifBadge" class="hidden">0</span></button>
         <button class="secondary" style="width:auto;" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="khanqahLocationCard">
+      <div class="row" style="justify-content:space-between;">
+        <h3 style="margin:0;">📍 Khanqah Location</h3>
+        <button class="secondary" style="width:auto;" onclick="document.getElementById('khanqahLocationCard').classList.add('hidden')">✖</button>
+      </div>
+      <p id="khanqahAddressText" style="font-size:13px; margin-top:8px;"></p>
+      <div class="row" style="margin-top:8px;">
+        <button style="width:auto;" onclick="window.open(window.khanqahMapLink, '_blank')">🗺️ Google Maps mein kholo</button>
+        <button class="secondary" style="width:auto;" onclick="shareKhanqahLocation()">🔗 Share Karo</button>
       </div>
     </div>
 
@@ -135,6 +148,14 @@ a { color: #ffd700; }
 
     <!-- ============ ADMIN PANEL ============ -->
    <div id="adminScreen" class="hidden">
+      <div class="card">
+        <h3>📍 Khanqah Location Set Karo</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Yeh ek baar set karo. Google Maps kholo, Khanqah ki jagah dhoondo, "Share" → "Copy link" karke yahan paste karo.</p>
+        <input type="text" id="khanqahAddressInput" placeholder="Address (jaise: Silsila-e-Zahidiya, Mysore)">
+        <input type="text" id="khanqahMapLinkInput" placeholder="Google Maps link (https://maps.app.goo.gl/...)">
+        <button onclick="saveKhanqahLocation()">💾 Location Save Karo</button>
+      </div>
+
       <div class="card">
         <h3>👤 Meri Profile (Admin)</h3>
         <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Apna naam, mobile ya password badalne ke liye yahan bharo. Password khaali chhodo to purana wahi rahega.</p>
@@ -708,6 +729,51 @@ async function loadAdminData() {
   } catch(e) { console.error(e); }
 }
 
+window.khanqahMapLink = '';
+window.khanqahAddress = '';
+
+function openKhanqahLocation() {
+  if (!window.khanqahMapLink) {
+    alert('Abhi Khanqah ki location set nahi hui hai. Admin se poochho.');
+    return;
+  }
+  document.getElementById('khanqahAddressText').innerText = window.khanqahAddress || '';
+  document.getElementById('khanqahLocationCard').classList.remove('hidden');
+  document.getElementById('khanqahLocationCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function shareKhanqahLocation() {
+  const link = window.khanqahMapLink;
+  if (!link) return;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'Khanqah Location', text: window.khanqahAddress || 'Khanqah Location', url: link });
+    } catch (e) {}
+  } else {
+    try {
+      await navigator.clipboard.writeText(link);
+      alert('Link copy ho gaya, ab kahin bhi paste kar sakte ho');
+    } catch (e) {
+      alert(link);
+    }
+  }
+}
+
+async function saveKhanqahLocation() {
+  const address = document.getElementById('khanqahAddressInput').value.trim();
+  const mapLink = document.getElementById('khanqahMapLinkInput').value.trim();
+  if (!mapLink) { alert('Google Maps link zaroori hai'); return; }
+  try {
+    const res = await fetch(API + '/api/alarm-settings', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ khanqah_address: address, khanqah_map_link: mapLink })
+    });
+    const data = await res.json();
+    alert(data.message || 'Location save ho gayi');
+    loadAlarmSettings();
+  } catch (e) { alert('Kuch galat ho gaya'); }
+}
+
 async function saveMyProfile() {
   const name = document.getElementById('myProfileName').value.trim();
   const mobile = document.getElementById('myProfileMobile').value.trim();
@@ -1028,6 +1094,13 @@ async function loadAlarmSettings() {
       if (cs) cs.value = alarmSettings.custom_alarm_start || '';
       if (cend) cend.value = alarmSettings.custom_alarm_end || '';
 
+      window.khanqahMapLink = alarmSettings.khanqah_map_link || '';
+      window.khanqahAddress = alarmSettings.khanqah_address || '';
+      const kai = document.getElementById('khanqahAddressInput');
+      const kmi = document.getElementById('khanqahMapLinkInput');
+      if (kai && !kai.value) kai.value = window.khanqahAddress;
+      if (kmi && !kmi.value) kmi.value = window.khanqahMapLink;
+
       checkCustomAlarm();
     }
   } catch (e) { console.error(e); }
@@ -1111,6 +1184,28 @@ function getIslamicMonthYear(date) {
   return { month: h.month, year: h.year };
 }
 
+// Hijri calendar ke zaroori din (month-day ke hisaab se, har saal wahi rehte hain)
+const HIJRI_EVENTS = {
+  '1-1': 'Islamic New Year (Muharram)',
+  '1-10': 'Ashura',
+  '3-12': "Eid Milad-un-Nabi ﷺ",
+  '7-27': "Shab-e-Mairaj",
+  '8-15': 'Shab-e-Baraat',
+  '9-1': 'Ramadan Shuru',
+  '9-27': 'Shab-e-Qadr (ehtiyaatan)',
+  '10-1': 'Eid-ul-Fitr',
+  '12-9': 'Youm-e-Arafah',
+  '12-10': 'Eid-ul-Adha'
+};
+
+// Gregorian calendar ke National holidays
+const GREGORIAN_EVENTS = {
+  '0-26': 'Republic Day',
+  '7-15': 'Independence Day',
+  '9-2': 'Gandhi Jayanti',
+  '11-25': 'Christmas'
+};
+
 function buildIslamicMonthDates(today) {
   let d = new Date(today);
   let guard = 0;
@@ -1126,7 +1221,7 @@ function buildIslamicMonthDates(today) {
     cur.setDate(cur.getDate() + 1);
     guard++;
   }
-  return { title: HIJRI_MONTHS[month - 1] + ' ' + year + ' AH', dates };
+  return { title: HIJRI_MONTHS[month - 1] + ' ' + year + ' AH', dates, hijriMonth: month };
 }
 
 function buildGregorianMonthDates(today) {
@@ -1141,7 +1236,8 @@ function buildGregorianMonthDates(today) {
 
 function openCalendarGrid(type) {
   const today = new Date();
-  const { title, dates } = type === 'islamic' ? buildIslamicMonthDates(today) : buildGregorianMonthDates(today);
+  const built = type === 'islamic' ? buildIslamicMonthDates(today) : buildGregorianMonthDates(today);
+  const { title, dates } = built;
   document.getElementById('calendarGridTitle').innerText = (type === 'islamic' ? '🌙 ' : '📆 ') + title;
 
   const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
@@ -1152,13 +1248,34 @@ function openCalendarGrid(type) {
   const firstDow = dates[0].getDay();
   for (let i = 0; i < firstDow; i++) html += '<div></div>';
 
+  const eventsThisMonth = [];
+
   dates.forEach((d, idx) => {
     const isToday = d.toDateString() === today.toDateString();
     const dayNum = type === 'islamic' ? (idx + 1) : d.getDate();
-    html += `<div style="padding:6px 0; border-radius:6px; ${isToday ? 'background:#ffd700; color:#1a3a1a; font-weight:bold;' : 'background:#0f2a0f;'}">${dayNum}</div>`;
+    let eventName = null;
+    if (type === 'islamic') {
+      eventName = HIJRI_EVENTS[built.hijriMonth + '-' + dayNum] || null;
+    } else {
+      eventName = GREGORIAN_EVENTS[d.getMonth() + '-' + dayNum] || null;
+    }
+    if (eventName) eventsThisMonth.push({ day: dayNum, name: eventName });
+
+    let style = isToday ? 'background:#ffd700; color:#1a3a1a; font-weight:bold;' : 'background:#0f2a0f;';
+    if (eventName && !isToday) style = 'background:#8b1a1a; color:#fff; font-weight:bold;';
+    html += `<div style="padding:6px 0; border-radius:6px; position:relative; ${style}" title="${eventName || ''}">${dayNum}${eventName ? '<div style="font-size:9px;">●</div>' : ''}</div>`;
   });
 
   html += '</div>';
+
+  if (eventsThisMonth.length) {
+    html += '<div style="margin-top:10px; font-size:12px;">';
+    eventsThisMonth.forEach(ev => {
+      html += `<div style="margin-top:4px;">🔴 <strong>${ev.day}:</strong> ${ev.name}</div>`;
+    });
+    html += '</div>';
+  }
+
   document.getElementById('calendarGridBody').innerHTML = html;
   document.getElementById('calendarGridCard').classList.remove('hidden');
   document.getElementById('calendarGridCard').scrollIntoView({ behavior: 'smooth' });
@@ -1188,16 +1305,43 @@ async function saveAlarmSettings() {
   } catch (e) { alert('Error saving settings'); }
 }
 
+let sharedAudioCtx = null;
+function getAudioCtx() {
+  if (!sharedAudioCtx) {
+    sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (sharedAudioCtx.state === 'suspended') {
+    sharedAudioCtx.resume().catch(() => {});
+  }
+  return sharedAudioCtx;
+}
+function unlockAudio() {
+  // Login jaise real click par AudioContext ko "unlock" kar dete hain,
+  // taaki baad mein timer se (bina click ke) bhi alarm sound baj sake.
+  try { getAudioCtx(); } catch (e) {}
+}
+
+function playTone(ctx, freq, startTime, durationSec) {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.0001, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.35, startTime + 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + durationSec);
+  osc.start(startTime);
+  osc.stop(startTime + durationSec + 0.05);
+}
+
 function beep(durationMs) {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = 800;
-    osc.start();
-    setTimeout(() => { osc.stop(); ctx.close(); }, durationMs);
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    const totalSec = Math.max(durationMs / 1000, 0.6);
+    // "Ding-dong" jaisa do-tone chime
+    playTone(ctx, 880, now, totalSec / 2);       // Ding (upar wala sur)
+    playTone(ctx, 659, now + totalSec / 2, totalSec / 2); // Dong (neeche wala sur)
   } catch (e) { console.error('Beep error', e); }
 }
 
@@ -1312,6 +1456,7 @@ function sendHeartbeat() {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ mobile: currentUser.mobile })
   }).catch(() => {});
+}
 function stopAutoRefresh() {
   if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
 }</script>
