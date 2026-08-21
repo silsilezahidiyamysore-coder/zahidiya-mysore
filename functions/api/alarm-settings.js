@@ -31,6 +31,8 @@ export async function onRequestPost(context) {
     const custom_alarm_title = body.custom_alarm_title !== undefined ? body.custom_alarm_title : (existing.custom_alarm_title || '');
     const custom_alarm_start = body.custom_alarm_start !== undefined ? body.custom_alarm_start : (existing.custom_alarm_start || '');
     const custom_alarm_end = body.custom_alarm_end !== undefined ? body.custom_alarm_end : (existing.custom_alarm_end || '');
+    const khanqah_address = body.khanqah_address !== undefined ? body.khanqah_address : (existing.khanqah_address || '');
+    const khanqah_map_link = body.khanqah_map_link !== undefined ? body.khanqah_map_link : (existing.khanqah_map_link || '');
 
     await db
       .prepare(`
@@ -45,6 +47,8 @@ export async function onRequestPost(context) {
           custom_alarm_title = ?,
           custom_alarm_start = ?,
           custom_alarm_end = ?,
+          khanqah_address = ?,
+          khanqah_map_link = ?,
           updated_at = datetime('now')
         WHERE id = 1
       `)
@@ -58,7 +62,9 @@ export async function onRequestPost(context) {
         custom_alarm_enabled,
         custom_alarm_title,
         custom_alarm_start,
-        custom_alarm_end
+        custom_alarm_end,
+        khanqah_address,
+        khanqah_map_link
       )
       .run();
 
