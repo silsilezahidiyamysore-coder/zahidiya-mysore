@@ -181,6 +181,10 @@ a { color: #ffd700; }
           <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('mardana')"><div class="num" id="mardanaCount">0</div><div>Mardana</div></div>
           <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('zanana')"><div class="num" id="zananaCount">0</div><div>Zanana</div></div>
         </div>
+        <div class="row" style="margin-top:8px;">
+          <div class="stat-box" style="background:#1f4d1f; cursor:pointer;" onclick="showMureedList('online')"><div class="num" id="onlineCount" style="color:#4ade80;">0</div><div>🟢 Online Abhi</div></div>
+          <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('offline')"><div class="num" id="offlineCount">0</div><div>⚪ Offline</div></div>
+        </div>
      <div id="mureedListArea" style="margin-top:12px;"></div>
       </div>
 
@@ -548,6 +552,12 @@ function formatDate(dt) {
   if (isNaN(d)) return dt;
   return d.toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
 }
+function isMureedOnline(lastActive) {
+  if (!lastActive) return false;
+  const last = new Date(lastActive.replace(' ', 'T') + 'Z');
+  if (isNaN(last)) return false;
+  return (Date.now() - last.getTime()) / 1000 < 40;
+}
 function getOnlineStatusLabel(lastActive) {
   if (!lastActive) return '⚪ Kabhi login nahi kiya';
   const last = new Date(lastActive.replace(' ', 'T') + 'Z');
@@ -722,6 +732,11 @@ async function loadAdminData() {
     allMureedsData = data.all || [];
     if (currentMureedListType) showMureedList(currentMureedListType);
 
+    let onlineN = 0;
+    allMureedsData.forEach(m => { if (isMureedOnline(m.last_active)) onlineN++; });
+    document.getElementById('onlineCount').innerText = onlineN;
+    document.getElementById('offlineCount').innerText = Math.max(allMureedsData.length - onlineN, 0);
+
     const pn = document.getElementById('myProfileName');
     const pm = document.getElementById('myProfileMobile');
     if (pn && !pn.value) pn.value = currentUser.name;
@@ -823,6 +838,8 @@ function showMureedList(type) {
   let title = 'Sabhi Mureed';
   if (type === 'mardana') { list = allMureedsData.filter(m => m.group_type === 'mardana'); title = 'Mardana Mureed'; }
   if (type === 'zanana') { list = allMureedsData.filter(m => m.group_type === 'zanana'); title = 'Zanana Mureed'; }
+  if (type === 'online') { list = allMureedsData.filter(m => isMureedOnline(m.last_active)); title = '🟢 Online Mureed'; }
+  if (type === 'offline') { list = allMureedsData.filter(m => !isMureedOnline(m.last_active)); title = '⚪ Offline Mureed'; }
   if (!list.length) { area.innerHTML = `<p style="font-size:13px;">Koi ${title} nahi mila.</p>`; return; }
   area.innerHTML = `<h3 style="font-size:14px; margin-bottom:8px;">${title} (${list.length})</h3>` +
     list.map(m => `
