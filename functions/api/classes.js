@@ -47,7 +47,7 @@ export async function onRequestPost(context) {
       return Response.json({ error: 'File URL zaroori hai' }, { status: 400 });
     }
 
-    await db
+    const insertResult = await db
       .prepare(
         `INSERT INTO classes (title, type, file_url, group_type, is_live)
          VALUES (?, ?, ?, ?, ?)`
@@ -55,17 +55,19 @@ export async function onRequestPost(context) {
       .bind(title, type, file_url, group_type, is_live)
       .run();
 
-    // Notification bhi banayen taake sab approved mureeds ko dikhe
+    const newClassId = insertResult.meta.last_row_id;
+
+    // Notification bhi banayen taake sab approved mureeds ko dikhe, aur click karne par seedha class khul jaaye
     const notifText = is_live
       ? `🔴 LIVE shuru hui: "${title}"`
       : `Nayi class upload hui: "${title}"`;
 
     await db
       .prepare(
-        `INSERT INTO notifications (message, target_role, is_read, target_mobile)
-         VALUES (?, 'mureed', 0, NULL)`
+        `INSERT INTO notifications (message, target_role, is_read, target_mobile, related_class_id)
+         VALUES (?, 'mureed', 0, NULL, ?)`
       )
-      .bind(notifText)
+      .bind(notifText, newClassId)
       .run();
 
     return Response.json({ success: true });
