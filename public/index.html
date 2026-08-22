@@ -284,6 +284,13 @@ a { color: #ffd700; }
         <input type="number" id="endReminderRepeatCount" placeholder="Kitni baar baje (e.g. 3)">
         <input type="number" id="endReminderBeepSeconds" placeholder="Har baar kitne second (e.g. 2)">
         <button onclick="saveAlarmSettings()">Save Alarm Settings</button>
+
+        <label style="font-size:13px; margin-top:12px; display:block;">🎵 Alarm Tone (Ringtone)</label>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Koi audio file (mp3) upload karo — yehi tone alarm baja tega. Kuch upload nahi karoge to default "ding-dong" chalega.</p>
+        <div id="alarmToneCurrentName" style="font-size:12px; color:#cde; margin-bottom:6px;"></div>
+        <input type="file" id="alarmToneFile" accept="audio/*">
+        <button onclick="uploadAlarmTone()">🎵 Tone Upload Karo</button>
+        <button class="secondary" onclick="playAlarmSound(3000)">🔊 Is Tone Ko Suno</button>
       </div>
 
       <div class="card">
@@ -295,10 +302,19 @@ a { color: #ffd700; }
         </div>
         <input type="text" id="customAlarmTitleInput" placeholder="Alarm ka naam (jaise: Ijtema Time)">
         <label style="font-size:13px;">Start Time</label>
-        <input type="time" id="customAlarmStart">
-        <label style="font-size:13px;">End Time</label>
-        <input type="time" id="customAlarmEnd">
+        <div class="row" style="gap:6px;">
+          <select id="customAlarmStartHour" style="margin:0;"></select>
+          <select id="customAlarmStartMin" style="margin:0;"></select>
+          <select id="customAlarmStartAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
+        </div>
+        <label style="font-size:13px; margin-top:8px;">End Time</label>
+        <div class="row" style="gap:6px;">
+          <select id="customAlarmEndHour" style="margin:0;"></select>
+          <select id="customAlarmEndMin" style="margin:0;"></select>
+          <select id="customAlarmEndAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
+        </div>
         <button onclick="saveCustomAlarm()">Save Custom Alarm</button>
+        <button class="secondary" onclick="playAlarmSound(2500)">🔊 Test Sound (abhi suno)</button>
       </div>
     </div>
 
@@ -383,6 +399,7 @@ function loginSuccess() {
 }
 
 function logout() {
+  sendHeartbeat(true); // turant "offline" mark ho jaaye, wait na karna pade
   currentUser = null;
   localStorage.removeItem('zahidiya_mobile');
   localStorage.removeItem('zahidiya_password');
@@ -565,14 +582,14 @@ function isMureedOnline(lastActive) {
   if (!lastActive) return false;
   const last = new Date(lastActive.replace(' ', 'T') + 'Z');
   if (isNaN(last)) return false;
-  return (Date.now() - last.getTime()) / 1000 < 40;
+  return (Date.now() - last.getTime()) / 1000 < 15;
 }
 function getOnlineStatusLabel(lastActive) {
   if (!lastActive) return '⚪ Kabhi login nahi kiya';
   const last = new Date(lastActive.replace(' ', 'T') + 'Z');
   if (isNaN(last)) return '';
   const diffSec = (Date.now() - last.getTime()) / 1000;
-  if (diffSec < 40) return '🟢 Online abhi';
+  if (diffSec < 15) return '🟢 Online abhi';
   const diffMin = Math.floor(diffSec / 60);
   if (diffMin < 60) return `⚪ ${diffMin} minute pehle active tha`;
   const diffHr = Math.floor(diffMin / 60);
@@ -1093,8 +1110,48 @@ let alarmSettings = {
   custom_alarm_end: ''
 };
 
+function populate12HourDropdowns() {
+  ['customAlarmStartHour','customAlarmEndHour'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel && !sel.options.length) {
+      for (let h = 1; h <= 12; h++) sel.innerHTML += `<option value="${h}">${h}</option>`;
+    }
+  });
+  ['customAlarmStartMin','customAlarmEndMin'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel && !sel.options.length) {
+      for (let m = 0; m < 60; m += 5) sel.innerHTML += `<option value="${m}">${String(m).padStart(2,'0')}</option>`;
+    }
+  });
+}
+
+function set12HourFields(prefix, time24) {
+  // time24 jaisa "14:30" -> Hour=2, Min=30, AmPm=PM
+  if (!time24) return;
+  const [h, m] = time24.split(':').map(Number);
+  let hour12 = h % 12; if (hour12 === 0) hour12 = 12;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const nearestMin = Math.round(m / 5) * 5 % 60;
+  const hourSel = document.getElementById(prefix + 'Hour');
+  const minSel = document.getElementById(prefix + 'Min');
+  const ampmSel = document.getElementById(prefix + 'AmPm');
+  if (hourSel) hourSel.value = String(hour12);
+  if (minSel) minSel.value = String(nearestMin);
+  if (ampmSel) ampmSel.value = ampm;
+}
+
+function get24HourFromFields(prefix) {
+  const hour12 = parseInt(document.getElementById(prefix + 'Hour').value, 10);
+  const min = parseInt(document.getElementById(prefix + 'Min').value, 10);
+  const ampm = document.getElementById(prefix + 'AmPm').value;
+  let hour24 = hour12 % 12;
+  if (ampm === 'PM') hour24 += 12;
+  return String(hour24).padStart(2,'0') + ':' + String(min).padStart(2,'0');
+}
+
 async function loadAlarmSettings() {
   try {
+    populate12HourDropdowns();
     const res = await fetch(API + '/api/alarm-settings');
     const data = await res.json();
     if (data.settings) {
@@ -1114,12 +1171,10 @@ async function loadAlarmSettings() {
 
       const ce = document.getElementById('customAlarmEnabled');
       const ct = document.getElementById('customAlarmTitleInput');
-      const cs = document.getElementById('customAlarmStart');
-      const cend = document.getElementById('customAlarmEnd');
       if (ce) ce.checked = !!alarmSettings.custom_alarm_enabled;
       if (ct) ct.value = alarmSettings.custom_alarm_title || '';
-      if (cs) cs.value = alarmSettings.custom_alarm_start || '';
-      if (cend) cend.value = alarmSettings.custom_alarm_end || '';
+      set12HourFields('customAlarmStart', alarmSettings.custom_alarm_start || '09:00');
+      set12HourFields('customAlarmEnd', alarmSettings.custom_alarm_end || '10:00');
 
       window.khanqahMapLink = alarmSettings.khanqah_map_link || '';
       window.khanqahAddress = alarmSettings.khanqah_address || '';
@@ -1127,6 +1182,13 @@ async function loadAlarmSettings() {
       const kmi = document.getElementById('khanqahMapLinkInput');
       if (kai && !kai.value) kai.value = window.khanqahAddress;
       if (kmi && !kmi.value) kmi.value = window.khanqahMapLink;
+
+      const toneNameBox = document.getElementById('alarmToneCurrentName');
+      if (toneNameBox) {
+        toneNameBox.innerText = alarmSettings.alarm_tone_url
+          ? '✅ Ab tak upload ki hui tone use ho rahi hai'
+          : 'Abhi default "ding-dong" tone use ho rahi hai';
+      }
 
       checkCustomAlarm();
     }
@@ -1137,8 +1199,8 @@ async function saveCustomAlarm() {
   const body = {
     custom_alarm_enabled: document.getElementById('customAlarmEnabled').checked,
     custom_alarm_title: document.getElementById('customAlarmTitleInput').value.trim(),
-    custom_alarm_start: document.getElementById('customAlarmStart').value,
-    custom_alarm_end: document.getElementById('customAlarmEnd').value
+    custom_alarm_start: get24HourFromFields('customAlarmStart'),
+    custom_alarm_end: get24HourFromFields('customAlarmEnd')
   };
   try {
     const res = await fetch(API + '/api/alarm-settings', {
@@ -1178,7 +1240,7 @@ function checkCustomAlarm() {
     if (!alarmSilenced[key]) {
       currentAlarmKey = key;
       showAlarmBanner(titleText);
-      beep((alarmSettings.start_alarm_duration_seconds || 3) * 1000);
+      playAlarmSound((alarmSettings.start_alarm_duration_seconds || 3) * 1000);
     }
   } else {
     card.classList.add('hidden');
@@ -1441,6 +1503,42 @@ function beep(durationMs) {
   } catch (e) { console.error('Beep error', e); }
 }
 
+function playAlarmSound(durationMs) {
+  // Agar admin ne apni ringtone upload ki hai, wahi bajao. Warna default ding-dong.
+  if (alarmSettings && alarmSettings.alarm_tone_url) {
+    try {
+      const audio = new Audio(alarmSettings.alarm_tone_url);
+      audio.play().catch(() => { beep(durationMs); });
+      return;
+    } catch (e) {
+      beep(durationMs);
+      return;
+    }
+  }
+  beep(durationMs);
+}
+
+async function uploadAlarmTone() {
+  const fileInput = document.getElementById('alarmToneFile');
+  const file = fileInput.files[0];
+  if (!file) { alert('Pehle koi audio file choose karo'); return; }
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const uploadRes = await fetch(API + '/api/upload', { method: 'POST', body: formData });
+    const uploadData = await uploadRes.json();
+    if (!uploadData.url) { alert('Upload fail ho gaya'); return; }
+
+    const res = await fetch(API + '/api/alarm-settings', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ alarm_tone_url: uploadData.url })
+    });
+    const data = await res.json();
+    alert('🎵 Tone upload ho gayi! Ab yehi alarm mein bajegi.');
+    loadAlarmSettings();
+  } catch (e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+
 let alarmSilenced = {};
 
 function silenceAlarm(key) {
@@ -1481,7 +1579,7 @@ function checkNamazAlarms() {
       if (!alarmSilenced[key]) {
         currentAlarmKey = key;
         showAlarmBanner('🕌 ' + name + ' ki namaz ka waqt ho gaya hai');
-        beep(Math.min(alarmSettings.start_alarm_duration_seconds * 1000, 5000));
+        playAlarmSound(Math.min(alarmSettings.start_alarm_duration_seconds * 1000, 5000));
       }
     }
 
@@ -1500,7 +1598,7 @@ function checkNamazAlarms() {
           showAlarmBanner('⏳ ' + name + ' ki namaz khatam hone wali hai (' + alarmSettings.end_reminder_minutes_before + ' min)');
           let count = 0;
           const beepInterval = setInterval(() => {
-            beep(alarmSettings.end_reminder_beep_seconds * 1000);
+            playAlarmSound(alarmSettings.end_reminder_beep_seconds * 1000);
             count++;
             if (count >= alarmSettings.end_reminder_repeat_count) clearInterval(beepInterval);
           }, (alarmSettings.end_reminder_beep_seconds + 1) * 1000);
@@ -1530,6 +1628,12 @@ async function tryAutoLogin() {
 }
 window.addEventListener('DOMContentLoaded', tryAutoLogin);
 window.addEventListener('DOMContentLoaded', showIslamicDate);
+
+// Auto-login se bina button dabaye seedha andar aa jaate hain, isliye Login click ke bharose
+// audio unlock nahi ho pata. Isliye page par jahan bhi pehla click/tap/key ho, wahin audio unlock kar do.
+['click', 'touchstart', 'keydown'].forEach(evt => {
+  document.addEventListener(evt, unlockAudio);
+});
 
 // ---------- POORI WEBSITE KEYBOARD SE CHALE (arrow keys + Enter, mouse ki zaroorat nahi) ----------
 function getPageFocusableElements() {
@@ -1561,7 +1665,17 @@ document.addEventListener('keydown', function(e) {
   if (isTypingField && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) return;
 
   if (e.key === 'Enter') {
-    if (isTypingField) return; // form field mein Enter ko normal rehne do
+    if (isTypingField) {
+      // Text/number field mein Enter dabane par agle box mein chale jao
+      const focusables = getPageFocusableElements();
+      const idx = focusables.indexOf(active);
+      if (idx !== -1 && focusables[idx + 1]) {
+        focusables[idx + 1].focus();
+        focusables[idx + 1].scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+      e.preventDefault();
+      return;
+    }
     if (active && typeof active.click === 'function') {
       active.click();
       e.preventDefault();
@@ -1588,28 +1702,38 @@ document.addEventListener('keydown', function(e) {
 
 // ---------- AUTO REFRESH (bina refresh kiye naya class/notification dikhna) ----------
 let autoRefreshTimer = null;
+let fastRefreshTimer = null;
 function startAutoRefresh() {
   if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  if (fastRefreshTimer) clearInterval(fastRefreshTimer);
+
+  // Online/Offline status turant (fast) update ho, isliye alag chhota timer
+  fastRefreshTimer = setInterval(() => {
+    if (currentUser) {
+      sendHeartbeat();
+      if (currentUser.role === 'admin') { loadAdminData(); }
+    }
+  }, 5000); // har 5 second
+
   autoRefreshTimer = setInterval(() => {
     if (currentUser) {
       loadClasses();
       loadNotifications();
-      if (currentUser.role === 'admin') { loadAdminData(); }
       checkCustomAlarm();
       loadPrayerTimes();
-      sendHeartbeat();
     }
-  }, 15000); // har 15 second mein naya data check karega
+  }, 15000); // baaki cheezein har 15 second mein
 }
-function sendHeartbeat() {
+function sendHeartbeat(goingOffline) {
   if (!currentUser) return;
   fetch(API + '/api/heartbeat', {
     method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ mobile: currentUser.mobile })
+    body: JSON.stringify({ mobile: currentUser.mobile, offline: !!goingOffline })
   }).catch(() => {});
 }
 function stopAutoRefresh() {
   if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+  if (fastRefreshTimer) { clearInterval(fastRefreshTimer); fastRefreshTimer = null; }
 }</script>
 </body>
 </html>
