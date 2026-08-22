@@ -75,7 +75,12 @@ a { color: #ffd700; }
         <p id="welcomeUser" style="font-size:12px;color:#ffd700;margin-top:2px;"></p>
       </div>
       <div class="row" style="width:auto;">
-        <button class="secondary" style="width:auto;" onclick="openKhanqahLocation()" title="Khanqah Location">📍</button>
+        <button class="secondary" style="width:auto; padding:6px 10px;" onclick="openKhanqahLocation()" title="Khanqah Location">
+          <svg width="20" height="20" viewBox="0 0 24 24" style="vertical-align:middle;">
+            <path fill="#EA4335" d="M12 2C7.6 2 4 5.6 4 10c0 5.4 7 11.5 7.3 11.8c.2.2.5.3.7.3s.5-.1.7-.3C13 21.5 20 15.4 20 10c0-4.4-3.6-8-8-8z"/>
+            <circle cx="12" cy="10" r="3.2" fill="#fff"/>
+          </svg>
+        </button>
         <button class="secondary" style="width:auto;" onclick="showScreen('notifications')">🔔<span id="notifBadge" class="hidden">0</span></button>
         <button class="secondary" style="width:auto;" onclick="logout()">Logout</button>
       </div>
@@ -111,6 +116,10 @@ a { color: #ffd700; }
       <div class="row" style="justify-content:space-between;">
         <h3 id="calendarGridTitle" style="margin:0;"></h3>
         <button class="secondary" style="width:auto;" onclick="closeCalendarGrid()">✖ Band Karo</button>
+      </div>
+      <div class="row" style="justify-content:space-between; margin-top:8px;">
+        <button class="secondary" style="width:auto;" onclick="changeCalendarMonth(-1)">⬅ Pichla Mahina</button>
+        <button class="secondary" style="width:auto;" onclick="changeCalendarMonth(1)">Agla Mahina ➡</button>
       </div>
       <div id="calendarGridBody" style="margin-top:10px;"></div>
     </div>
@@ -784,7 +793,8 @@ async function saveKhanqahLocation() {
       body: JSON.stringify({ khanqah_address: address, khanqah_map_link: mapLink })
     });
     const data = await res.json();
-    alert(data.message || 'Location save ho gayi');
+    if (data.error) { alert(data.error); return; }
+    alert('📍 Khanqah Location save ho gayi!');
     loadAlarmSettings();
   } catch (e) { alert('Kuch galat ho gaya'); }
 }
@@ -1159,8 +1169,17 @@ function checkCustomAlarm() {
     ? (nowMinutes >= startMinutes && nowMinutes <= endMinutes)
     : (nowMinutes >= startMinutes || nowMinutes <= endMinutes); // raat paar hone wala case
   if (active) {
-    titleEl.innerText = '🔔 ' + (alarmSettings.custom_alarm_title || 'Alarm') + ' — abhi chal raha hai';
+    const titleText = '🔔 ' + (alarmSettings.custom_alarm_title || 'Alarm') + ' — abhi chal raha hai';
+    titleEl.innerText = titleText;
     card.classList.remove('hidden');
+
+    // Sound bhi bajayenge - din mein ek baar (jab tak silence na kiya ho)
+    const key = 'custom-' + alarmSettings.custom_alarm_start + '-' + now.toDateString();
+    if (!alarmSilenced[key]) {
+      currentAlarmKey = key;
+      showAlarmBanner(titleText);
+      beep((alarmSettings.start_alarm_duration_seconds || 3) * 1000);
+    }
   } else {
     card.classList.add('hidden');
   }
@@ -1223,8 +1242,8 @@ const GREGORIAN_EVENTS = {
   '11-25': 'Christmas'
 };
 
-function buildIslamicMonthDates(today) {
-  let d = new Date(today);
+function buildIslamicMonthDates(anchor) {
+  let d = new Date(anchor);
   let guard = 0;
   while (getIslamicDayNumber(d) !== 1 && guard < 40) { d.setDate(d.getDate() - 1); guard++; }
   const { month, year } = getIslamicMonthYear(d);
@@ -1241,24 +1260,29 @@ function buildIslamicMonthDates(today) {
   return { title: HIJRI_MONTHS[month - 1] + ' ' + year + ' AH', dates, hijriMonth: month };
 }
 
-function buildGregorianMonthDates(today) {
-  const year = today.getFullYear();
-  const month = today.getMonth();
+function buildGregorianMonthDates(anchor) {
+  const year = anchor.getFullYear();
+  const month = anchor.getMonth();
   const last = new Date(year, month + 1, 0);
   const dates = [];
   for (let d = 1; d <= last.getDate(); d++) dates.push(new Date(year, month, d));
-  const title = today.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  const title = anchor.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
   return { title, dates };
 }
 
-function openCalendarGrid(type) {
+let calendarType = 'gregorian';
+let calendarAnchorDate = new Date();
+
+function openCalendarGrid(type, anchor) {
+  calendarType = type;
+  calendarAnchorDate = anchor || new Date();
   const today = new Date();
-  const built = type === 'islamic' ? buildIslamicMonthDates(today) : buildGregorianMonthDates(today);
+  const built = type === 'islamic' ? buildIslamicMonthDates(calendarAnchorDate) : buildGregorianMonthDates(calendarAnchorDate);
   const { title, dates } = built;
   document.getElementById('calendarGridTitle').innerText = (type === 'islamic' ? '🌙 ' : '📆 ') + title;
 
   const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
-  let html = '<div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; font-size:12px;">';
+  let html = '<div id="calGridContainer" style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; font-size:12px;">';
   dayNames.forEach(dn => html += `<div style="color:#ffd700; font-weight:bold;">${dn}</div>`);
 
   // pehle date ke din se pehle khaali boxes
@@ -1266,6 +1290,7 @@ function openCalendarGrid(type) {
   for (let i = 0; i < firstDow; i++) html += '<div></div>';
 
   const eventsThisMonth = [];
+  const cellEventMap = {};
 
   dates.forEach((d, idx) => {
     const isToday = d.toDateString() === today.toDateString();
@@ -1278,10 +1303,13 @@ function openCalendarGrid(type) {
     }
     if (eventName) eventsThisMonth.push({ day: dayNum, name: eventName });
 
+    const gridPos = firstDow + idx;
+    cellEventMap[gridPos] = { dayNum, eventName };
+
     let style = isToday ? 'background:#ffd700; color:#1a3a1a; font-weight:bold;' : 'background:#0f2a0f;';
     if (eventName && !isToday) style = 'background:#8b1a1a; color:#fff; font-weight:bold;';
     const shortLabel = eventName ? `<div style="font-size:8px; line-height:1.1; margin-top:2px; padding:0 2px; word-break:break-word;">${eventName}</div>` : '';
-    html += `<div style="padding:6px 2px; border-radius:6px; position:relative; min-height:32px; ${style}" title="${eventName || ''}">${dayNum}${shortLabel}</div>`;
+    html += `<div id="calCell-${gridPos}" tabindex="0" style="padding:6px 2px; border-radius:6px; position:relative; min-height:32px; outline-offset:2px; cursor:pointer; ${style}" title="${eventName || ''}">${dayNum}${shortLabel}</div>`;
   });
 
   html += '</div>';
@@ -1297,6 +1325,56 @@ function openCalendarGrid(type) {
   document.getElementById('calendarGridBody').innerHTML = html;
   document.getElementById('calendarGridCard').classList.remove('hidden');
   document.getElementById('calendarGridCard').scrollIntoView({ behavior: 'smooth' });
+  setupCalendarKeyboardNav(cellEventMap);
+}
+
+function setupCalendarKeyboardNav(cellEventMap) {
+  const container = document.getElementById('calGridContainer');
+  if (!container) return;
+  container.onkeydown = function(e) {
+    const active = document.activeElement;
+    if (!active || !active.id || !active.id.startsWith('calCell-')) return;
+    const pos = parseInt(active.id.replace('calCell-', ''), 10);
+    let newPos = null;
+    if (e.key === 'ArrowLeft') newPos = pos - 1;
+    else if (e.key === 'ArrowRight') newPos = pos + 1;
+    else if (e.key === 'ArrowUp') newPos = pos - 7;
+    else if (e.key === 'ArrowDown') newPos = pos + 7;
+    else if (e.key === 'Enter') {
+      const info = cellEventMap[pos];
+      if (info) alert(info.dayNum + (info.eventName ? ' — ' + info.eventName : ' — Koi khaas din nahi'));
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    } else {
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    const nextCell = document.getElementById('calCell-' + newPos);
+    if (nextCell) nextCell.focus();
+  };
+  // Pehla din focus mein le aao taaki turant arrow keys se chal sake
+  const firstCell = container.querySelector('[id^="calCell-"]');
+  if (firstCell) firstCell.focus();
+}
+
+function changeCalendarMonth(direction) {
+  if (calendarType === 'gregorian') {
+    const next = new Date(calendarAnchorDate.getFullYear(), calendarAnchorDate.getMonth() + direction, 1);
+    openCalendarGrid('gregorian', next);
+  } else {
+    const built = buildIslamicMonthDates(calendarAnchorDate);
+    let newAnchor;
+    if (direction > 0) {
+      newAnchor = new Date(built.dates[built.dates.length - 1]);
+      newAnchor.setDate(newAnchor.getDate() + 1); // agle Hijri month ka pehla din
+    } else {
+      newAnchor = new Date(built.dates[0]);
+      newAnchor.setDate(newAnchor.getDate() - 1); // pichhle Hijri month ka aakhri din
+    }
+    openCalendarGrid('islamic', newAnchor);
+  }
 }
 
 function closeCalendarGrid() {
@@ -1452,6 +1530,61 @@ async function tryAutoLogin() {
 }
 window.addEventListener('DOMContentLoaded', tryAutoLogin);
 window.addEventListener('DOMContentLoaded', showIslamicDate);
+
+// ---------- POORI WEBSITE KEYBOARD SE CHALE (arrow keys + Enter, mouse ki zaroorat nahi) ----------
+function getPageFocusableElements() {
+  const selector = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  return Array.from(document.querySelectorAll(selector)).filter(el => {
+    if (el.closest('.hidden')) return false;
+    const rect = el.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) return false;
+    const style = window.getComputedStyle(el);
+    if (style.display === 'none' || style.visibility === 'hidden') return false;
+    return true;
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.stat-box').forEach(el => {
+    if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+  });
+});
+
+document.addEventListener('keydown', function(e) {
+  if (!['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Enter'].includes(e.key)) return;
+
+  const active = document.activeElement;
+  const tag = (active.tagName || '').toLowerCase();
+  const isTypingField = (tag === 'input' && !['checkbox','radio','button','submit'].includes(active.type)) || tag === 'textarea' || tag === 'select';
+
+  // Text/number fields ke andar Left/Right ko chhedna nahi (cursor move karne dena)
+  if (isTypingField && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) return;
+
+  if (e.key === 'Enter') {
+    if (isTypingField) return; // form field mein Enter ko normal rehne do
+    if (active && typeof active.click === 'function') {
+      active.click();
+      e.preventDefault();
+    }
+    return;
+  }
+
+  const focusables = getPageFocusableElements();
+  const idx = focusables.indexOf(active);
+  let nextIdx;
+  if (idx === -1) {
+    nextIdx = 0;
+  } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+    nextIdx = Math.min(idx + 1, focusables.length - 1);
+  } else {
+    nextIdx = Math.max(idx - 1, 0);
+  }
+  if (focusables[nextIdx]) {
+    focusables[nextIdx].focus();
+    focusables[nextIdx].scrollIntoView({ block: 'center', behavior: 'smooth' });
+    e.preventDefault();
+  }
+});
 
 // ---------- AUTO REFRESH (bina refresh kiye naya class/notification dikhna) ----------
 let autoRefreshTimer = null;
