@@ -433,6 +433,11 @@ a { color: #ffd700; }
     <h3>📖 Notes se Sawal-Jawab</h3>
 
     <div id="qaAdminUploadBox" class="hidden">
+      <div style="border:1px solid #2a6b2a; border-radius:8px; padding:10px; margin-bottom:12px;">
+        <p style="font-size:13px; color:#ffd700; margin:0 0 6px;">🌐 Sab Mureedon ke liye Sawal-Jawab</p>
+        <button class="secondary" id="globalQaToggleBtn" style="width:100%;" onclick="toggleGlobalQaAccess()">Loading...</button>
+        <p style="font-size:11px; color:#cde; margin-top:6px;">Ek hi button se sab mureedon ke liye tab dikhega ya gayab ho jaayega.</p>
+      </div>
       <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Urdu Notes (PDF) upload karo:</p>
       <input type="text" id="qaNoteTitle" placeholder="Notes ka naam (jaise: Malfoozat Hissa 1)">
       <input type="file" id="qaNoteFile" accept="application/pdf">
@@ -535,14 +540,9 @@ function loginSuccess() {
     loadAdminData();
     loadQaNotes();
   }
-  // Mureed ke liye Sawal-Jawab tab tabhi dikhega jab admin ne uska access ON kiya ho.
+  // Mureed ke liye Sawal-Jawab tab tabhi dikhega jab Admin ne global switch ON kiya ho.
   // OFF hone par tab bilkul hide rahega — mureed ko pata bhi nahi chalega ki yeh page hai.
-  const qaTabBtn = document.getElementById('tabQA');
-  if (currentUser.role === 'admin' || Number(currentUser.qa_access) !== 0) {
-    qaTabBtn.classList.remove('hidden');
-  } else {
-    qaTabBtn.classList.add('hidden');
-  }
+  updateQaTabVisibility();
  loadClasses();
   loadNotifications();
   loadPrayerTimes();
@@ -1061,9 +1061,6 @@ function showMureedList(type) {
           <button class="secondary" style="width:auto;" onclick="toggleBlockMureed(${m.id}, ${m.is_blocked ? 1 : 0})">${m.is_blocked ? '✅ Unblock' : '🚫 Block'}</button>
           <button class="secondary" style="width:auto;" onclick="deleteMureed(${m.id})">🗑️ Delete</button>
         </div>
-        <div class="row" style="margin-top:6px;">
-          <button class="secondary" style="width:auto;" onclick="toggleQaAccessMureed(${m.id}, ${Number(m.qa_access) === 0 ? 0 : 1})">📖 Sawal-Jawab: ${Number(m.qa_access) === 0 ? 'OFF (dabao ON karne ke liye)' : 'ON (dabao OFF karne ke liye)'}</button>
-        </div>
       </div>
     `).join('');
 }
@@ -1304,7 +1301,8 @@ let alarmSettings = {
   custom_alarm_enabled: 0,
   custom_alarm_title: '',
   custom_alarm_start: '',
-  custom_alarm_end: ''
+  custom_alarm_end: '',
+  qa_global_access: 1
 };
 
 function populate12HourDropdowns() {
@@ -1400,6 +1398,39 @@ async function loadAlarmSettings() {
       if (cached) alarmSettings = JSON.parse(cached);
     } catch (e2) {}
   }
+  updateQaTabVisibility();
+}
+
+// Sirf ek hi global switch se sab mureedon ke liye "Sawal-Jawab" tab dikhta/gayab hota hai.
+function updateQaTabVisibility() {
+  const qaTabBtn = document.getElementById('tabQA');
+  if (!qaTabBtn || !currentUser) return;
+  const globalOn = Number(alarmSettings.qa_global_access) !== 0;
+  if (currentUser.role === 'admin' || globalOn) {
+    qaTabBtn.classList.remove('hidden');
+  } else {
+    qaTabBtn.classList.add('hidden');
+  }
+  const btn = document.getElementById('globalQaToggleBtn');
+  if (btn && currentUser.role === 'admin') {
+    btn.innerText = globalOn ? '✅ ON hai (dabao OFF karne ke liye)' : '⛔ OFF hai (dabao ON karne ke liye)';
+  }
+}
+
+async function toggleGlobalQaAccess() {
+  const newState = Number(alarmSettings.qa_global_access) === 0 ? 1 : 0;
+  const action = newState ? 'ON' : 'OFF';
+  if (!confirm(`Sab mureedon ke liye Sawal-Jawab ${action} karna hai?`)) return;
+  try {
+    const res = await fetch(API + '/api/toggle-global-qa', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ qa_global_access: newState })
+    });
+    const data = await res.json();
+    if (!data.success) { alert(data.message || 'Kuch galat ho gaya'); return; }
+    alarmSettings.qa_global_access = newState;
+    updateQaTabVisibility();
+  } catch (e) { alert('Kuch galat ho gaya'); }
 }
 
 async function saveCustomAlarm() {
