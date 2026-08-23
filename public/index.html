@@ -156,6 +156,45 @@ a { color: #ffd700; }
       </div>
     </div>
 
+    <!-- ============ NOTES SAWAL-JAWAB (Admin + Mureed dono) ============ -->
+    <div id="notesScreen" class="hidden">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;">
+          <h3>📖 Notes se Sawal-Jawab</h3>
+          <button class="secondary" style="width:auto;" onclick="showScreen('home')">← Back</button>
+        </div>
+      </div>
+
+      <div class="card hidden" id="notesAdminUploadCard">
+        <h3 style="margin-top:0;">📄 Notes PDF Upload Karo (Urdu)</h3>
+        <p style="font-size:12px; color:#ffd700;">Yeh sab mureedon ko dikhega jab wo sawal poochenge.</p>
+        <input type="text" id="notesDocTitle" placeholder="Notes ka naam (jaise: Malfoozat Jild 1)">
+        <input type="file" id="notesDocFile" accept="application/pdf">
+        <button onclick="uploadNotesDoc()" id="notesUploadBtn">PDF Upload Karo</button>
+        <p id="notesUploadStatus" style="font-size:12px; color:#ffd700;"></p>
+        <div id="notesDocsList" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0;">❓ Sawal Poochho</h3>
+        <textarea id="qaQuestionInput" placeholder="Apna sawal yahan likho..." style="min-height:70px;"></textarea>
+        <button onclick="askNotesQuestion()" id="qaAskBtn">Poochho</button>
+        <div id="qaAnswerBox" class="hidden" style="margin-top:12px; border:1px solid #2a6b2a; border-radius:8px; padding:12px;">
+          <p id="qaAnswerText" style="white-space:pre-wrap;"></p>
+          <button class="secondary" style="width:auto; margin-top:8px;" onclick="speakAnswer()">🔊 Suno</button>
+          <button class="secondary" style="width:auto; margin-top:8px; margin-left:6px;" onclick="stopSpeaking()">⏹️ Roko</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between;">
+          <h3 style="margin:0;">📜 Mere Sawal-Jawab</h3>
+          <button class="secondary" style="width:auto;" onclick="downloadMyQaPdf()">⬇️ PDF Download</button>
+        </div>
+        <div id="myQaHistoryList" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
     <!-- ============ ADMIN PANEL ============ -->
    <div id="adminScreen" class="hidden">
       <div class="card">
@@ -388,11 +427,49 @@ a { color: #ffd700; }
   </div>
 </div>
 
+<!-- ============ NOTES SE SAWAL-JAWAB SCREEN ============ -->
+<div id="qaScreen" class="hidden">
+  <div class="card">
+    <h3>📖 Notes se Sawal-Jawab</h3>
+
+    <div id="qaAdminUploadBox" class="hidden">
+      <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Urdu Notes (PDF) upload karo:</p>
+      <input type="text" id="qaNoteTitle" placeholder="Notes ka naam (jaise: Malfoozat Hissa 1)">
+      <input type="file" id="qaNoteFile" accept="application/pdf">
+      <button onclick="uploadQaNote()" id="qaUploadBtn">Notes Upload Karo</button>
+      <p id="qaUploadStatus" style="font-size:12px; color:#ffd700;"></p>
+      <div id="qaNotesAdminList" style="margin-top:10px;"></div>
+      <hr style="border-color:#2a6b2a; margin:14px 0;">
+    </div>
+
+    <p style="font-size:12px; color:#cde;">Apna sawal likho:</p>
+    <textarea id="qaQuestionInput" placeholder="Yahan apna sawal likho..." style="min-height:60px;"></textarea>
+    <button onclick="askQaQuestion()" id="qaAskBtn">Sawal Poocho</button>
+
+    <div id="qaAnswerBox" class="hidden" style="margin-top:14px; border:1px solid #2a6b2a; border-radius:8px; padding:12px;">
+      <p style="font-size:12px; color:#ffd700; margin-top:0;">Jawab:</p>
+      <p id="qaAnswerText" style="white-space:pre-wrap;"></p>
+      <button class="secondary" style="width:auto; padding:6px 14px;" onclick="speakQaAnswer()">🔊 Suno</button>
+      <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px;" onclick="stopQaSpeak()">⏹️ Roko</button>
+    </div>
+
+    <hr style="border-color:#2a6b2a; margin:14px 0;">
+    <button class="secondary" onclick="downloadQaHistoryPdf()">📄 Mere Sawal-Jawab PDF Download Karo</button>
+    <div id="qaHistoryList" style="margin-top:12px;"></div>
+  </div>
+</div>
+
 <!-- ============ BOTTOM TAB BAR ============ -->
 <div class="tab-bar hidden" id="tabBar">
   <button onclick="showScreen('home')" id="tabHome" class="active">🏠 Home</button>
+  <button onclick="showScreen('qa')" id="tabQA" class="hidden">📖 Sawal-Jawab</button>
   <button onclick="showScreen('admin')" id="tabAdmin" class="hidden">⚙️ Admin</button>
 </div>
+
+<!-- PDF text extraction, PDF banane, aur screenshot ke liye libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
  <script>
 const API = ""; // same domain, so empty base
 let currentUser = null;
@@ -454,13 +531,24 @@ function loginSuccess() {
   document.getElementById('tabBar').classList.remove('hidden');
   if (currentUser.role === 'admin') {
     document.getElementById('tabAdmin').classList.remove('hidden');
+    document.getElementById('qaAdminUploadBox').classList.remove('hidden');
     loadAdminData();
+    loadQaNotes();
+  }
+  // Mureed ke liye Sawal-Jawab tab tabhi dikhega jab admin ne uska access ON kiya ho.
+  // OFF hone par tab bilkul hide rahega — mureed ko pata bhi nahi chalega ki yeh page hai.
+  const qaTabBtn = document.getElementById('tabQA');
+  if (currentUser.role === 'admin' || Number(currentUser.qa_access) !== 0) {
+    qaTabBtn.classList.remove('hidden');
+  } else {
+    qaTabBtn.classList.add('hidden');
   }
  loadClasses();
   loadNotifications();
   loadPrayerTimes();
   loadAlarmSettings();
   loadEvents();
+  loadQaHistory();
   showIslamicDate();
   startAutoRefresh();
   sendHeartbeat();
@@ -482,8 +570,10 @@ function showScreen(name) {
   document.getElementById('homeScreen').classList.add('hidden');
   document.getElementById('notificationsScreen').classList.add('hidden');
   document.getElementById('adminScreen').classList.add('hidden');
+  document.getElementById('qaScreen').classList.add('hidden');
   document.getElementById('tabHome').classList.remove('active');
   document.getElementById('tabAdmin').classList.remove('active');
+  document.getElementById('tabQA').classList.remove('active');
   if (name === 'notifications') {
     document.getElementById('notificationsScreen').classList.remove('hidden');
     markNotificationsRead();
@@ -491,6 +581,11 @@ function showScreen(name) {
     document.getElementById('adminScreen').classList.remove('hidden');
     document.getElementById('tabAdmin').classList.add('active');
     loadAdminData();
+  } else if (name === 'qa') {
+    document.getElementById('qaScreen').classList.remove('hidden');
+    document.getElementById('tabQA').classList.add('active');
+    loadQaHistory();
+    if (currentUser && currentUser.role === 'admin') loadQaNotes();
   } else {
     document.getElementById('homeScreen').classList.remove('hidden');
     document.getElementById('tabHome').classList.add('active');
@@ -966,6 +1061,9 @@ function showMureedList(type) {
           <button class="secondary" style="width:auto;" onclick="toggleBlockMureed(${m.id}, ${m.is_blocked ? 1 : 0})">${m.is_blocked ? '✅ Unblock' : '🚫 Block'}</button>
           <button class="secondary" style="width:auto;" onclick="deleteMureed(${m.id})">🗑️ Delete</button>
         </div>
+        <div class="row" style="margin-top:6px;">
+          <button class="secondary" style="width:auto;" onclick="toggleQaAccessMureed(${m.id}, ${Number(m.qa_access) === 0 ? 0 : 1})">📖 Sawal-Jawab: ${Number(m.qa_access) === 0 ? 'OFF (dabao ON karne ke liye)' : 'ON (dabao OFF karne ke liye)'}</button>
+        </div>
       </div>
     `).join('');
 }
@@ -994,6 +1092,21 @@ async function toggleBlockMureed(id, currentlyBlocked) {
     });
     const data = await res.json();
     if (data.error) { alert(data.error); return; }
+    loadAdminData();
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+
+async function toggleQaAccessMureed(id, currentlyOn) {
+  const newState = currentlyOn ? 0 : 1;
+  const action = newState ? 'ON' : 'OFF';
+  if (!confirm(`Is mureed ke liye Sawal-Jawab ${action} karna hai?`)) return;
+  try {
+    const res = await fetch(API + '/api/toggle-qa-access', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id, qa_access: newState })
+    });
+    const data = await res.json();
+    if (data.error || data.success === false) { alert(data.message || data.error || 'Kuch galat ho gaya'); return; }
     loadAdminData();
   } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
 }
@@ -2151,6 +2264,205 @@ function stopAutoRefresh() {
   if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
   if (fastRefreshTimer) { clearInterval(fastRefreshTimer); fastRefreshTimer = null; }
   if (slowRefreshTimer) { clearInterval(slowRefreshTimer); slowRefreshTimer = null; }
-}</script>
+}
+
+// ---------- NOTES SE SAWAL-JAWAB ----------
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+window.qaNotesList = [];
+window.qaHistoryList = [];
+window.qaLastAnswer = '';
+
+async function extractPdfText(file) {
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it => it.str).join(' ') + '\n\n';
+  }
+  return text.trim();
+}
+
+async function uploadQaNote() {
+  const title = document.getElementById('qaNoteTitle').value.trim();
+  const file = document.getElementById('qaNoteFile').files[0];
+  if (!title) { alert('Notes ka naam likho'); return; }
+  if (!file) { alert('PDF choose karo'); return; }
+
+  const statusEl = document.getElementById('qaUploadStatus');
+  const btn = document.getElementById('qaUploadBtn');
+  btn.disabled = true;
+
+  try {
+    statusEl.innerText = '📄 PDF se text nikal rahe hain...';
+    const extracted_text = await extractPdfText(file);
+    if (!extracted_text) {
+      statusEl.innerText = '❌ Is PDF mein se text nahi mila (shayad scanned/photo wala PDF hai)';
+      btn.disabled = false;
+      return;
+    }
+
+    statusEl.innerText = '⬆️ PDF upload ho rahi hai...';
+    const formData = new FormData();
+    formData.append('file', file);
+    const uploadRes = await fetch(API + '/api/upload', { method: 'POST', body: formData });
+    const uploadData = await uploadRes.json();
+    const file_url = uploadData.url || '';
+
+    statusEl.innerText = '💾 Save ho raha hai...';
+    const res = await fetch(API + '/api/notes', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ title, file_url, extracted_text })
+    });
+    const data = await res.json();
+    if (data.success) {
+      statusEl.innerText = '✅ Notes upload ho gaye';
+      document.getElementById('qaNoteTitle').value = '';
+      document.getElementById('qaNoteFile').value = '';
+      loadQaNotes();
+    } else {
+      statusEl.innerText = '❌ ' + (data.message || 'Kuch gadbad ho gayi');
+    }
+  } catch (e) {
+    statusEl.innerText = '❌ Error: ' + e.message;
+  }
+  btn.disabled = false;
+}
+
+async function loadQaNotes() {
+  try {
+    const res = await fetch(API + '/api/notes');
+    const data = await res.json();
+    window.qaNotesList = data.notes || [];
+  } catch (e) { window.qaNotesList = []; }
+  const box = document.getElementById('qaNotesAdminList');
+  if (!box) return;
+  if (!window.qaNotesList.length) { box.innerHTML = '<p style="font-size:12px; color:#cde;">Abhi koi notes upload nahi hui hai.</p>'; return; }
+  box.innerHTML = '<p style="font-size:12px; color:#ffd700;">Upload ki hui notes:</p>' + window.qaNotesList.map(n =>
+    `<div style="font-size:12px; display:flex; justify-content:space-between; align-items:center; border:1px solid #2a6b2a; border-radius:6px; padding:6px 8px; margin-top:6px;">
+      <span>📄 ${n.title}</span>
+      <button class="secondary" style="width:auto; padding:4px 10px;" onclick="deleteQaNote(${n.id})">🗑️</button>
+    </div>`
+  ).join('');
+}
+
+function deleteQaNote(id) {
+  if (!confirm('Yeh notes delete karni hain? Sawal-jawab inhi se milte hain.')) return;
+  fetch(API + '/api/delete-note', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id })
+  }).then(r => r.json()).then(data => {
+    if (data.success) loadQaNotes(); else alert(data.message || 'Delete fail ho gaya');
+  }).catch(() => alert('Error deleting notes'));
+}
+
+async function askQaQuestion() {
+  const question = document.getElementById('qaQuestionInput').value.trim();
+  if (!question) { alert('Pehle sawal likho'); return; }
+  if (!currentUser) return;
+
+  const btn = document.getElementById('qaAskBtn');
+  const answerBox = document.getElementById('qaAnswerBox');
+  const answerText = document.getElementById('qaAnswerText');
+  btn.disabled = true;
+  btn.innerText = 'Jawab dhoond rahe hain...';
+  answerBox.classList.add('hidden');
+
+  try {
+    const res = await fetch(API + '/api/ask-question', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ question, mobile: currentUser.mobile })
+    });
+    const data = await res.json();
+    if (data.success) {
+      window.qaLastAnswer = data.answer;
+      answerText.innerText = data.answer;
+      answerBox.classList.remove('hidden');
+      document.getElementById('qaQuestionInput').value = '';
+      loadQaHistory();
+    } else {
+      alert(data.message || 'Jawab nahi mil saka');
+    }
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.innerText = 'Sawal Poocho';
+}
+
+function speakQaAnswer() {
+  if (!window.qaLastAnswer) return;
+  if (!('speechSynthesis' in window)) { alert('Is browser mein awaaz (text-to-speech) support nahi hai'); return; }
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(window.qaLastAnswer);
+  utter.lang = 'ur-PK';
+  speechSynthesis.speak(utter);
+}
+function stopQaSpeak() {
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+}
+
+async function loadQaHistory() {
+  if (!currentUser) return;
+  try {
+    const res = await fetch(API + '/api/qa-history?mobile=' + encodeURIComponent(currentUser.mobile));
+    const data = await res.json();
+    window.qaHistoryList = data.history || [];
+  } catch (e) { window.qaHistoryList = []; }
+  const box = document.getElementById('qaHistoryList');
+  if (!box) return;
+  if (!window.qaHistoryList.length) { box.innerHTML = ''; return; }
+  box.innerHTML = '<p style="font-size:12px; color:#ffd700;">Aapke purane sawal-jawab:</p>' + window.qaHistoryList.map(qa =>
+    `<div style="font-size:12px; border:1px solid #2a6b2a; border-radius:6px; padding:8px; margin-top:6px;">
+      <b>Q:</b> ${qa.question}<br><b>A:</b> ${qa.answer}
+    </div>`
+  ).join('');
+}
+
+async function downloadQaHistoryPdf() {
+  if (!window.qaHistoryList || !window.qaHistoryList.length) { alert('Abhi aapke koi sawal-jawab nahi hain'); return; }
+
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed; left:-9999px; top:0; width:700px; background:#fff; color:#000; padding:24px; font-size:16px; direction:rtl; font-family:Arial, sans-serif;';
+  let html = '<h2 style="text-align:center;">Mere Sawal-Jawab</h2>';
+  window.qaHistoryList.forEach((qa, i) => {
+    html += `<div style="margin-bottom:16px; border-bottom:1px solid #ccc; padding-bottom:10px;">
+      <p><b>Sawal ${i + 1}:</b> ${qa.question}</p>
+      <p><b>Jawab:</b> ${qa.answer}</p>
+    </div>`;
+  });
+  container.innerHTML = html;
+  document.body.appendChild(container);
+
+  try {
+    const canvas = await html2canvas(container, { scale: 2 });
+    document.body.removeChild(container);
+
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = 210, pageHeight = 297;
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+    pdf.save('mere-sawal-jawab.pdf');
+  } catch (e) {
+    document.body.removeChild(container);
+    alert('PDF banane mein error: ' + e.message);
+  }
+}
+</script>
 </body>
 </html>
