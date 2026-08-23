@@ -129,6 +129,7 @@ a { color: #ffd700; }
       <h3 style="margin:0;">🌙 Aaj ke Namaz Auqaat</h3>
       <div id="namazDateLabel" style="font-size:13px; color:#ffd700; margin-top:6px;"></div>
       <div id="prayerTimes" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;"></div>
+      <div id="alarmStatusLine" style="font-size:11px; color:#8fbf8f; margin-top:8px;"></div>
     </div>
 
     <!-- Custom Alarm banner area (agar admin ne on kiya hai aur abhi time chal raha hai) -->
@@ -291,6 +292,7 @@ a { color: #ffd700; }
         <input type="file" id="alarmToneFile" accept="audio/*">
         <button onclick="uploadAlarmTone()">🎵 Tone Upload Karo</button>
         <button class="secondary" onclick="playAlarmSound(3000)">🔊 Is Tone Ko Suno</button>
+        <button class="secondary" style="background:#8b1a1a;" onclick="deleteAlarmTone()">🗑️ Tone Delete Karo (Default Beep par wapas)</button>
       </div>
 
       <div class="card">
@@ -315,6 +317,71 @@ a { color: #ffd700; }
         </div>
         <button onclick="saveCustomAlarm()">Save Custom Alarm</button>
         <button class="secondary" onclick="playAlarmSound(2500)">🔊 Test Sound (abhi suno)</button>
+      </div>
+
+      <div class="card">
+        <h3>📅 Event (Har Hafte / Har Mahine / Ek Baar)</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Jaise: Zanana ki class har Saturday, Mardana ki class har Sunday — content (text/image/PDF/audio) ke saath.</p>
+        <input type="hidden" id="editingEventId" value="">
+        <input type="text" id="eventTitle" placeholder="Event ka naam (jaise: Zanana Class)">
+
+        <select id="eventRepeatType" onchange="toggleEventScheduleFields()">
+          <option value="weekly">Har Hafte (Weekly)</option>
+          <option value="monthly">Har Mahine (Monthly)</option>
+          <option value="once">Sirf Ek Baar</option>
+        </select>
+        <select id="eventDayOfWeek">
+          <option value="0">Sunday</option>
+          <option value="1">Monday</option>
+          <option value="2">Tuesday</option>
+          <option value="3">Wednesday</option>
+          <option value="4">Thursday</option>
+          <option value="5">Friday</option>
+          <option value="6" selected>Saturday</option>
+        </select>
+        <input type="number" id="eventDayOfMonth" placeholder="Mahine ki tareekh (1 se 31)" min="1" max="31" style="display:none;">
+        <input type="date" id="eventDate" style="display:none;">
+
+        <label style="font-size:13px; margin-top:8px;">Start Time</label>
+        <div class="row" style="gap:6px;">
+          <select id="eventStartHour" style="margin:0;"></select>
+          <select id="eventStartMin" style="margin:0;"></select>
+          <select id="eventStartAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
+        </div>
+        <label style="font-size:13px; margin-top:8px;">End Time</label>
+        <div class="row" style="gap:6px;">
+          <select id="eventEndHour" style="margin:0;"></select>
+          <select id="eventEndMin" style="margin:0;"></select>
+          <select id="eventEndAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
+        </div>
+
+        <select id="eventGroup">
+          <option value="both">Both</option>
+          <option value="mardana">Mardana</option>
+          <option value="zanana" selected>Zanana</option>
+        </select>
+
+        <select id="eventContentType" onchange="toggleEventContentFields()">
+          <option value="text">Text (khud likh kar)</option>
+          <option value="image">Image</option>
+          <option value="pdf">PDF</option>
+          <option value="audio">Audio (record ya upload)</option>
+          <option value="none">Kuch nahi, sirf reminder</option>
+        </select>
+
+        <textarea id="eventTextContent" placeholder="Yahan likho jo mureedon ko dikhna hai..." style="display:block; min-height:70px;"></textarea>
+        <input type="file" id="eventFileInput" accept="image/*" style="display:none;">
+        <div id="eventAudioBox" style="display:none;">
+          <input type="file" id="eventAudioFileInput" accept="audio/*">
+          <p style="font-size:12px; text-align:center; margin:6px 0; color:#cde;">— ya seedha record karo —</p>
+          <button type="button" id="eventRecordBtn" class="secondary" onclick="startEventRecording()">🎙️ Record Karo</button>
+          <p id="eventRecordStatus" style="font-size:12px; color:#ffd700;"></p>
+        </div>
+
+        <button onclick="saveEvent()" id="saveEventBtn">Event Save Karo</button>
+        <button class="secondary" id="cancelEditEventBtn" style="display:none;" onclick="cancelEditEvent()">Cancel Edit</button>
+
+        <div id="eventsAdminList" style="margin-top:14px;"></div>
       </div>
     </div>
 
@@ -393,6 +460,7 @@ function loginSuccess() {
   loadNotifications();
   loadPrayerTimes();
   loadAlarmSettings();
+  loadEvents();
   showIslamicDate();
   startAutoRefresh();
   sendHeartbeat();
@@ -704,6 +772,7 @@ async function getNamazApiUrl() {
 }
 
 async function loadPrayerTimes() {
+  const todayKey = 'zahidiya_namaz_' + new Date().toDateString();
   try {
     const url = await getNamazApiUrl();
     const res = await fetch(url);
@@ -716,6 +785,9 @@ async function loadPrayerTimes() {
       Fajr: clean(t.Fajr), Dhuhr: clean(t.Dhuhr), Asr: clean(t.Asr),
       Maghrib: clean(t.Maghrib), Isha: clean(t.Isha)
     };
+    // Aaj ke time save kar lo, taaki agar aage internet chala jaaye to bhi
+    // yehi cached time se alarm chalta rahe (jab tak app khuli hai)
+    try { localStorage.setItem(todayKey, JSON.stringify(window.namazTimesToday)); } catch(e) {}
 
     const prayers = [
       { key: 'Fajr', label: 'Fajr', start: clean(t.Fajr), end: clean(t.Sunrise) },
@@ -742,7 +814,19 @@ async function loadPrayerTimes() {
       `;
     }).join('');
   } catch(e) {
-    document.getElementById('prayerTimes').innerHTML = '<p style="font-size:13px;">Unable to load prayer times.</p>';
+    // Internet nahi mila — agar aaj ka time pehle se cache mein hai to wahi use karo,
+    // taaki alarm chalta rahe (app khuli rehni chahiye)
+    try {
+      const cached = localStorage.getItem(todayKey);
+      if (cached) {
+        window.namazTimesToday = JSON.parse(cached);
+        document.getElementById('namazDateLabel').innerText =
+          new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
+          ' 📡 (Offline — pehle se saved time)';
+        return;
+      }
+    } catch(e2) {}
+    document.getElementById('prayerTimes').innerHTML = '<p style="font-size:13px;">Internet nahi mila aur pehle se koi time bhi saved nahi hai — ek baar internet on karke khol lo.</p>';
   }
 }
 
@@ -1111,13 +1195,13 @@ let alarmSettings = {
 };
 
 function populate12HourDropdowns() {
-  ['customAlarmStartHour','customAlarmEndHour'].forEach(id => {
+  ['customAlarmStartHour','customAlarmEndHour','eventStartHour','eventEndHour'].forEach(id => {
     const sel = document.getElementById(id);
     if (sel && !sel.options.length) {
       for (let h = 1; h <= 12; h++) sel.innerHTML += `<option value="${h}">${h}</option>`;
     }
   });
-  ['customAlarmStartMin','customAlarmEndMin'].forEach(id => {
+  ['customAlarmStartMin','customAlarmEndMin','eventStartMin','eventEndMin'].forEach(id => {
     const sel = document.getElementById(id);
     if (sel && !sel.options.length) {
       for (let m = 0; m < 60; m += 5) sel.innerHTML += `<option value="${m}">${String(m).padStart(2,'0')}</option>`;
@@ -1191,8 +1275,18 @@ async function loadAlarmSettings() {
       }
 
       checkCustomAlarm();
+      // Settings ko save kar lo, taaki internet chala jaaye to bhi
+      // sahi (admin ne jo set kiya wahi) settings se alarm chale, hardcoded default se nahi
+      try { localStorage.setItem('zahidiya_alarm_settings', JSON.stringify(alarmSettings)); } catch(e2) {}
     }
-  } catch (e) { console.error(e); }
+  } catch (e) {
+    console.error(e);
+    // Internet nahi mila — agar pehle se settings cache mein hain to wahi use karo
+    try {
+      const cached = localStorage.getItem('zahidiya_alarm_settings');
+      if (cached) alarmSettings = JSON.parse(cached);
+    } catch (e2) {}
+  }
 }
 
 async function saveCustomAlarm() {
@@ -1539,6 +1633,19 @@ async function uploadAlarmTone() {
   } catch (e) { console.error(e); alert('Kuch galat ho gaya'); }
 }
 
+async function deleteAlarmTone() {
+  if (!confirm('Tone delete karke default "ding-dong" par wapas jaana hai?')) return;
+  try {
+    const res = await fetch(API + '/api/alarm-settings', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ alarm_tone_url: '' })
+    });
+    await res.json();
+    alert('✅ Tone delete ho gayi, ab default "ding-dong" bajega.');
+    loadAlarmSettings();
+  } catch (e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+
 let alarmSilenced = {};
 
 function silenceAlarm(key) {
@@ -1560,38 +1667,56 @@ function showAlarmBanner(text) {
 }
 
 let currentAlarmKey = '';
-let lastCheckedMinute = '';
+let lastCheckedMinute = -1;
+
+// "HH:MM" ko minute-number mein badalte hain, taaki string-match ki gadbad (space/format) na ho
+function toMinutes(hhmm) {
+  if (!hhmm) return null;
+  const parts = String(hhmm).trim().split(':');
+  const h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  if (isNaN(h) || isNaN(m)) return null;
+  return h * 60 + m;
+}
+
+// D1/DB se kabhi-kabhi 1/0 ki jagah null/undefined aa sakta hai — usko bhi "enabled" hi maano
+// jab tak explicitly 0/false na ho
+function isAlarmOn(val) {
+  return !(val === 0 || val === false || val === '0');
+}
 
 function checkNamazAlarms() {
-  if (!window.namazTimesToday) return;
   const now = new Date();
-  const hhmm = now.toTimeString().slice(0,5);
-  if (hhmm === lastCheckedMinute) return;
-  lastCheckedMinute = hhmm;
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  if (!window.namazTimesToday) {
+    updateAlarmStatusLine('Namaz auqaat load nahi hue — internet check karo');
+    return;
+  }
+  if (nowMin === lastCheckedMinute) return;
+  lastCheckedMinute = nowMin;
 
   const names = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
-  names.forEach((name, idx) => {
-    const t = window.namazTimesToday[name];
-    if (!t) return;
+  let statusMsg = '⏰ Alarm check chal raha hai (' + now.toTimeString().slice(0,5) + ')';
 
-    if (alarmSettings.start_alarm_enabled && t === hhmm) {
+  names.forEach((name, idx) => {
+    const tMin = toMinutes(window.namazTimesToday[name]);
+    if (tMin === null) return;
+
+    if (isAlarmOn(alarmSettings.start_alarm_enabled) && tMin === nowMin) {
       const key = 'start-' + name + '-' + now.toDateString();
       if (!alarmSilenced[key]) {
         currentAlarmKey = key;
         showAlarmBanner('🕌 ' + name + ' ki namaz ka waqt ho gaya hai');
-        playAlarmSound(Math.min(alarmSettings.start_alarm_duration_seconds * 1000, 5000));
+        playAlarmSound(Math.min((alarmSettings.start_alarm_duration_seconds || 60) * 1000, 5000));
       }
     }
 
     const nextName = names[idx + 1];
-    const nextTime = nextName ? window.namazTimesToday[nextName] : null;
-    if (alarmSettings.end_reminder_enabled && nextTime) {
-      const [nh, nm] = nextTime.split(':').map(Number);
-      const endDate = new Date(now);
-      endDate.setHours(nh, nm, 0, 0);
-      const reminderDate = new Date(endDate.getTime() - alarmSettings.end_reminder_minutes_before * 60000);
-      const reminderHHMM = reminderDate.toTimeString().slice(0,5);
-      if (reminderHHMM === hhmm) {
+    const nextTMin = nextName ? toMinutes(window.namazTimesToday[nextName]) : null;
+    if (isAlarmOn(alarmSettings.end_reminder_enabled) && nextTMin !== null) {
+      const reminderMin = nextTMin - (alarmSettings.end_reminder_minutes_before || 0);
+      if (reminderMin === nowMin) {
         const key = 'end-' + name + '-' + now.toDateString();
         if (!alarmSilenced[key]) {
           currentAlarmKey = key;
@@ -1606,9 +1731,292 @@ function checkNamazAlarms() {
       }
     }
   });
+
+  updateAlarmStatusLine(statusMsg);
+}
+
+function updateAlarmStatusLine(msg) {
+  const el = document.getElementById('alarmStatusLine');
+  if (el) el.innerText = msg;
 }
 
 setInterval(checkNamazAlarms, 15000);
+checkNamazAlarms();
+
+// ---------- EVENTS (Weekly / Monthly / Ek-baar, content ke saath) ----------
+window.eventsList = [];
+window.eventRecordedBlob = null;
+let eventMediaRecorder = null;
+let eventRecordedChunks = [];
+
+function toggleEventScheduleFields() {
+  const type = document.getElementById('eventRepeatType').value;
+  document.getElementById('eventDayOfWeek').style.display = type === 'weekly' ? 'block' : 'none';
+  document.getElementById('eventDayOfMonth').style.display = type === 'monthly' ? 'block' : 'none';
+  document.getElementById('eventDate').style.display = type === 'once' ? 'block' : 'none';
+}
+
+function toggleEventContentFields() {
+  const type = document.getElementById('eventContentType').value;
+  document.getElementById('eventTextContent').style.display = type === 'text' ? 'block' : 'none';
+  const fileInput = document.getElementById('eventFileInput');
+  fileInput.style.display = (type === 'image' || type === 'pdf') ? 'block' : 'none';
+  fileInput.accept = type === 'pdf' ? 'application/pdf' : 'image/*';
+  document.getElementById('eventAudioBox').style.display = type === 'audio' ? 'block' : 'none';
+}
+
+async function startEventRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    eventRecordedChunks = [];
+    eventMediaRecorder = new MediaRecorder(stream);
+    eventMediaRecorder.ondataavailable = e => { if (e.data.size > 0) eventRecordedChunks.push(e.data); };
+    eventMediaRecorder.onstop = () => {
+      stream.getTracks().forEach(t => t.stop());
+      window.eventRecordedBlob = new Blob(eventRecordedChunks, { type: 'audio/webm' });
+      document.getElementById('eventRecordStatus').innerText = '✅ Recording taiyar hai (' + Math.round(window.eventRecordedBlob.size / 1024) + ' KB) — ab "Event Save Karo" dabao';
+      const btn = document.getElementById('eventRecordBtn');
+      btn.innerText = '🎙️ Dobara Record Karo';
+      btn.onclick = startEventRecording;
+    };
+    eventMediaRecorder.start();
+    document.getElementById('eventRecordStatus').innerText = '🔴 Recording ho rahi hai...';
+    const btn = document.getElementById('eventRecordBtn');
+    btn.innerText = '⏹️ Roko (Stop)';
+    btn.onclick = stopEventRecording;
+  } catch (e) {
+    alert('Mic ki permission nahi mili. Browser settings mein mic allow karo.');
+  }
+}
+function stopEventRecording() {
+  if (eventMediaRecorder && eventMediaRecorder.state !== 'inactive') eventMediaRecorder.stop();
+}
+
+async function uploadFileGetUrl(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(API + '/api/upload', { method: 'POST', body: formData });
+  const data = await res.json();
+  if (!data.url) throw new Error(data.error || 'Upload fail ho gaya');
+  return data.url;
+}
+
+async function saveEvent() {
+  const editingId = document.getElementById('editingEventId').value;
+  const title = document.getElementById('eventTitle').value.trim();
+  const repeat_type = document.getElementById('eventRepeatType').value;
+  const group_type = document.getElementById('eventGroup').value;
+  const content_type = document.getElementById('eventContentType').value;
+  const start_time = get24HourFromFields('event' + 'Start');
+  const end_time = get24HourFromFields('event' + 'End');
+
+  if (!title) { alert('Event ka naam likho'); return; }
+
+  let day_of_week = null, day_of_month = null, event_date = null;
+  if (repeat_type === 'weekly') {
+    day_of_week = Number(document.getElementById('eventDayOfWeek').value);
+  } else if (repeat_type === 'monthly') {
+    day_of_month = Number(document.getElementById('eventDayOfMonth').value);
+    if (!day_of_month || day_of_month < 1 || day_of_month > 31) { alert('Mahine ki sahi tareekh (1-31) daalo'); return; }
+  } else {
+    event_date = document.getElementById('eventDate').value;
+    if (!event_date) { alert('Date choose karo'); return; }
+  }
+
+  let content_text = '';
+  let file_url = '';
+  const existing = editingId ? window.eventsList.find(e => e.id == editingId) : null;
+
+  try {
+    if (content_type === 'text') {
+      content_text = document.getElementById('eventTextContent').value.trim();
+      if (!content_text) { alert('Text likho'); return; }
+    } else if (content_type === 'image' || content_type === 'pdf') {
+      const file = document.getElementById('eventFileInput').files[0];
+      if (file) { file_url = await uploadFileGetUrl(file); }
+      else if (existing) { file_url = existing.file_url || ''; }
+      else { alert('File choose karo'); return; }
+    } else if (content_type === 'audio') {
+      const file = document.getElementById('eventAudioFileInput').files[0];
+      if (file) { file_url = await uploadFileGetUrl(file); }
+      else if (window.eventRecordedBlob) { file_url = await uploadFileGetUrl(new File([window.eventRecordedBlob], 'recording.webm', { type: 'audio/webm' })); }
+      else if (existing) { file_url = existing.file_url || ''; }
+      else { alert('Audio file choose karo ya record karo'); return; }
+    }
+  } catch (e) { alert(e.message || 'Upload fail ho gaya'); return; }
+
+  const body = {
+    id: editingId ? Number(editingId) : undefined,
+    title, repeat_type, day_of_week, day_of_month, event_date,
+    start_time, end_time, group_type, content_type, content_text, file_url
+  };
+
+  try {
+    const res = await fetch(API + '/api/events', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(editingId ? '✅ Event update ho gaya' : '✅ Event add ho gaya');
+      cancelEditEvent();
+      loadEvents();
+    } else {
+      alert(data.message || 'Kuch gadbad ho gayi');
+    }
+  } catch (e) { alert('Error saving event'); }
+}
+
+async function loadEvents() {
+  try {
+    const res = await fetch(API + '/api/events');
+    const data = await res.json();
+    window.eventsList = data.events || [];
+    try { localStorage.setItem('zahidiya_events', JSON.stringify(window.eventsList)); } catch(e) {}
+  } catch (e) {
+    try {
+      const cached = localStorage.getItem('zahidiya_events');
+      if (cached) window.eventsList = JSON.parse(cached);
+    } catch (e2) {}
+  }
+  renderEventsAdminList();
+}
+
+function renderEventsAdminList() {
+  const box = document.getElementById('eventsAdminList');
+  if (!box || !currentUser || currentUser.role !== 'admin') return;
+  if (!window.eventsList.length) { box.innerHTML = '<p style="font-size:12px; color:#cde;">Abhi koi event nahi hai.</p>'; return; }
+  const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  box.innerHTML = window.eventsList.map(ev => {
+    let schedule = ev.repeat_type === 'weekly' ? (dayNames[ev.day_of_week] + ' (har hafte)')
+      : ev.repeat_type === 'monthly' ? (ev.day_of_month + ' tareekh (har mahine)')
+      : (ev.event_date + ' (ek baar)');
+    return `<div style="border:1px solid #2a6b2a; border-radius:8px; padding:10px; margin-top:8px;">
+      <b style="color:#ffd700;">${ev.title}</b><br>
+      <span style="font-size:12px; color:#cde;">${schedule} • ${to12Hour(ev.start_time)} - ${to12Hour(ev.end_time)} • ${ev.group_type} • ${ev.content_type}</span><br>
+      <button class="secondary" style="width:auto; margin-top:6px; padding:6px 12px;" onclick="editEvent(${ev.id})">✏️ Edit</button>
+      <button class="secondary" style="width:auto; margin-top:6px; margin-left:6px; padding:6px 12px; background:#8b1a1a;" onclick="deleteEvent(${ev.id})">🗑️ Delete</button>
+    </div>`;
+  }).join('');
+}
+
+function editEvent(id) {
+  const ev = window.eventsList.find(e => e.id == id);
+  if (!ev) return;
+  document.getElementById('editingEventId').value = ev.id;
+  document.getElementById('eventTitle').value = ev.title;
+  document.getElementById('eventRepeatType').value = ev.repeat_type;
+  toggleEventScheduleFields();
+  if (ev.repeat_type === 'weekly') document.getElementById('eventDayOfWeek').value = ev.day_of_week;
+  if (ev.repeat_type === 'monthly') document.getElementById('eventDayOfMonth').value = ev.day_of_month;
+  if (ev.repeat_type === 'once') document.getElementById('eventDate').value = ev.event_date;
+  set12HourFields('eventStart', ev.start_time);
+  set12HourFields('eventEnd', ev.end_time);
+  document.getElementById('eventGroup').value = ev.group_type;
+  document.getElementById('eventContentType').value = ev.content_type || 'text';
+  toggleEventContentFields();
+  document.getElementById('eventTextContent').value = ev.content_text || '';
+  document.getElementById('cancelEditEventBtn').style.display = 'block';
+  document.getElementById('saveEventBtn').innerText = 'Event Update Karo';
+  document.getElementById('eventTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function cancelEditEvent() {
+  document.getElementById('editingEventId').value = '';
+  document.getElementById('eventTitle').value = '';
+  document.getElementById('eventTextContent').value = '';
+  document.getElementById('eventFileInput').value = '';
+  document.getElementById('eventAudioFileInput').value = '';
+  window.eventRecordedBlob = null;
+  document.getElementById('eventRecordStatus').innerText = '';
+  document.getElementById('cancelEditEventBtn').style.display = 'none';
+  document.getElementById('saveEventBtn').innerText = 'Event Save Karo';
+}
+
+function deleteEvent(id) {
+  if (!confirm('Yeh event hamesha ke liye delete karna hai?')) return;
+  fetch(API + '/api/delete-event', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id })
+  }).then(r => r.json()).then(data => {
+    if (data.success) loadEvents(); else alert(data.message || 'Delete fail ho gaya');
+  }).catch(() => alert('Error deleting event'));
+}
+
+function checkEvents() {
+  if (!window.eventsList || !window.eventsList.length) return;
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const todayDow = now.getDay();
+  const todayDate = now.getDate();
+  const todayISO = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+
+  window.eventsList.forEach(ev => {
+    if (!isAlarmOn(ev.is_enabled)) return;
+    if (currentUser && currentUser.role !== 'admin' && ev.group_type !== 'both' && ev.group_type !== currentUser.group_type) return;
+
+    let matchesToday = false;
+    if (ev.repeat_type === 'weekly' && Number(ev.day_of_week) === todayDow) matchesToday = true;
+    else if (ev.repeat_type === 'monthly' && Number(ev.day_of_month) === todayDate) matchesToday = true;
+    else if (ev.repeat_type === 'once' && ev.event_date === todayISO) matchesToday = true;
+    if (!matchesToday) return;
+
+    const sMin = toMinutes(ev.start_time);
+    const eMin = toMinutes(ev.end_time);
+    if (sMin === null || eMin === null) return;
+    const active = sMin <= eMin ? (nowMin >= sMin && nowMin <= eMin) : (nowMin >= sMin || nowMin <= eMin);
+    if (!active) return;
+
+    const key = 'event-' + ev.id + '-' + now.toDateString();
+    if (!alarmSilenced[key]) {
+      currentAlarmKey = key;
+      showEventBanner(ev);
+      playAlarmSound(3000);
+    }
+  });
+}
+setInterval(checkEvents, 15000);
+
+function showEventBanner(ev) {
+  let bar = document.getElementById('alarmBanner');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'alarmBanner';
+    bar.style.cssText = 'position:fixed; top:0; left:0; right:0; background:#ffd700; color:#0f3d2e; padding:14px; text-align:center; font-weight:bold; z-index:9999;';
+    document.body.prepend(bar);
+  }
+  bar.innerHTML = '📅 ' + ev.title +
+    ' <button style="width:auto; margin-left:10px; padding:6px 14px;" onclick="openEventContent(' + ev.id + ')">Dekho</button>' +
+    ' <button style="width:auto; margin-left:6px; padding:6px 14px;" onclick="silenceAlarm(currentAlarmKey)">Silence</button>';
+  bar.classList.remove('hidden');
+}
+
+function openEventContent(id) {
+  const ev = (window.eventsList || []).find(e => e.id == id);
+  if (!ev) return;
+  let modal = document.getElementById('eventContentModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'eventContentModal';
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px;';
+    document.body.appendChild(modal);
+  }
+  let inner = '<div style="background:#0f2a0f; border-radius:12px; padding:20px; max-width:500px; width:100%; max-height:80vh; overflow:auto; border:1px solid #2a6b2a;">';
+  inner += '<h3 style="color:#ffd700; margin-top:0;">' + ev.title + '</h3>';
+  if (ev.content_type === 'text') {
+    inner += '<p style="white-space:pre-wrap;">' + (ev.content_text || 'Koi text nahi hai.') + '</p>';
+  } else if (ev.content_type === 'image' && ev.file_url) {
+    inner += '<img src="' + ev.file_url + '" style="max-width:100%; border-radius:8px;">';
+  } else if (ev.content_type === 'pdf' && ev.file_url) {
+    inner += '<a href="' + ev.file_url + '" target="_blank" style="color:#ffd700; font-weight:bold;">📄 PDF Kholo / Download Karo</a>';
+  } else if (ev.content_type === 'audio' && ev.file_url) {
+    inner += '<audio controls style="width:100%;" src="' + ev.file_url + '"></audio>';
+  } else {
+    inner += '<p>Is event ke saath koi content nahi hai.</p>';
+  }
+  inner += '<button style="margin-top:16px;" onclick="document.getElementById(\'eventContentModal\').remove()">Band Karo</button>';
+  inner += '</div>';
+  modal.innerHTML = inner;
+}
+
 // ---------- AUTO LOGIN (dobara refresh karne par login yaad rahe) ----------
 async function tryAutoLogin() {
   const savedMobile = localStorage.getItem('zahidiya_mobile');
@@ -1703,9 +2111,11 @@ document.addEventListener('keydown', function(e) {
 // ---------- AUTO REFRESH (bina refresh kiye naya class/notification dikhna) ----------
 let autoRefreshTimer = null;
 let fastRefreshTimer = null;
+let slowRefreshTimer = null;
 function startAutoRefresh() {
   if (autoRefreshTimer) clearInterval(autoRefreshTimer);
   if (fastRefreshTimer) clearInterval(fastRefreshTimer);
+  if (slowRefreshTimer) clearInterval(slowRefreshTimer);
 
   // Online/Offline status turant (fast) update ho, isliye alag chhota timer
   fastRefreshTimer = setInterval(() => {
@@ -1720,9 +2130,15 @@ function startAutoRefresh() {
       loadClasses();
       loadNotifications();
       checkCustomAlarm();
-      loadPrayerTimes();
     }
   }, 15000); // baaki cheezein har 15 second mein
+
+  // Namaz auqaat baar-baar (15 sec) load karna zaroori nahi tha aur GPS/network
+  // ko bewajah load kar raha tha — ab har 5 minute mein ek baar refresh hoga
+  if (slowRefreshTimer) clearInterval(slowRefreshTimer);
+  slowRefreshTimer = setInterval(() => {
+    if (currentUser) { loadPrayerTimes(); loadEvents(); }
+  }, 300000);
 }
 function sendHeartbeat(goingOffline) {
   if (!currentUser) return;
@@ -1734,6 +2150,7 @@ function sendHeartbeat(goingOffline) {
 function stopAutoRefresh() {
   if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
   if (fastRefreshTimer) { clearInterval(fastRefreshTimer); fastRefreshTimer = null; }
+  if (slowRefreshTimer) { clearInterval(slowRefreshTimer); slowRefreshTimer = null; }
 }</script>
 </body>
 </html>
