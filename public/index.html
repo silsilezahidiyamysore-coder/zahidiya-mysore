@@ -121,6 +121,7 @@ a { color: #ffd700; }
         <button class="secondary" style="width:auto;" onclick="changeCalendarMonth(-1)">⬅ Pichla Mahina</button>
         <button class="secondary" style="width:auto;" onclick="changeCalendarMonth(1)">Agla Mahina ➡</button>
       </div>
+      <button class="secondary" style="width:100%; margin-top:8px;" id="calSwitchPrimaryBtn" onclick="switchCalendarPrimary()"></button>
       <div id="calendarGridBody" style="margin-top:10px;"></div>
     </div>
 
@@ -882,7 +883,12 @@ async function loadPrayerTimes() {
     };
     // Aaj ke time save kar lo, taaki agar aage internet chala jaaye to bhi
     // yehi cached time se alarm chalta rahe (jab tak app khuli hai)
-    try { localStorage.setItem(todayKey, JSON.stringify(window.namazTimesToday)); } catch(e) {}
+    try {
+      localStorage.setItem(todayKey, JSON.stringify(window.namazTimesToday));
+      // "Last known good" bhi save karo — agar kabhi "aaj" ka data kabhi load hi na
+      // ho paaye (jaise raat bhar internet na ho), to yehi (kal ka) fallback ban jaata hai
+      localStorage.setItem('zahidiya_namaz_last', JSON.stringify({ date: new Date().toDateString(), times: window.namazTimesToday }));
+    } catch(e) {}
 
     const prayers = [
       { key: 'Fajr', label: 'Fajr', start: clean(t.Fajr), end: clean(t.Sunrise) },
@@ -909,8 +915,7 @@ async function loadPrayerTimes() {
       `;
     }).join('');
   } catch(e) {
-    // Internet nahi mila — agar aaj ka time pehle se cache mein hai to wahi use karo,
-    // taaki alarm chalta rahe (app khuli rehni chahiye)
+    // Internet nahi mila — pehle "aaj" ka cache check karo
     try {
       const cached = localStorage.getItem(todayKey);
       if (cached) {
@@ -921,6 +926,20 @@ async function loadPrayerTimes() {
         return;
       }
     } catch(e2) {}
+    // "Aaj" ka data kabhi mila hi nahi (jaise raat bhar internet na ho) —
+    // ab jo bhi last-known time hai (chahe kal ka ho) wahi use karo, taaki
+    // alarm bilkul na chuke — namaz ke time roz sirf 1-2 min hi badalte hain
+    try {
+      const lastRaw = localStorage.getItem('zahidiya_namaz_last');
+      if (lastRaw) {
+        const last = JSON.parse(lastRaw);
+        window.namazTimesToday = last.times;
+        document.getElementById('namazDateLabel').innerText =
+          new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
+          ' ⚠️ (Internet nahi mila — ' + last.date + ' ke saved time use ho rahe hain, 1-2 min farak ho sakta hai)';
+        return;
+      }
+    } catch(e3) {}
     document.getElementById('prayerTimes').innerHTML = '<p style="font-size:13px;">Internet nahi mila aur pehle se koi time bhi saved nahi hai — ek baar internet on karke khol lo.</p>';
   }
 }
@@ -1581,7 +1600,14 @@ function openCalendarGrid(type, anchor) {
   const { title, dates } = built;
   document.getElementById('calendarGridTitle').innerText = (type === 'islamic' ? '🌙 ' : '📆 ') + title;
 
+  const switchBtn = document.getElementById('calSwitchPrimaryBtn');
+  if (switchBtn) {
+    switchBtn.innerText = type === 'islamic' ? '📆 English ko Bada Dikhao' : '🌙 Hijri ko Bada Dikhao';
+  }
+
   const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const gregShortMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const hijriShortMonths = ['Muh','Saf','Rab-I','Rab-II','Jum-I','Jum-II','Raj',"Sha'",'Ram','Shw','Dhu-Q','Dhu-H'];
   let html = '<div id="calGridContainer" style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; font-size:12px;">';
   dayNames.forEach(dn => html += `<div style="color:#ffd700; font-weight:bold;">${dn}</div>`);
 
@@ -1594,22 +1620,36 @@ function openCalendarGrid(type, anchor) {
 
   dates.forEach((d, idx) => {
     const isToday = d.toDateString() === today.toDateString();
-    const dayNum = type === 'islamic' ? (idx + 1) : d.getDate();
+    const primaryDayNum = type === 'islamic' ? (idx + 1) : d.getDate();
+
+    // Doosra (secondary) calendar ka date bhi nikaal lo, taaki ek hi box mein dono dikhein
+    let secondaryLabel;
+    if (type === 'islamic') {
+      secondaryLabel = d.getDate() + ' ' + gregShortMonths[d.getMonth()];
+    } else {
+      const hp = getHijriParts(d);
+      secondaryLabel = hp.day + ' ' + hijriShortMonths[hp.month - 1];
+    }
+
     let eventName = null;
     if (type === 'islamic') {
-      eventName = HIJRI_EVENTS[built.hijriMonth + '-' + dayNum] || null;
+      eventName = HIJRI_EVENTS[built.hijriMonth + '-' + primaryDayNum] || null;
     } else {
-      eventName = GREGORIAN_EVENTS[d.getMonth() + '-' + dayNum] || null;
+      eventName = GREGORIAN_EVENTS[d.getMonth() + '-' + primaryDayNum] || null;
     }
-    if (eventName) eventsThisMonth.push({ day: dayNum, name: eventName });
+    if (eventName) eventsThisMonth.push({ day: primaryDayNum, name: eventName });
 
     const gridPos = firstDow + idx;
-    cellEventMap[gridPos] = { dayNum, eventName };
+    cellEventMap[gridPos] = { dayNum: primaryDayNum, secondaryLabel, eventName };
 
     let style = isToday ? 'background:#ffd700; color:#1a3a1a; font-weight:bold;' : 'background:#0f2a0f;';
     if (eventName && !isToday) style = 'background:#8b1a1a; color:#fff; font-weight:bold;';
     const shortLabel = eventName ? `<div style="font-size:8px; line-height:1.1; margin-top:2px; padding:0 2px; word-break:break-word;">${eventName}</div>` : '';
-    html += `<div id="calCell-${gridPos}" tabindex="0" style="padding:6px 2px; border-radius:6px; position:relative; min-height:32px; outline-offset:2px; cursor:pointer; ${style}" title="${eventName || ''}">${dayNum}${shortLabel}</div>`;
+    html += `<div id="calCell-${gridPos}" tabindex="0" style="padding:6px 2px; border-radius:6px; position:relative; min-height:38px; outline-offset:2px; cursor:pointer; ${style}" title="${eventName || ''}">
+      <div>${primaryDayNum}</div>
+      <div style="font-size:9px; opacity:0.8;">${secondaryLabel}</div>
+      ${shortLabel}
+    </div>`;
   });
 
   html += '</div>';
@@ -1628,6 +1668,12 @@ function openCalendarGrid(type, anchor) {
   setupCalendarKeyboardNav(cellEventMap);
 }
 
+// Ek hi button se dusra calendar (Hijri/English) primary bana do — anchor date wahi rehta hai
+function switchCalendarPrimary() {
+  const otherType = calendarType === 'islamic' ? 'gregorian' : 'islamic';
+  openCalendarGrid(otherType, calendarAnchorDate);
+}
+
 function setupCalendarKeyboardNav(cellEventMap) {
   const container = document.getElementById('calGridContainer');
   if (!container) return;
@@ -1642,7 +1688,7 @@ function setupCalendarKeyboardNav(cellEventMap) {
     else if (e.key === 'ArrowDown') newPos = pos + 7;
     else if (e.key === 'Enter') {
       const info = cellEventMap[pos];
-      if (info) alert(info.dayNum + (info.eventName ? ' — ' + info.eventName : ' — Koi khaas din nahi'));
+      if (info) alert(info.dayNum + ' (' + info.secondaryLabel + ')' + (info.eventName ? ' — ' + info.eventName : ' — Koi khaas din nahi'));
       e.preventDefault();
       e.stopPropagation();
       return;
