@@ -106,6 +106,11 @@ a { color: #ffd700; }
         <button style="width:auto;" onclick="startVoiceSearch()">🎤</button>
       </div>
     </div>
+    <!-- Push Notification Permission -->
+    <div class="card" id="notifPermCard">
+      <button class="secondary" id="notifPermBtn" style="width:100%;" onclick="enableNotifications()">🔔 Notification ON Karo (Screen Lock mein bhi Alarm ke liye)</button>
+    </div>
+
     <!-- Islamic Calendar -->
     <div class="card">
       <h3>📅 Islamic Calendar</h3>
@@ -331,7 +336,7 @@ a { color: #ffd700; }
         <div id="alarmToneCurrentName" style="font-size:12px; color:#cde; margin-bottom:6px;"></div>
         <input type="file" id="alarmToneFile" accept="audio/*">
         <button onclick="uploadAlarmTone()">🎵 Tone Upload Karo</button>
-        <button class="secondary" onclick="playAlarmSound(3000)">🔊 Is Tone Ko Suno</button>
+        <button class="secondary" id="testToneBtn" onclick="toggleTestTone('testToneBtn')">🔊 Is Tone Ko Suno</button>
         <button class="secondary" style="background:#8b1a1a;" onclick="deleteAlarmTone()">🗑️ Tone Delete Karo (Default Beep par wapas)</button>
       </div>
 
@@ -356,7 +361,7 @@ a { color: #ffd700; }
           <select id="customAlarmEndAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
         </div>
         <button onclick="saveCustomAlarm()">Save Custom Alarm</button>
-        <button class="secondary" onclick="playAlarmSound(2500)">🔊 Test Sound (abhi suno)</button>
+        <button class="secondary" id="testToneBtn2" onclick="toggleTestTone('testToneBtn2')">🔊 Test Sound (abhi suno)</button>
       </div>
 
       <div class="card">
@@ -478,6 +483,75 @@ a { color: #ffd700; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
  <script>
 const API = ""; // same domain, so empty base
+
+// ---------- PUSH NOTIFICATIONS (screen lock mein bhi kaam karta hai, WhatsApp jaisa) ----------
+const VAPID_PUBLIC_KEY = "BB6nEl89eXyVZKAbLuiY1z79zA9S_lNGvtzmyliFQos6l6LICc-B0DmKzmoj1JeQ4FEXq4ZhMrAQOSmmq2y7f_w";
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i++) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+async function setupPushNotifications() {
+  const btn = document.getElementById('notifPermBtn');
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (btn) { btn.innerText = '⚠️ Yeh browser notification support nahi karta'; btn.disabled = true; }
+    return;
+  }
+  try {
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+
+    if (Notification.permission === 'granted') {
+      await subscribeToPush(reg);
+      if (btn) { btn.innerText = '✅ Notification ON hai'; btn.disabled = true; }
+    } else if (Notification.permission === 'denied') {
+      if (btn) { btn.innerText = '⛔ Notification band hai (Browser settings se allow karo)'; }
+    } else {
+      if (btn) { btn.innerText = '🔔 Notification ON Karo (Screen Lock mein bhi Alarm ke liye)'; btn.disabled = false; }
+    }
+  } catch (e) { console.error('Service worker error:', e); }
+}
+
+async function enableNotifications() {
+  const btn = document.getElementById('notifPermBtn');
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      if (btn) btn.innerText = '⛔ Permission nahi mili — dobara try karo';
+      return;
+    }
+    const reg = await navigator.serviceWorker.ready;
+    await subscribeToPush(reg);
+    if (btn) { btn.innerText = '✅ Notification ON hai'; btn.disabled = true; }
+    alert('✅ Ab screen lock mein bhi namaz/event alarm ki notification aayegi.');
+  } catch (e) {
+    console.error(e);
+    alert('Kuch galat ho gaya, dobara try karo.');
+  }
+}
+
+async function subscribeToPush(reg) {
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) {
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+  }
+  if (currentUser && currentUser.mobile) {
+    try {
+      await fetch(API + '/api/save-push-subscription', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ mobile: currentUser.mobile, subscription: sub.toJSON() })
+      });
+    } catch (e) { console.error(e); }
+  }
+}
 let currentUser = null;
 
 // ---------- LOGIN / REGISTER TOGGLE ----------
@@ -553,6 +627,7 @@ function loginSuccess() {
   showIslamicDate();
   startAutoRefresh();
   sendHeartbeat();
+  setupPushNotifications();
 }
 
 function logout() {
@@ -947,6 +1022,7 @@ async function loadPrayerTimes() {
 // ---------- ADMIN PANEL ----------
 let allMureedsData = [];
 async function loadAdminData() {
+  setupAdminAccordion();
   try {
     const res = await fetch(API + '/api/state?admin=1');
     const data = await res.json();
@@ -1134,6 +1210,7 @@ function editMureed(id) {
   document.getElementById('editMureedMobile').value = m.mobile;
   document.getElementById('editMureedPassword').value = '';
   document.getElementById('editMureedCard').classList.remove('hidden');
+  openAdminAccordionCard('editMureedCard');
   document.getElementById('editMureedCard').scrollIntoView({behavior:'smooth'});
 }
 
@@ -1763,6 +1840,8 @@ function unlockAudio() {
   try { getAudioCtx(); } catch (e) {}
 }
 
+window.activeOscillators = [];
+
 function playTone(ctx, freq, startTime, durationSec) {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -1774,6 +1853,10 @@ function playTone(ctx, freq, startTime, durationSec) {
   gain.gain.exponentialRampToValueAtTime(0.0001, startTime + durationSec);
   osc.start(startTime);
   osc.stop(startTime + durationSec + 0.05);
+  window.activeOscillators.push(osc);
+  osc.onended = () => {
+    window.activeOscillators = window.activeOscillators.filter(o => o !== osc);
+  };
 }
 
 function beep(durationMs) {
@@ -1787,12 +1870,22 @@ function beep(durationMs) {
   } catch (e) { console.error('Beep error', e); }
 }
 
+window.currentAlarmAudio = null;
+
 function playAlarmSound(durationMs) {
+  stopAlarmSound(); // pehle se koi baj raha ho to pehle usse rok do, do sound ek sath na bajein
   // Agar admin ne apni ringtone upload ki hai, wahi bajao. Warna default ding-dong.
   if (alarmSettings && alarmSettings.alarm_tone_url) {
     try {
       const audio = new Audio(alarmSettings.alarm_tone_url);
+      window.currentAlarmAudio = audio;
       audio.play().catch(() => { beep(durationMs); });
+      // durationMs ke baad khud rok do, taaki lambi audio file bhi hamesha na bajti rahe
+      if (durationMs && durationMs > 0 && durationMs < 3600000) {
+        window.currentAlarmAudioTimeout = setTimeout(() => {
+          if (window.currentAlarmAudio === audio) stopAlarmSound();
+        }, durationMs);
+      }
       return;
     } catch (e) {
       beep(durationMs);
@@ -1800,6 +1893,59 @@ function playAlarmSound(durationMs) {
     }
   }
   beep(durationMs);
+}
+
+// Chahe custom tone bajay ho ya default beep — ek hi function se turant rok deta hai
+function stopAlarmSound() {
+  if (window.currentAlarmAudioTimeout) { clearTimeout(window.currentAlarmAudioTimeout); window.currentAlarmAudioTimeout = null; }
+  if (window.repeatBeepInterval) { clearInterval(window.repeatBeepInterval); window.repeatBeepInterval = null; }
+  if (window.testToneInterval) { clearInterval(window.testToneInterval); window.testToneInterval = null; }
+  if (window.currentAlarmAudio) {
+    try { window.currentAlarmAudio.pause(); window.currentAlarmAudio.currentTime = 0; } catch (e) {}
+    window.currentAlarmAudio = null;
+  }
+  if (window.activeOscillators && window.activeOscillators.length) {
+    window.activeOscillators.forEach(osc => { try { osc.stop(); } catch (e) {} });
+    window.activeOscillators = [];
+  }
+  // Jo bhi "Suno" button abhi "Roko" dikha raha tha, use wapas normal kar do
+  ['testToneBtn', 'testToneBtn2'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn && btn.dataset.playing === '1') {
+      btn.innerText = btn.dataset.label;
+      btn.dataset.playing = '0';
+    }
+  });
+}
+
+// Ek hi button — pehli baar dabao to bajta rahega (loop), dobara dabao to turant ruk jaayega
+function toggleTestTone(btnId) {
+  const btn = document.getElementById(btnId);
+  if (btn && btn.dataset.playing === '1') {
+    stopAlarmSound();
+    return;
+  }
+  stopAlarmSound(); // koi aur test/alarm baj raha ho to pehle usse rok do
+  if (btn) {
+    btn.dataset.label = btn.innerText;
+    btn.dataset.playing = '1';
+    btn.innerText = '⏹ Roko (bajna band karo)';
+  }
+  if (alarmSettings && alarmSettings.alarm_tone_url) {
+    try {
+      const audio = new Audio(alarmSettings.alarm_tone_url);
+      audio.loop = true; // jab tak "Roko" na dabao, bajta rahe
+      window.currentAlarmAudio = audio;
+      audio.play().catch(() => { startLoopingBeep(); });
+    } catch (e) { startLoopingBeep(); }
+  } else {
+    startLoopingBeep();
+  }
+}
+
+function startLoopingBeep() {
+  beep(1200);
+  window.testToneInterval = setInterval(() => beep(1200), 1800);
 }
 
 async function uploadAlarmTone() {
@@ -1838,8 +1984,74 @@ async function deleteAlarmTone() {
 
 let alarmSilenced = {};
 
+// ---------- ADMIN PANEL ACCORDION (ek box khulega, baaki sab band ho jaayenge) ----------
+function setupAdminAccordion() {
+  const cards = document.querySelectorAll('#adminScreen > .card');
+  cards.forEach((card) => {
+    if (card.dataset.accordionInit === '1') return;
+    const header = card.querySelector('h3');
+    if (!header) return;
+    card.dataset.accordionInit = '1';
+
+    // h3 ke alawa card ke andar jo bhi hai, usko ek collapsible body mein daal do
+    const body = document.createElement('div');
+    body.className = 'accordion-body hidden';
+    Array.from(card.children).forEach(child => {
+      if (child !== header) body.appendChild(child);
+    });
+
+    // h3 ko ek clickable header-row mein rakhte hain, arrow ko alag rakha hai taaki
+    // baad mein kahin h3.innerText badle to arrow mit na jaaye
+    const headerRow = document.createElement('div');
+    headerRow.className = 'accordion-header-row';
+    headerRow.style.cssText = 'display:flex; justify-content:space-between; align-items:center; cursor:pointer;';
+    card.insertBefore(headerRow, header);
+    headerRow.appendChild(header);
+    const arrow = document.createElement('span');
+    arrow.className = 'accordion-arrow';
+    arrow.style.cssText = 'margin-left:8px; flex-shrink:0;';
+    arrow.innerText = '▶';
+    headerRow.appendChild(arrow);
+    card.appendChild(body);
+
+    headerRow.onclick = () => toggleAdminAccordion(card);
+  });
+}
+
+function toggleAdminAccordion(openCard) {
+  const cards = document.querySelectorAll('#adminScreen > .card');
+  const wasOpen = openCard.querySelector('.accordion-body') && !openCard.querySelector('.accordion-body').classList.contains('hidden');
+  cards.forEach(card => {
+    const body = card.querySelector('.accordion-body');
+    const arrow = card.querySelector('.accordion-arrow');
+    if (!body) return;
+    if (card === openCard && !wasOpen) {
+      body.classList.remove('hidden');
+      if (arrow) arrow.innerText = '▼';
+    } else {
+      body.classList.add('hidden');
+      if (arrow) arrow.innerText = '▶';
+    }
+  });
+}
+
+// Kisi khaas card ko zabardasti khol do (jaise "Edit" dabane par), baaki sab band karke
+function openAdminAccordionCard(cardId) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  const cards = document.querySelectorAll('#adminScreen > .card');
+  cards.forEach(c => {
+    const body = c.querySelector('.accordion-body');
+    const arrow = c.querySelector('.accordion-arrow');
+    if (!body) return;
+    if (c === card) { body.classList.remove('hidden'); if (arrow) arrow.innerText = '▼'; }
+    else { body.classList.add('hidden'); if (arrow) arrow.innerText = '▶'; }
+  });
+}
+
 function silenceAlarm(key) {
   alarmSilenced[key] = true;
+  stopAlarmSound(); // sound turant band — banner hide karne se pehle hi
   const bar = document.getElementById('alarmBanner');
   if (bar) bar.classList.add('hidden');
 }
@@ -1912,10 +2124,10 @@ function checkNamazAlarms() {
           currentAlarmKey = key;
           showAlarmBanner('⏳ ' + name + ' ki namaz khatam hone wali hai (' + alarmSettings.end_reminder_minutes_before + ' min)');
           let count = 0;
-          const beepInterval = setInterval(() => {
+          window.repeatBeepInterval = setInterval(() => {
             playAlarmSound(alarmSettings.end_reminder_beep_seconds * 1000);
             count++;
-            if (count >= alarmSettings.end_reminder_repeat_count) clearInterval(beepInterval);
+            if (count >= alarmSettings.end_reminder_repeat_count) { clearInterval(window.repeatBeepInterval); window.repeatBeepInterval = null; }
           }, (alarmSettings.end_reminder_beep_seconds + 1) * 1000);
         }
       }
