@@ -1,0 +1,2757 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silsila-e-Zahidiya Mysore</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0f3d2e; color: #fff; min-height: 100vh; }
+  .container { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .card { background: #14503b; border-radius: 14px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  h1, h2, h3 { margin-bottom: 10px; }
+  h1 { text-align: center; font-size: 22px; color: #ffd700; }
+  input, select, button, textarea {
+    width: 100%; padding: 12px; margin: 6px 0; border-radius: 8px; border: none; font-size: 15px;
+  }
+  button { background: #ffd700; color: #0f3d2e; font-weight: bold; cursor: pointer; transition: 0.2s; }
+  button:hover { opacity: 0.85; }
+  button.secondary { background: #1c6b4f; color: #fff; }
+  .hidden { display: none !important; }
+  .tab-bar { display: flex; justify-content: space-around; background: #14503b; padding: 10px 0; position: fixed; bottom: 0; left: 0; right: 0; }
+  .tab-bar button { width: auto; padding: 8px 14px; background: transparent; color: #fff; font-size: 13px; }
+  .tab-bar button.active { color: #ffd700; }
+  .list-item { background: #1c6b4f; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .badge { background: #ffd700; color: #0f3d2e; border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: bold; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .stat-box { flex: 1; background: #1c6b4f; border-radius: 10px; padding: 14px; text-align: center; }
+  .stat-box .num { font-size: 24px; font-weight: bold; color: #ffd700; }
+  #notifBadge { background: red; border-radius: 50%; padding: 2px 7px; font-size: 11px; margin-left: 6px; }
+  .content-area { padding-bottom: 70px; }
+a { color: #ffd700; }
+
+  /* Laptop/bade screen par wide layout aur boxes wali grid */
+  @media (min-width: 900px) {
+    .container { max-width: 1100px; }
+    #classList, #notifList { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+    #classList .list-item, #notifList .list-item { margin-bottom: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container content-area" id="app">
+
+  <!-- ============ LOGIN SCREEN ============ -->
+  <div id="loginScreen">
+    <h1>🕌 Silsila-e-Zahidiya Mysore</h1>
+    <div class="card">
+      <h3 id="loginTitle">Login</h3>
+      <div id="loginFields">
+        <input type="text" id="loginMobile" placeholder="Mobile Number">
+        <input type="password" id="loginPassword" placeholder="Password">
+      </div>
+      <div id="registerFields" class="hidden">
+        <input type="text" id="regName" placeholder="Full Name">
+        <input type="text" id="regMobile" placeholder="Mobile Number">
+        <input type="password" id="regPassword" placeholder="Password">
+        <select id="regGroup">
+          <option value="mardana">Mardana</option>
+          <option value="zanana">Zanana</option>
+        </select>
+      </div>
+      <button onclick="unlockAudio(); handleLoginOrRegister()" id="loginActionBtn">Login</button>
+      <button class="secondary" onclick="toggleLoginRegister()" id="toggleBtn">New user? Register here</button>
+      <p id="loginMsg" style="margin-top:8px; font-size:13px; color:#ffd700;"></p>
+    </div>
+  </div>
+
+  <!-- ============ MAIN APP (after login) ============ -->
+  <div id="mainApp" class="hidden">
+
+    <div class="row" style="justify-content:space-between; margin-bottom:10px;">
+     <div>
+        <h1 style="font-size:18px;">🕌Silsila-e-Zahidiya Mysore</h1>
+        <p id="welcomeUser" style="font-size:12px;color:#ffd700;margin-top:2px;"></p>
+      </div>
+      <div class="row" style="width:auto;">
+        <button class="secondary" style="width:auto; padding:6px 10px;" onclick="openKhanqahLocation()" title="Khanqah Location">
+          <svg width="20" height="20" viewBox="0 0 24 24" style="vertical-align:middle;">
+            <path fill="#EA4335" d="M12 2C7.6 2 4 5.6 4 10c0 5.4 7 11.5 7.3 11.8c.2.2.5.3.7.3s.5-.1.7-.3C13 21.5 20 15.4 20 10c0-4.4-3.6-8-8-8z"/>
+            <circle cx="12" cy="10" r="3.2" fill="#fff"/>
+          </svg>
+        </button>
+        <button class="secondary" style="width:auto;" onclick="showScreen('notifications')">🔔<span id="notifBadge" class="hidden">0</span></button>
+        <button class="secondary" style="width:auto;" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="khanqahLocationCard">
+      <div class="row" style="justify-content:space-between;">
+        <h3 style="margin:0;">📍 Khanqah Location</h3>
+        <button class="secondary" style="width:auto;" onclick="document.getElementById('khanqahLocationCard').classList.add('hidden')">✖</button>
+      </div>
+      <p id="khanqahAddressText" style="font-size:13px; margin-top:8px;"></p>
+      <div class="row" style="margin-top:8px;">
+        <button style="width:auto;" onclick="window.open(window.khanqahMapLink, '_blank')">🗺️ Google Maps mein kholo</button>
+        <button class="secondary" style="width:auto;" onclick="shareKhanqahLocation()">🔗 Share Karo</button>
+      </div>
+    </div>
+
+   <div id="homeScreen">
+    <!-- Search Bar --> <!-- Search Bar -->
+    <div class="card">
+      <div class="row">
+        <input type="text" id="searchBox" placeholder="Search classes..." oninput="filterClasses()">
+        <button style="width:auto;" onclick="startVoiceSearch()">🎤</button>
+      </div>
+    </div>
+    <!-- Push Notification Permission -->
+    <div class="card" id="notifPermCard">
+      <button class="secondary" id="notifPermBtn" style="width:100%;" onclick="enableNotifications()">🔔 Notification ON Karo (Screen Lock mein bhi Alarm ke liye)</button>
+    </div>
+
+    <!-- Islamic Calendar -->
+    <div class="card">
+      <h3>📅 Islamic Calendar</h3>
+      <div id="islamicDateBox" style="font-size:14px;"></div>
+    </div>
+
+    <div class="card hidden" id="calendarGridCard">
+      <div class="row" style="justify-content:space-between;">
+        <h3 id="calendarGridTitle" style="margin:0;"></h3>
+        <button class="secondary" style="width:auto;" onclick="closeCalendarGrid()">✖ Band Karo</button>
+      </div>
+      <div class="row" style="justify-content:space-between; margin-top:8px;">
+        <button class="secondary" style="width:auto;" onclick="changeCalendarMonth(-1)">⬅ Pichla Mahina</button>
+        <button class="secondary" style="width:auto;" onclick="changeCalendarMonth(1)">Agla Mahina ➡</button>
+      </div>
+      <button class="secondary" style="width:100%; margin-top:8px;" id="calSwitchPrimaryBtn" onclick="switchCalendarPrimary()"></button>
+      <div id="calendarGridBody" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- Namaz Times -->
+    <div class="card">
+      <h3 style="margin:0;">🌙 Aaj ke Namaz Auqaat</h3>
+      <div id="namazDateLabel" style="font-size:13px; color:#ffd700; margin-top:6px;"></div>
+      <div id="prayerTimes" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;"></div>
+      <div id="alarmStatusLine" style="font-size:11px; color:#8fbf8f; margin-top:8px;"></div>
+    </div>
+
+    <!-- Custom Alarm banner area (agar admin ne on kiya hai aur abhi time chal raha hai) -->
+    <div class="card hidden" id="customAlarmCard">
+      <h3 id="customAlarmTitle">🔔 Alarm</h3>
+    </div>
+
+<!-- Classes List -->
+    <div class="card">
+      <h3 style="cursor:pointer;" onclick="toggleClassList()">📚 Classes (<span id="classCount">0</span>) <span id="liveIndicator"></span> <span id="classToggleIcon">▼</span></h3>
+      <div id="classList" class="hidden"></div>
+    </div>
+
+  </div>
+
+    <!-- ============ NOTIFICATIONS SCREEN ============ -->  <!-- ============ NOTIFICATIONS SCREEN ============ -->
+    <div id="notificationsScreen" class="hidden">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;">
+          <h3>🔔 Notifications</h3>
+          <button class="secondary" style="width:auto;" onclick="showScreen('home')">← Back</button>
+        </div>
+        <div id="notifList"></div>
+      </div>
+    </div>
+
+    <!-- ============ NOTES SAWAL-JAWAB (Admin + Mureed dono) ============ -->
+    <div id="notesScreen" class="hidden">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;">
+          <h3>📖 Notes se Sawal-Jawab</h3>
+          <button class="secondary" style="width:auto;" onclick="showScreen('home')">← Back</button>
+        </div>
+      </div>
+
+      <div class="card hidden" id="notesAdminUploadCard">
+        <h3 style="margin-top:0;">📄 Notes PDF Upload Karo (Urdu)</h3>
+        <p style="font-size:12px; color:#ffd700;">Yeh sab mureedon ko dikhega jab wo sawal poochenge.</p>
+        <input type="text" id="notesDocTitle" placeholder="Notes ka naam (jaise: Malfoozat Jild 1)">
+        <input type="file" id="notesDocFile" accept="application/pdf">
+        <button onclick="uploadNotesDoc()" id="notesUploadBtn">PDF Upload Karo</button>
+        <p id="notesUploadStatus" style="font-size:12px; color:#ffd700;"></p>
+        <div id="notesDocsList" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0;">❓ Sawal Poochho</h3>
+        <textarea id="qaQuestionInput" placeholder="Apna sawal yahan likho..." style="min-height:70px;"></textarea>
+        <button onclick="askNotesQuestion()" id="qaAskBtn">Poochho</button>
+        <div id="qaAnswerBox" class="hidden" style="margin-top:12px; border:1px solid #2a6b2a; border-radius:8px; padding:12px;">
+          <p id="qaAnswerText" style="white-space:pre-wrap;"></p>
+          <button class="secondary" style="width:auto; margin-top:8px;" onclick="speakAnswer()">🔊 Suno</button>
+          <button class="secondary" style="width:auto; margin-top:8px; margin-left:6px;" onclick="stopSpeaking()">⏹️ Roko</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between;">
+          <h3 style="margin:0;">📜 Mere Sawal-Jawab</h3>
+          <button class="secondary" style="width:auto;" onclick="downloadMyQaPdf()">⬇️ PDF Download</button>
+        </div>
+        <div id="myQaHistoryList" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <!-- ============ ADMIN PANEL ============ -->
+   <div id="adminScreen" class="hidden">
+      <div class="card">
+        <h3>📍 Khanqah Location Set Karo</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Yeh ek baar set karo. Google Maps kholo, Khanqah ki jagah dhoondo, "Share" → "Copy link" karke yahan paste karo.</p>
+        <input type="text" id="khanqahAddressInput" placeholder="Address (jaise: Silsila-e-Zahidiya, Mysore)">
+        <input type="text" id="khanqahMapLinkInput" placeholder="Google Maps link (https://maps.app.goo.gl/...)">
+        <button onclick="saveKhanqahLocation()">💾 Location Save Karo</button>
+      </div>
+
+      <div class="card">
+        <h3>👤 Meri Profile (Admin)</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Apna naam, mobile ya password badalne ke liye yahan bharo. Password khaali chhodo to purana wahi rahega.</p>
+        <input type="text" id="myProfileName" placeholder="Full Name">
+        <input type="text" id="myProfileMobile" placeholder="Mobile Number">
+        <input type="text" id="myProfilePassword" placeholder="Naya Password (khaali chhodo agar badalna nahi)">
+        <button onclick="saveMyProfile()">💾 Meri Profile Save Karo</button>
+      </div>
+
+      <div class="card">
+        <h3>🛡️ Naya Admin Banao</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Isse jo bhi mobile-password banaoge, wo bhi Admin Panel access kar sakega.</p>
+        <input type="text" id="newAdminName" placeholder="Full Name">
+        <input type="text" id="newAdminMobile" placeholder="Mobile Number">
+        <input type="text" id="newAdminPassword" placeholder="Password">
+        <button onclick="createNewAdmin()">➕ Admin Add Karo</button>
+      </div>
+
+      <div class="card">
+        <h3>📊 Mureed Stats (tap karke poori list dekhein)</h3>
+        <div class="row">
+          <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('total')"><div class="num" id="totalCount">0</div><div>Total</div></div>
+          <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('mardana')"><div class="num" id="mardanaCount">0</div><div>Mardana</div></div>
+          <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('zanana')"><div class="num" id="zananaCount">0</div><div>Zanana</div></div>
+        </div>
+        <div class="row" style="margin-top:8px;">
+          <div class="stat-box" style="background:#1f4d1f; cursor:pointer;" onclick="showMureedList('online')"><div class="num" id="onlineCount" style="color:#4ade80;">0</div><div>🟢 Online Abhi</div></div>
+          <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('offline')"><div class="num" id="offlineCount">0</div><div>⚪ Offline</div></div>
+        </div>
+     <div id="mureedListArea" style="margin-top:12px;"></div>
+      </div>
+
+      <div class="card hidden" id="editMureedCard">
+        <h3>✏️ Mureed Edit Karo</h3>
+        <input type="hidden" id="editMureedId">
+        <input type="text" id="editMureedName" placeholder="Full Name">
+        <input type="text" id="editMureedMobile" placeholder="Mobile Number">
+        <input type="text" id="editMureedPassword" placeholder="Naya Password (khaali chhodo agar badalna nahi)">
+        <div class="row" style="margin-top:8px;">
+          <button style="width:auto;" onclick="saveMureedEdit()">💾 Save Karo</button>
+          <button class="secondary" style="width:auto;" onclick="cancelMureedEdit()">Cancel</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>✅ Mureed Allow Karo (Register Khud Karega)</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Sirf naam aur mobile daalo — mureed khud Register screen se apna password set karega. Sirf yahan add kiya hua mobile number hi register ho payega.</p>
+        <input type="text" id="invName" placeholder="Full Name">
+        <input type="text" id="invMobile" placeholder="Mobile Number">
+        <select id="invGroup">
+          <option value="mardana">Mardana</option>
+          <option value="zanana">Zanana</option>
+        </select>
+        <button onclick="inviteMureed()">Allow Karo</button>
+      </div>
+
+      <div class="card">
+        <h3>➕ Direct Add Mureed</h3>
+        <input type="text" id="daName" placeholder="Full Name">
+        <input type="text" id="daMobile" placeholder="Mobile Number">
+        <input type="password" id="daPassword" placeholder="Password">
+        <select id="daGroup">
+          <option value="mardana">Mardana</option>
+          <option value="zanana">Zanana</option>
+        </select>
+        <button onclick="directAddMureed()">Add Mureed</button>
+      </div>
+
+      <div class="card">
+        <h3>📥 Bulk Add Mureeds</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Har row mein ek mureed ki details bharo. Zaroorat ho to "+ Row Add Karo" se aur row badha sakte ho.</p>
+        <div id="bulkRowsContainer"></div>
+        <button class="secondary" style="width:auto; margin-top:8px;" onclick="addBulkRow()">➕ Row Add Karo</button>
+        <button style="margin-top:8px;" onclick="bulkAddMureeds()">Bulk Add</button>
+      </div>
+
+      <div class="card">
+      <h3 id="uploadCardTitle">📤 Upload New Class</h3>
+        <input type="hidden" id="editingClassId" value="">
+        <input type="text" id="classTitle" placeholder="Class Title">
+    <select id="classType" onchange="toggleClassUrlOrFile()">
+          <option value="audio">Audio (MP3)</option>
+          <option value="video">Video</option>
+          <option value="pdf">PDF</option>
+          <option value="link">Link (WhatsApp/Website)</option>
+        </select>
+<input type="text" id="classUrl" placeholder="File URL (link)" style="display:none;">
+        <input type="file" id="classFile" onchange="autoFillTitle()">
+        <p id="editFileNote" style="font-size:11px; color:#ffd700; display:none;">Naya file sirf tab choose karo agar file badalni ho, warna purani file wahi rahegi.</p>
+        <div class="row" id="liveCheckRow" style="display:none; margin:6px 0;">
+          <input type="checkbox" id="classIsLive" style="width:auto;">
+          <span style="font-size:13px;">🔴 Yeh abhi Live hai (YouTube/Zoom link)</span>
+        </div>
+        <select id="classGroup">
+          <option value="both">Both</option>
+          <option value="mardana">Mardana</option>
+          <option value="zanana">Zanana</option>
+        </select>
+        <button id="uploadClassBtn" onclick="uploadClass()">Upload Class</button>
+        <button class="secondary" id="cancelEditBtn" style="display:none;" onclick="cancelEditClass()">Cancel Edit</button>
+      </div>
+       <div class="card">
+        <h3>⏰ Alarm Settings</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Namaz shuru hone par alarm, aur khatam hone se pehle reminder — yahan control karein.</p>
+        <label style="font-size:13px;">Start Alarm (Namaz shuru hone par)</label>
+        <div class="row">
+          <input type="checkbox" id="startAlarmEnabled" style="width:auto;">
+          <span style="font-size:13px;">On/Off</span>
+        </div>
+        <input type="number" id="startAlarmDuration" placeholder="Kitne second tak baje (e.g. 60)">
+        <label style="font-size:13px; margin-top:8px; display:block;">End Reminder (Namaz khatam hone se pehle)</label>
+        <div class="row">
+          <input type="checkbox" id="endReminderEnabled" style="width:auto;">
+          <span style="font-size:13px;">On/Off</span>
+        </div>
+        <input type="number" id="endReminderMinutesBefore" placeholder="Kitne minute pehle (e.g. 10)">
+        <input type="number" id="endReminderRepeatCount" placeholder="Kitni baar baje (e.g. 3)">
+        <input type="number" id="endReminderBeepSeconds" placeholder="Har baar kitne second (e.g. 2)">
+        <button onclick="saveAlarmSettings()">Save Alarm Settings</button>
+
+        <label style="font-size:13px; margin-top:12px; display:block;">🎵 Alarm Tone (Ringtone)</label>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Koi audio file (mp3) upload karo — yehi tone alarm baja tega. Kuch upload nahi karoge to default "ding-dong" chalega.</p>
+        <div id="alarmToneCurrentName" style="font-size:12px; color:#cde; margin-bottom:6px;"></div>
+        <input type="file" id="alarmToneFile" accept="audio/*">
+        <button onclick="uploadAlarmTone()">🎵 Tone Upload Karo</button>
+        <button class="secondary" id="testToneBtn" onclick="toggleTestTone('testToneBtn')">🔊 Is Tone Ko Suno</button>
+        <button class="secondary" style="background:#8b1a1a;" onclick="deleteAlarmTone()">🗑️ Tone Delete Karo (Default Beep par wapas)</button>
+      </div>
+
+      <div class="card">
+        <h3>🔔 Custom Alarm (Start Time / End Time)</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Koi khaas alarm/reminder banane ke liye — jaise kisi event ka time. Jab start-end ke beech ka waqt chalega, sabhi mureedon ke home screen par yeh dikhega.</p>
+        <div class="row">
+          <input type="checkbox" id="customAlarmEnabled" style="width:auto;">
+          <span style="font-size:13px;">On/Off</span>
+        </div>
+        <input type="text" id="customAlarmTitleInput" placeholder="Alarm ka naam (jaise: Ijtema Time)">
+        <label style="font-size:13px;">Start Time</label>
+        <div class="row" style="gap:6px;">
+          <select id="customAlarmStartHour" style="margin:0;"></select>
+          <select id="customAlarmStartMin" style="margin:0;"></select>
+          <select id="customAlarmStartAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
+        </div>
+        <label style="font-size:13px; margin-top:8px;">End Time</label>
+        <div class="row" style="gap:6px;">
+          <select id="customAlarmEndHour" style="margin:0;"></select>
+          <select id="customAlarmEndMin" style="margin:0;"></select>
+          <select id="customAlarmEndAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
+        </div>
+        <button onclick="saveCustomAlarm()">Save Custom Alarm</button>
+        <button class="secondary" id="testToneBtn2" onclick="toggleTestTone('testToneBtn2')">🔊 Test Sound (abhi suno)</button>
+      </div>
+
+      <div class="card">
+        <h3>📅 Event (Har Hafte / Har Mahine / Ek Baar)</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Jaise: Zanana ki class har Saturday, Mardana ki class har Sunday — content (text/image/PDF/audio) ke saath.</p>
+        <input type="hidden" id="editingEventId" value="">
+        <input type="text" id="eventTitle" placeholder="Event ka naam (jaise: Zanana Class)">
+
+        <select id="eventRepeatType" onchange="toggleEventScheduleFields()">
+          <option value="weekly">Har Hafte (Weekly)</option>
+          <option value="monthly">Har Mahine (Monthly)</option>
+          <option value="once">Sirf Ek Baar</option>
+        </select>
+        <select id="eventDayOfWeek">
+          <option value="0">Sunday</option>
+          <option value="1">Monday</option>
+          <option value="2">Tuesday</option>
+          <option value="3">Wednesday</option>
+          <option value="4">Thursday</option>
+          <option value="5">Friday</option>
+          <option value="6" selected>Saturday</option>
+        </select>
+        <input type="number" id="eventDayOfMonth" placeholder="Mahine ki tareekh (1 se 31)" min="1" max="31" style="display:none;">
+        <input type="date" id="eventDate" style="display:none;">
+
+        <label style="font-size:13px; margin-top:8px;">Start Time</label>
+        <div class="row" style="gap:6px;">
+          <select id="eventStartHour" style="margin:0;"></select>
+          <select id="eventStartMin" style="margin:0;"></select>
+          <select id="eventStartAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
+        </div>
+        <label style="font-size:13px; margin-top:8px;">End Time</label>
+        <div class="row" style="gap:6px;">
+          <select id="eventEndHour" style="margin:0;"></select>
+          <select id="eventEndMin" style="margin:0;"></select>
+          <select id="eventEndAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
+        </div>
+
+        <select id="eventGroup">
+          <option value="both">Both</option>
+          <option value="mardana">Mardana</option>
+          <option value="zanana" selected>Zanana</option>
+        </select>
+
+        <select id="eventContentType" onchange="toggleEventContentFields()">
+          <option value="text">Text (khud likh kar)</option>
+          <option value="image">Image</option>
+          <option value="pdf">PDF</option>
+          <option value="audio">Audio (record ya upload)</option>
+          <option value="none">Kuch nahi, sirf reminder</option>
+        </select>
+
+        <textarea id="eventTextContent" placeholder="Yahan likho jo mureedon ko dikhna hai..." style="display:block; min-height:70px;"></textarea>
+        <input type="file" id="eventFileInput" accept="image/*" style="display:none;">
+        <div id="eventAudioBox" style="display:none;">
+          <input type="file" id="eventAudioFileInput" accept="audio/*">
+          <p style="font-size:12px; text-align:center; margin:6px 0; color:#cde;">— ya seedha record karo —</p>
+          <button type="button" id="eventRecordBtn" class="secondary" onclick="startEventRecording()">🎙️ Record Karo</button>
+          <p id="eventRecordStatus" style="font-size:12px; color:#ffd700;"></p>
+        </div>
+
+        <button onclick="saveEvent()" id="saveEventBtn">Event Save Karo</button>
+        <button class="secondary" id="cancelEditEventBtn" style="display:none;" onclick="cancelEditEvent()">Cancel Edit</button>
+
+        <div id="eventsAdminList" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ NOTES SE SAWAL-JAWAB SCREEN ============ -->
+<div id="qaScreen" class="hidden">
+  <div class="card">
+    <h3>📖 Notes se Sawal-Jawab</h3>
+
+    <div id="qaAdminUploadBox" class="hidden">
+      <div style="border:1px solid #2a6b2a; border-radius:8px; padding:10px; margin-bottom:12px;">
+        <p style="font-size:13px; color:#ffd700; margin:0 0 6px;">🌐 Sab Mureedon ke liye Sawal-Jawab</p>
+        <button class="secondary" id="globalQaToggleBtn" style="width:100%;" onclick="toggleGlobalQaAccess()">Loading...</button>
+        <p style="font-size:11px; color:#cde; margin-top:6px;">Ek hi button se sab mureedon ke liye tab dikhega ya gayab ho jaayega.</p>
+      </div>
+      <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Urdu Notes (PDF) upload karo:</p>
+      <input type="text" id="qaNoteTitle" placeholder="Notes ka naam (jaise: Malfoozat Hissa 1)">
+      <input type="file" id="qaNoteFile" accept="application/pdf">
+      <button onclick="uploadQaNote()" id="qaUploadBtn">Notes Upload Karo</button>
+      <p id="qaUploadStatus" style="font-size:12px; color:#ffd700;"></p>
+      <div id="qaNotesAdminList" style="margin-top:10px;"></div>
+      <hr style="border-color:#2a6b2a; margin:14px 0;">
+    </div>
+
+    <p style="font-size:12px; color:#cde;">Apna sawal likho:</p>
+    <textarea id="qaQuestionInput" placeholder="Yahan apna sawal likho..." style="min-height:60px;"></textarea>
+    <button onclick="askQaQuestion()" id="qaAskBtn">Sawal Poocho</button>
+
+    <div id="qaAnswerBox" class="hidden" style="margin-top:14px; border:1px solid #2a6b2a; border-radius:8px; padding:12px;">
+      <p style="font-size:12px; color:#ffd700; margin-top:0;">Jawab:</p>
+      <p id="qaAnswerText" style="white-space:pre-wrap;"></p>
+      <button class="secondary" style="width:auto; padding:6px 14px;" onclick="speakQaAnswer()">🔊 Suno</button>
+      <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px;" onclick="stopQaSpeak()">⏹️ Roko</button>
+    </div>
+
+    <hr style="border-color:#2a6b2a; margin:14px 0;">
+    <button class="secondary" onclick="downloadQaHistoryPdf()">📄 Mere Sawal-Jawab PDF Download Karo</button>
+    <div id="qaHistoryList" style="margin-top:12px;"></div>
+  </div>
+</div>
+
+<!-- ============ BOTTOM TAB BAR ============ -->
+<div class="tab-bar hidden" id="tabBar">
+  <button onclick="showScreen('home')" id="tabHome" class="active">🏠 Home</button>
+  <button onclick="showScreen('qa')" id="tabQA" class="hidden">📖 Sawal-Jawab</button>
+  <button onclick="showScreen('admin')" id="tabAdmin" class="hidden">⚙️ Admin</button>
+</div>
+
+<!-- PDF text extraction, PDF banane, aur screenshot ke liye libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+ <script>
+const API = ""; // same domain, so empty base
+
+// ---------- PUSH NOTIFICATIONS (screen lock mein bhi kaam karta hai, WhatsApp jaisa) ----------
+const VAPID_PUBLIC_KEY = "BB6nEl89eXyVZKAbLuiY1z79zA9S_lNGvtzmyliFQos6l6LICc-B0DmKzmoj1JeQ4FEXq4ZhMrAQOSmmq2y7f_w";
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i++) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+async function setupPushNotifications() {
+  const btn = document.getElementById('notifPermBtn');
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (btn) { btn.innerText = '⚠️ Yeh browser notification support nahi karta'; btn.disabled = true; }
+    return;
+  }
+  try {
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+
+    if (Notification.permission === 'granted') {
+      await subscribeToPush(reg);
+      if (btn) { btn.innerText = '✅ Notification ON hai'; btn.disabled = true; }
+    } else if (Notification.permission === 'denied') {
+      if (btn) { btn.innerText = '⛔ Notification band hai (Browser settings se allow karo)'; }
+    } else {
+      if (btn) { btn.innerText = '🔔 Notification ON Karo (Screen Lock mein bhi Alarm ke liye)'; btn.disabled = false; }
+    }
+  } catch (e) { console.error('Service worker error:', e); }
+}
+
+async function enableNotifications() {
+  const btn = document.getElementById('notifPermBtn');
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      if (btn) btn.innerText = '⛔ Permission nahi mili — dobara try karo';
+      return;
+    }
+    const reg = await navigator.serviceWorker.ready;
+    await subscribeToPush(reg);
+    if (btn) { btn.innerText = '✅ Notification ON hai'; btn.disabled = true; }
+    alert('✅ Ab screen lock mein bhi namaz/event alarm ki notification aayegi.');
+  } catch (e) {
+    console.error(e);
+    alert('Kuch galat ho gaya, dobara try karo.');
+  }
+}
+
+async function subscribeToPush(reg) {
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) {
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+  }
+  if (currentUser && currentUser.mobile) {
+    try {
+      await fetch(API + '/api/save-push-subscription', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ mobile: currentUser.mobile, subscription: sub.toJSON() })
+      });
+    } catch (e) { console.error(e); }
+  }
+}
+let currentUser = null;
+
+// ---------- LOGIN / REGISTER TOGGLE ----------
+let isRegisterMode = false;
+function toggleLoginRegister() {
+  isRegisterMode = !isRegisterMode;
+  document.getElementById('loginFields').classList.toggle('hidden', isRegisterMode);
+  document.getElementById('registerFields').classList.toggle('hidden', !isRegisterMode);
+  document.getElementById('loginActionBtn').innerText = isRegisterMode ? 'Register' : 'Login';
+  document.getElementById('toggleBtn').innerText = isRegisterMode ? 'Already a member? Login' : 'New user? Register here';
+  document.getElementById('loginTitle').innerText = isRegisterMode ? 'Register' : 'Login';
+}
+
+async function handleLoginOrRegister() {
+  const msg = document.getElementById('loginMsg');
+  if (isRegisterMode) {
+    const name = document.getElementById('regName').value.trim();
+    const mobile = document.getElementById('regMobile').value.trim();
+    const password = document.getElementById('regPassword').value.trim();
+    const group = document.getElementById('regGroup').value;
+    if (!name || !mobile || !password) { msg.innerText = "Please fill all fields"; return; }
+    try {
+      const res = await fetch(API + '/api/register', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ name, mobile, password, group_type: group })
+      });
+      const data = await res.json();
+      msg.innerText = data.message || "Registered! Wait for admin approval.";
+      if (res.ok) toggleLoginRegister();
+    } catch(e) { msg.innerText = "Error connecting to server"; }
+  } else {
+    const mobile = document.getElementById('loginMobile').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    if (!mobile || !password) { msg.innerText = "Please enter mobile and password"; return; }
+    try {
+      const res = await fetch(API + '/api/state?mobile=' + encodeURIComponent(mobile) + '&password=' + encodeURIComponent(password));
+      const data = await res.json();
+      if (res.ok && data.user) {
+        if (data.user.status === 'pending') { msg.innerText = "Your account is pending approval."; return; }
+        if (data.user.status === 'rejected') { msg.innerText = "Your registration was rejected."; return; }
+        if (data.user.is_blocked) { msg.innerText = "Aapka account block kar diya gaya hai. Admin se contact karein."; return; }
+      currentUser = data.user;
+        localStorage.setItem('zahidiya_mobile', mobile);
+        localStorage.setItem('zahidiya_password', password);
+        loginSuccess();
+      } else {
+        msg.innerText = data.message || "Invalid mobile or password";
+      }
+    } catch(e) { msg.innerText = "Error connecting to server"; }
+  }
+}
+
+function loginSuccess() {
+  document.getElementById('welcomeUser').innerText = 'Welcome, ' + currentUser.name;
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('mainApp').classList.remove('hidden');
+  document.getElementById('tabBar').classList.remove('hidden');
+  if (currentUser.role === 'admin') {
+    document.getElementById('tabAdmin').classList.remove('hidden');
+    document.getElementById('qaAdminUploadBox').classList.remove('hidden');
+    loadAdminData();
+    loadQaNotes();
+  }
+  // Mureed ke liye Sawal-Jawab tab tabhi dikhega jab Admin ne global switch ON kiya ho.
+  // OFF hone par tab bilkul hide rahega — mureed ko pata bhi nahi chalega ki yeh page hai.
+  updateQaTabVisibility();
+ loadClasses();
+  loadNotifications();
+  loadPrayerTimes();
+  loadAlarmSettings();
+  loadEvents();
+  loadQaHistory();
+  showIslamicDate();
+  startAutoRefresh();
+  sendHeartbeat();
+  setupPushNotifications();
+}
+
+function logout() {
+  sendHeartbeat(true); // turant "offline" mark ho jaaye, wait na karna pade
+  currentUser = null;
+  localStorage.removeItem('zahidiya_mobile');
+  localStorage.removeItem('zahidiya_password');
+  stopAutoRefresh();
+  document.getElementById('mainApp').classList.add('hidden');
+  document.getElementById('tabBar').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+}
+
+// ---------- SCREEN SWITCHING ----------
+function showScreen(name) {
+  document.getElementById('homeScreen').classList.add('hidden');
+  document.getElementById('notificationsScreen').classList.add('hidden');
+  document.getElementById('adminScreen').classList.add('hidden');
+  document.getElementById('qaScreen').classList.add('hidden');
+  document.getElementById('tabHome').classList.remove('active');
+  document.getElementById('tabAdmin').classList.remove('active');
+  document.getElementById('tabQA').classList.remove('active');
+  if (name === 'notifications') {
+    document.getElementById('notificationsScreen').classList.remove('hidden');
+    markNotificationsRead();
+  } else if (name === 'admin') {
+    document.getElementById('adminScreen').classList.remove('hidden');
+    document.getElementById('tabAdmin').classList.add('active');
+    loadAdminData();
+  } else if (name === 'qa') {
+    document.getElementById('qaScreen').classList.remove('hidden');
+    document.getElementById('tabQA').classList.add('active');
+    loadQaHistory();
+    if (currentUser && currentUser.role === 'admin') loadQaNotes();
+  } else {
+    document.getElementById('homeScreen').classList.remove('hidden');
+    document.getElementById('tabHome').classList.add('active');
+  }
+}
+
+function openClassFromNotification(classId) {
+  if (!classId) return;
+  showScreen('home');
+  document.getElementById('tabHome').classList.add('active');
+  // Classes section khula hona chahiye
+  const listEl = document.getElementById('classList');
+  if (listEl.classList.contains('hidden')) { toggleClassList(); }
+  setTimeout(() => {
+    const el = document.getElementById('class-' + classId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.style.transition = 'background 0.4s';
+      const oldBg = el.style.background;
+      el.style.background = '#ffd70055';
+      setTimeout(() => { el.style.background = oldBg; }, 1800);
+    }
+  }, 150);
+}
+
+// ---------- CLASSES ----------
+let allClasses = [];
+let lastClassesSnapshot = '';
+async function loadClasses() {
+  try {
+    const res = await fetch(API + '/api/classes?group=' + currentUser.group_type);
+    const data = await res.json();
+    const newClasses = data.classes || [];
+    const snapshot = JSON.stringify(newClasses);
+    if (snapshot === lastClassesSnapshot) return; // kuch naya nahi aaya, screen ko chhedo mat
+    lastClassesSnapshot = snapshot;
+    allClasses = newClasses;
+    renderClasses(allClasses);
+  } catch(e) { console.error(e); }
+}
+
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderClasses(list) {
+  const el = document.getElementById('classList');
+  document.getElementById('classCount').innerText = list.length;
+  const liveCount = list.filter(c => c.is_live).length;
+  document.getElementById('liveIndicator').innerText = liveCount > 0 ? `🔴 ${liveCount} Live` : '';
+  if (!list.length) { el.innerHTML = '<p style="font-size:13px;">No classes available yet.</p>'; return; }
+  el.innerHTML = list.map(c => {
+    const safeTitle = escapeHtml(c.title);
+    const safeUrl = escapeHtml(c.file_url);
+    return `
+    <div class="list-item" id="class-${c.id}" style="${c.is_live ? 'border:2px solid #ff3333;' : ''}">
+      <div class="row" style="justify-content:space-between;">
+        <strong>${c.is_live ? '🔴 LIVE NOW — ' : ''}${safeTitle}</strong>
+        <span class="badge">${c.type.toUpperCase()}</span>
+      </div>
+      <div style="font-size:11px; color:#ccc; margin-top:2px;">${formatDate(c.uploaded_at)}</div>
+      <div style="margin-top:8px;">
+        ${c.type === 'audio' ? `<audio controls style="width:100%;" src="${safeUrl}"></audio>` : ''}
+        ${c.type === 'video' ? `<video controls style="width:100%;" src="${safeUrl}"></video>` : ''}
+        ${c.type === 'pdf' ? `<a href="${safeUrl}" target="_blank">📄 Open PDF</a> <button style="width:auto; margin-left:8px;" onclick="speakPdf('${safeUrl}')">🔊 Listen</button>` : ''}
+        ${c.type === 'link' ? `<a href="${safeUrl}" target="_blank" style="display:inline-block; background:#ffcc00; color:#1a3a1a; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">🔗 Open Link</a>` : ''}
+        ${['audio','video','pdf'].includes(c.type) ? `<a href="${safeUrl}&download=1" style="display:inline-block; margin-left:8px; margin-top:8px; background:#2a6b2a; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">⬇️ Download</a>` : ''}
+        ${currentUser.role === 'admin' && c.type === 'link' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px;" onclick="toggleLive(${c.id}, ${c.is_live ? 0 : 1})">${c.is_live ? '⏹ Live Band Karo' : '🔴 Live Shuru Karo'}</button>` : ''}
+        ${currentUser.role === 'admin' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px;" onclick="editClass(${c.id})">✏️ Edit</button>` : ''}
+        ${currentUser.role === 'admin' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px; background:#8b1a1a;" onclick="deleteClass(${c.id})">🗑️ Delete</button>` : ''}
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+function toggleClassList() {
+  const el = document.getElementById('classList');
+  const icon = document.getElementById('classToggleIcon');
+  el.classList.toggle('hidden');
+  icon.textContent = el.classList.contains('hidden') ? '▼' : '▲';
+}
+
+function findClassById(id) {
+  return allClasses.find(c => c.id === id);
+}
+
+async function deleteClass(id) {
+  const c = findClassById(id);
+  if (!c) return;
+  if (!confirm('Kya aap sach mein "' + c.title + '" delete karna chahte hain? Yeh wapas nahi aayegi.')) return;
+  try {
+    await fetch(API + '/api/delete-class', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id })
+    });
+    loadClasses();
+  } catch(e) { console.error(e); }
+}
+
+function editClass(id) {
+  const c = findClassById(id);
+  if (!c) return;
+  document.getElementById('editingClassId').value = id;
+  document.getElementById('uploadCardTitle').innerText = '✏️ Edit Class: ' + c.title;
+  document.getElementById('classTitle').value = c.title;
+  document.getElementById('classType').value = c.type;
+  document.getElementById('classGroup').value = c.group_type;
+  document.getElementById('classIsLive').checked = !!c.is_live;
+  toggleClassUrlOrFile();
+  if (c.type === 'link') {
+    document.getElementById('classUrl').value = c.file_url;
+  } else {
+    document.getElementById('classUrl').value = '';
+    document.getElementById('editFileNote').style.display = '';
+  }
+  document.getElementById('uploadClassBtn').innerText = 'Update Class';
+  document.getElementById('cancelEditBtn').style.display = '';
+  showScreen('admin');
+  document.getElementById('uploadCardTitle').scrollIntoView({behavior:'smooth'});
+}
+
+function cancelEditClass() {
+  document.getElementById('editingClassId').value = '';
+  document.getElementById('uploadCardTitle').innerText = '📤 Upload New Class';
+  document.getElementById('classTitle').value = '';
+  document.getElementById('classUrl').value = '';
+  document.getElementById('classFile').value = '';
+  document.getElementById('classIsLive').checked = false;
+  document.getElementById('editFileNote').style.display = 'none';
+  document.getElementById('uploadClassBtn').innerText = 'Upload Class';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+}
+
+async function toggleLive(id, is_live) {
+  try {
+    await fetch(API + '/api/toggle-live', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id, is_live })
+    });
+    loadClasses();
+  } catch(e) { console.error(e); }
+}
+function formatDate(dt) {
+  if (!dt) return '';
+  const d = new Date(dt.replace(' ', 'T') + 'Z');
+  if (isNaN(d)) return dt;
+  return d.toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function isMureedOnline(lastActive) {
+  if (!lastActive) return false;
+  const last = new Date(lastActive.replace(' ', 'T') + 'Z');
+  if (isNaN(last)) return false;
+  return (Date.now() - last.getTime()) / 1000 < 15;
+}
+function getOnlineStatusLabel(lastActive) {
+  if (!lastActive) return '⚪ Kabhi login nahi kiya';
+  const last = new Date(lastActive.replace(' ', 'T') + 'Z');
+  if (isNaN(last)) return '';
+  const diffSec = (Date.now() - last.getTime()) / 1000;
+  if (diffSec < 15) return '🟢 Online abhi';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `⚪ ${diffMin} minute pehle active tha`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `⚪ ${diffHr} ghante pehle active tha`;
+  const diffDay = Math.floor(diffHr / 24);
+  return `⚪ ${diffDay} din pehle active tha`;
+}
+function filterClasses() {
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  renderClasses(allClasses.filter(c => c.title.toLowerCase().includes(q)));
+}
+
+function startVoiceSearch() {
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Rec) { alert("Voice search not supported on this browser"); return; }
+  const rec = new Rec();
+  rec.lang = 'ur-IN';
+  rec.onresult = (e) => {
+    document.getElementById('searchBox').value = e.results[0][0].transcript;
+    filterClasses();
+  };
+  rec.start();
+}
+
+function speakPdf(url) {
+  const utter = new SpeechSynthesisUtterance("Opening PDF for reading. Please wait while it loads.");
+  speechSynthesis.speak(utter);
+  window.open(url, '_blank');
+}
+
+// ---------- NOTIFICATIONS ----------
+async function loadNotifications() {
+  try {
+   const res = await fetch(API + '/api/state?notifications=1&role=' + currentUser.role + '&mobile=' + currentUser.mobile);
+    const data = await res.json();
+    const list = data.notifications || [];
+    const badge = document.getElementById('notifBadge');
+    const unread = list.filter(n => !n.is_read).length;
+    if (unread > 0) { badge.classList.remove('hidden'); badge.innerText = unread; }
+    else { badge.classList.add('hidden'); }
+ document.getElementById('notifList').innerHTML = list.length ?
+      list.map(n => `<div class="list-item">
+        <div class="row" style="justify-content:space-between; align-items:flex-start;">
+          <div ${n.related_class_id ? `style="cursor:pointer; text-decoration:underline; text-decoration-style:dotted;" onclick="openClassFromNotification(${n.related_class_id})"` : ''}>${n.message}<div style="font-size:11px; color:#ccc; margin-top:4px;">${formatDate(n.created_at)}</div></div>
+          <button class="secondary" style="width:auto; font-size:12px; padding:4px 10px; flex-shrink:0; margin-left:8px;" onclick="event.stopPropagation(); deleteNotification(${n.id})">🗑️ Clear</button>
+        </div>
+      </div>`).join('')
+    : '<p style="font-size:13px;">No notifications yet.</p>';
+  } catch(e) { console.error(e); }
+}
+
+async function deleteNotification(id) {
+  try {
+    await fetch(API + '/api/delete-notification', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id })
+    });
+    loadNotifications();
+  } catch(e) { console.error(e); }
+}
+
+async function markNotificationsRead() {
+  try {
+    await fetch(API + '/api/mark-read', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ role: currentUser.role, mobile: currentUser.mobile })
+    });
+    document.getElementById('notifBadge').classList.add('hidden');
+    loadNotifications();
+  } catch(e) { console.error(e); }
+}
+
+// ---------- PRAYER TIMES ----------
+function to12Hour(hhmm) {
+  if (!hhmm) return '';
+  let [h, m] = hhmm.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if (h === 0) h = 12;
+  return h + ':' + String(m).padStart(2, '0') + ' ' + ampm;
+}
+
+function isPrayerActive(startHHMM, endHHMM) {
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const [sh, sm] = startHHMM.split(':').map(Number);
+  const [eh, em] = endHHMM.split(':').map(Number);
+  const startMin = sh * 60 + sm;
+  const endMin = eh * 60 + em;
+  return startMin <= endMin ? (nowMin >= startMin && nowMin < endMin) : (nowMin >= startMin || nowMin < endMin);
+}
+
+async function getNamazApiUrl() {
+  // Pehle phone ki GPS location try karo, na mile to Mysore default use karo
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        resolve(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=2`);
+      },
+      () => {
+        // permission nahi mila ya error aaya -> Mysore default
+        resolve('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
+      },
+      { timeout: 8000 }
+    );
+  });
+}
+
+async function loadPrayerTimes() {
+  const todayKey = 'zahidiya_namaz_' + new Date().toDateString();
+  try {
+    const url = await getNamazApiUrl();
+    const res = await fetch(url);
+    const data = await res.json();
+    const t = data.data.timings;
+    const clean = s => (s || '').split(' ')[0]; // timezone suffix hata do
+    const usedGps = url.includes('latitude');
+
+    window.namazTimesToday = {
+      Fajr: clean(t.Fajr), Dhuhr: clean(t.Dhuhr), Asr: clean(t.Asr),
+      Maghrib: clean(t.Maghrib), Isha: clean(t.Isha)
+    };
+    // Aaj ke time save kar lo, taaki agar aage internet chala jaaye to bhi
+    // yehi cached time se alarm chalta rahe (jab tak app khuli hai)
+    try {
+      localStorage.setItem(todayKey, JSON.stringify(window.namazTimesToday));
+      // "Last known good" bhi save karo — agar kabhi "aaj" ka data kabhi load hi na
+      // ho paaye (jaise raat bhar internet na ho), to yehi (kal ka) fallback ban jaata hai
+      localStorage.setItem('zahidiya_namaz_last', JSON.stringify({ date: new Date().toDateString(), times: window.namazTimesToday }));
+    } catch(e) {}
+
+    const prayers = [
+      { key: 'Fajr', label: 'Fajr', start: clean(t.Fajr), end: clean(t.Sunrise) },
+      { key: 'Dhuhr', label: 'Zuhr', start: clean(t.Dhuhr), end: clean(t.Asr) },
+      { key: 'Asr', label: 'Asr', start: clean(t.Asr), end: clean(t.Maghrib) },
+      { key: 'Maghrib', label: 'Maghrib', start: clean(t.Maghrib), end: clean(t.Isha) },
+      { key: 'Isha', label: 'Isha', start: clean(t.Isha), end: clean(t.Fajr) }
+    ];
+
+    document.getElementById('namazDateLabel').innerText =
+      new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
+      (usedGps ? ' 📍 (Aapki current location)' : ' 📍 (Mysore - default)');
+
+    document.getElementById('prayerTimes').innerHTML = prayers.map(p => {
+      const active = isPrayerActive(p.start, p.end);
+      return `
+        <div style="flex:1; min-width:130px; border:1px solid ${active ? '#ffd700' : '#2a6b2a'}; border-radius:8px; padding:10px; text-align:center; background:${active ? '#1f4d1f' : '#0f2a0f'};">
+          <div style="font-weight:bold; color:#ffd700; font-size:14px;">${p.label}${active ? ' ●' : ''}</div>
+          <div style="font-size:15px; font-weight:bold; margin-top:6px;">${to12Hour(p.start)}</div>
+          <div style="font-size:11px; color:#cde;">Shuru</div>
+          <div style="font-size:15px; font-weight:bold; margin-top:6px;">${to12Hour(p.end)}</div>
+          <div style="font-size:11px; color:#cde;">Khatam</div>
+        </div>
+      `;
+    }).join('');
+  } catch(e) {
+    // Internet nahi mila — pehle "aaj" ka cache check karo
+    try {
+      const cached = localStorage.getItem(todayKey);
+      if (cached) {
+        window.namazTimesToday = JSON.parse(cached);
+        document.getElementById('namazDateLabel').innerText =
+          new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
+          ' 📡 (Offline — pehle se saved time)';
+        return;
+      }
+    } catch(e2) {}
+    // "Aaj" ka data kabhi mila hi nahi (jaise raat bhar internet na ho) —
+    // ab jo bhi last-known time hai (chahe kal ka ho) wahi use karo, taaki
+    // alarm bilkul na chuke — namaz ke time roz sirf 1-2 min hi badalte hain
+    try {
+      const lastRaw = localStorage.getItem('zahidiya_namaz_last');
+      if (lastRaw) {
+        const last = JSON.parse(lastRaw);
+        window.namazTimesToday = last.times;
+        document.getElementById('namazDateLabel').innerText =
+          new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
+          ' ⚠️ (Internet nahi mila — ' + last.date + ' ke saved time use ho rahe hain, 1-2 min farak ho sakta hai)';
+        return;
+      }
+    } catch(e3) {}
+    document.getElementById('prayerTimes').innerHTML = '<p style="font-size:13px;">Internet nahi mila aur pehle se koi time bhi saved nahi hai — ek baar internet on karke khol lo.</p>';
+  }
+}
+
+// ---------- ADMIN PANEL ----------
+let allMureedsData = [];
+async function loadAdminData() {
+  setupAdminAccordion();
+  try {
+    const res = await fetch(API + '/api/state?admin=1');
+    const data = await res.json();
+    document.getElementById('totalCount').innerText = data.total || 0;
+    document.getElementById('mardanaCount').innerText = data.mardana || 0;
+    document.getElementById('zananaCount').innerText = data.zanana || 0;
+    allMureedsData = data.all || [];
+    if (currentMureedListType) showMureedList(currentMureedListType);
+
+    let onlineN = 0;
+    allMureedsData.forEach(m => { if (isMureedOnline(m.last_active)) onlineN++; });
+    document.getElementById('onlineCount').innerText = onlineN;
+    document.getElementById('offlineCount').innerText = Math.max(allMureedsData.length - onlineN, 0);
+
+    const pn = document.getElementById('myProfileName');
+    const pm = document.getElementById('myProfileMobile');
+    if (pn && !pn.value) pn.value = currentUser.name;
+    if (pm && !pm.value) pm.value = currentUser.mobile;
+  } catch(e) { console.error(e); }
+}
+
+window.khanqahMapLink = '';
+window.khanqahAddress = '';
+
+function openKhanqahLocation() {
+  if (!window.khanqahMapLink) {
+    alert('Abhi Khanqah ki location set nahi hui hai. Admin se poochho.');
+    return;
+  }
+  document.getElementById('khanqahAddressText').innerText = window.khanqahAddress || '';
+  document.getElementById('khanqahLocationCard').classList.remove('hidden');
+  document.getElementById('khanqahLocationCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function shareKhanqahLocation() {
+  const link = window.khanqahMapLink;
+  if (!link) return;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'Khanqah Location', text: window.khanqahAddress || 'Khanqah Location', url: link });
+    } catch (e) {}
+  } else {
+    try {
+      await navigator.clipboard.writeText(link);
+      alert('Link copy ho gaya, ab kahin bhi paste kar sakte ho');
+    } catch (e) {
+      alert(link);
+    }
+  }
+}
+
+async function saveKhanqahLocation() {
+  const address = document.getElementById('khanqahAddressInput').value.trim();
+  const mapLink = document.getElementById('khanqahMapLinkInput').value.trim();
+  if (!mapLink) { alert('Google Maps link zaroori hai'); return; }
+  try {
+    const res = await fetch(API + '/api/alarm-settings', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ khanqah_address: address, khanqah_map_link: mapLink })
+    });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+    alert('📍 Khanqah Location save ho gayi!');
+    loadAlarmSettings();
+  } catch (e) { alert('Kuch galat ho gaya'); }
+}
+
+async function saveMyProfile() {
+  const name = document.getElementById('myProfileName').value.trim();
+  const mobile = document.getElementById('myProfileMobile').value.trim();
+  const password = document.getElementById('myProfilePassword').value.trim();
+  if (!name || !mobile) { alert('Naam aur mobile zaroori hai'); return; }
+  try {
+    const res = await fetch(API + '/api/update-mureed', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id: currentUser.id, name, mobile, password })
+    });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+    alert('✅ Profile update ho gayi. Agli baar naye mobile/password se login karna.');
+    currentUser.name = name;
+    currentUser.mobile = mobile;
+    localStorage.setItem('zahidiya_mobile', mobile);
+    if (password) localStorage.setItem('zahidiya_password', password);
+    document.getElementById('myProfilePassword').value = '';
+    document.getElementById('welcomeUser').innerText = 'Welcome, ' + name;
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+
+async function createNewAdmin() {
+  const name = document.getElementById('newAdminName').value.trim();
+  const mobile = document.getElementById('newAdminMobile').value.trim();
+  const password = document.getElementById('newAdminPassword').value.trim();
+  if (!name || !mobile || !password) { alert('Sab fields bharo'); return; }
+  try {
+    const res = await fetch(API + '/api/create-admin', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ name, mobile, password })
+    });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+    alert(data.message || 'Naya admin ban gaya');
+    document.getElementById('newAdminName').value = '';
+    document.getElementById('newAdminMobile').value = '';
+    document.getElementById('newAdminPassword').value = '';
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+
+let currentMureedListType = null;
+function showMureedList(type) {
+  currentMureedListType = type;
+  const area = document.getElementById('mureedListArea');
+  let list = allMureedsData;
+  let title = 'Sabhi Mureed';
+  if (type === 'mardana') { list = allMureedsData.filter(m => m.group_type === 'mardana'); title = 'Mardana Mureed'; }
+  if (type === 'zanana') { list = allMureedsData.filter(m => m.group_type === 'zanana'); title = 'Zanana Mureed'; }
+  if (type === 'online') { list = allMureedsData.filter(m => isMureedOnline(m.last_active)); title = '🟢 Online Mureed'; }
+  if (type === 'offline') { list = allMureedsData.filter(m => !isMureedOnline(m.last_active)); title = '⚪ Offline Mureed'; }
+  if (!list.length) { area.innerHTML = `<p style="font-size:13px;">Koi ${title} nahi mila.</p>`; return; }
+  area.innerHTML = `<h3 style="font-size:14px; margin-bottom:8px;">${title} (${list.length})</h3>` +
+    list.map(m => `
+      <div class="list-item">
+        <div class="row" style="justify-content:space-between;">
+          <strong>${escapeHtml(m.name)}</strong>
+          <span class="badge">${m.has_registered ? (m.is_blocked ? 'blocked' : (m.status === 'approved' ? 'Active' : m.status)) : 'Invite Kiya (Register Nahi Kiya)'}</span>
+        </div>
+        <div style="font-size:13px; margin-top:4px;">📱 ${escapeHtml(m.mobile)} — ${m.group_type}</div>
+        <div style="font-size:12px; margin-top:4px;">${getOnlineStatusLabel(m.last_active)}</div>
+        <div class="row" style="margin-top:6px;">
+          <button class="secondary" style="width:auto;" onclick="editMureed(${m.id})">✏️ Edit</button>
+          <button class="secondary" style="width:auto;" onclick="toggleBlockMureed(${m.id}, ${m.is_blocked ? 1 : 0})">${m.is_blocked ? '✅ Unblock' : '🚫 Block'}</button>
+          <button class="secondary" style="width:auto;" onclick="deleteMureed(${m.id})">🗑️ Delete</button>
+        </div>
+      </div>
+    `).join('');
+}
+
+async function deleteMureed(id) {
+  if (!confirm('Pakka is mureed ko hamesha ke liye delete karna hai?')) return;
+  try {
+    const res = await fetch(API + '/api/delete-mureed', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id })
+    });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+    loadAdminData();
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+
+async function toggleBlockMureed(id, currentlyBlocked) {
+  const newState = currentlyBlocked ? 0 : 1;
+  const action = newState ? 'Block' : 'Unblock';
+  if (!confirm(`Is mureed ko ${action} karna hai?`)) return;
+  try {
+    const res = await fetch(API + '/api/block', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id, blocked: newState })
+    });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+    loadAdminData();
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+
+async function toggleQaAccessMureed(id, currentlyOn) {
+  const newState = currentlyOn ? 0 : 1;
+  const action = newState ? 'ON' : 'OFF';
+  if (!confirm(`Is mureed ke liye Sawal-Jawab ${action} karna hai?`)) return;
+  try {
+    const res = await fetch(API + '/api/toggle-qa-access', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id, qa_access: newState })
+    });
+    const data = await res.json();
+    if (data.error || data.success === false) { alert(data.message || data.error || 'Kuch galat ho gaya'); return; }
+    loadAdminData();
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+function editMureed(id) {
+  const m = allMureedsData.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('editMureedId').value = m.id;
+  document.getElementById('editMureedName').value = m.name;
+  document.getElementById('editMureedMobile').value = m.mobile;
+  document.getElementById('editMureedPassword').value = '';
+  document.getElementById('editMureedCard').classList.remove('hidden');
+  openAdminAccordionCard('editMureedCard');
+  document.getElementById('editMureedCard').scrollIntoView({behavior:'smooth'});
+}
+
+function cancelMureedEdit() {
+  document.getElementById('editMureedCard').classList.add('hidden');
+}
+
+async function saveMureedEdit() {
+  const id = document.getElementById('editMureedId').value;
+  const name = document.getElementById('editMureedName').value.trim();
+  const mobile = document.getElementById('editMureedMobile').value.trim();
+  const password = document.getElementById('editMureedPassword').value.trim();
+  if (!name || !mobile) { alert('Naam aur mobile zaroori hai'); return; }
+  try {
+    const res = await fetch(API + '/api/update-mureed', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id, name, mobile, password })
+    });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+    alert('✅ Update ho gaya');
+    cancelMureedEdit();
+    loadAdminData();
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+
+async function approveMureed(id) {
+  await fetch(API + '/api/approve', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+  loadAdminData();
+}
+async function rejectMureed(id) {
+  await fetch(API + '/api/reject', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+  loadAdminData();
+}
+async function inviteMureed() {
+  const name = document.getElementById('invName').value.trim();
+  const mobile = document.getElementById('invMobile').value.trim();
+  const group = document.getElementById('invGroup').value;
+  if (!name || !mobile) { alert("Naam aur mobile bharo"); return; }
+  try {
+    const res = await fetch(API + '/api/invite-mureed', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, mobile, group_type: group }) });
+    const data = await res.json();
+    if (data.error) { alert(data.error); return; }
+    alert(data.message || "Allow ho gaya");
+    document.getElementById('invName').value = '';
+    document.getElementById('invMobile').value = '';
+    loadAdminData();
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+async function directAddMureed() {
+  const name = document.getElementById('daName').value.trim();
+  const mobile = document.getElementById('daMobile').value.trim();
+  const password = document.getElementById('daPassword').value.trim();
+  const group = document.getElementById('daGroup').value;
+  if (!name || !mobile || !password) { alert("Fill all fields"); return; }
+  const res = await fetch(API + '/api/direct-add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, mobile, password, group_type: group }) });
+  const data = await res.json();
+  alert(data.message || "Added");
+  document.getElementById('daName').value = '';
+  document.getElementById('daMobile').value = '';
+  document.getElementById('daPassword').value = '';
+  loadAdminData();
+}
+let bulkRowCount = 0;
+function addBulkRow() {
+  bulkRowCount++;
+  const container = document.getElementById('bulkRowsContainer');
+  const rowId = 'bulkRow' + bulkRowCount;
+  const div = document.createElement('div');
+  div.id = rowId;
+  div.style = 'display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap; align-items:center;';
+  div.innerHTML = `
+    <input type="text" placeholder="Naam" class="bulkName" style="flex:1; min-width:100px; margin:0;">
+    <input type="text" placeholder="Mobile" class="bulkMobile" style="flex:1; min-width:100px; margin:0;">
+    <input type="text" placeholder="Password" class="bulkPassword" style="flex:1; min-width:100px; margin:0;">
+    <select class="bulkGroup" style="flex:1; min-width:100px; margin:0;">
+      <option value="mardana">Mardana</option>
+      <option value="zanana">Zanana</option>
+    </select>
+    <button class="secondary" style="width:auto; margin:0; padding:8px 12px;" onclick="document.getElementById('${rowId}').remove()">✖</button>
+  `;
+  container.appendChild(div);
+}
+addBulkRow(); // shuru mein ek row dikhe
+
+async function bulkAddMureeds() {
+  const rows = document.querySelectorAll('#bulkRowsContainer > div');
+  const entries = [];
+  rows.forEach(row => {
+    const name = row.querySelector('.bulkName').value.trim();
+    const mobile = row.querySelector('.bulkMobile').value.trim();
+    const password = row.querySelector('.bulkPassword').value.trim();
+    const group_type = row.querySelector('.bulkGroup').value;
+    if (name && mobile && password) {
+      entries.push({ name, mobile, password, group_type });
+    }
+  });
+  if (!entries.length) { alert("Kam se kam ek row poori bharo (Naam, Mobile, Password)"); return; }
+  try {
+    const res = await fetch(API + '/api/bulk-add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ entries }) });
+    const data = await res.json();
+    alert(data.message || "Bulk add done");
+    document.getElementById('bulkRowsContainer').innerHTML = '';
+    bulkRowCount = 0;
+    addBulkRow();
+    loadAdminData();
+  } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+function autoFillTitle() {
+  const fileInput = document.getElementById('classFile');
+  const titleBox = document.getElementById('classTitle');
+  if (fileInput.files[0] && !titleBox.value.trim()) {
+    let name = fileInput.files[0].name;
+    name = name.replace(/\.[^/.]+$/, ''); // extension hata do
+    titleBox.value = name;
+  }
+}function toggleClassUrlOrFile() {
+  const type = document.getElementById('classType').value;
+  const urlBox = document.getElementById('classUrl');
+  const fileBox = document.getElementById('classFile');
+  const liveRow = document.getElementById('liveCheckRow');
+  if (type === 'link') {
+    urlBox.style.display = '';
+    fileBox.style.display = 'none';
+    liveRow.style.display = '';
+  } else {
+    urlBox.style.display = 'none';
+    fileBox.style.display = '';
+    liveRow.style.display = 'none';
+    document.getElementById('classIsLive').checked = false;
+  }
+}
+
+async function uploadClass() {
+  const editingId = document.getElementById('editingClassId').value;
+  const title = document.getElementById('classTitle').value.trim();
+  const type = document.getElementById('classType').value;
+  const group_type = document.getElementById('classGroup').value;
+  let file_url = document.getElementById('classUrl').value.trim();
+  const fileInput = document.getElementById('classFile');
+  const is_live = type === 'link' && document.getElementById('classIsLive').checked;
+
+  if (!title) { alert("Title bharo"); return; }
+
+  if (type === 'link') {
+    if (!file_url) { alert("URL bharo"); return; }
+  } else {
+    const file = fileInput.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      const uploadRes = await fetch(API + '/api/upload', { method: 'POST', body: formData });
+      const uploadData = await uploadRes.json();
+      if (!uploadData.url) { alert(uploadData.error || "File upload fail ho gaya"); return; }
+      file_url = uploadData.url;
+    } else if (editingId) {
+      const existing = findClassById(Number(editingId));
+      file_url = existing ? existing.file_url : '';
+      if (!file_url) { alert("File choose karo"); return; }
+    } else {
+      alert("File choose karo"); return;
+    }
+  }
+
+  const endpoint = editingId ? '/api/update-class' : '/api/classes';
+  const payload = editingId
+    ? { id: Number(editingId), title, type, file_url, group_type, is_live }
+    : { title, type, file_url, group_type, is_live };
+
+  const res = await fetch(API + endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+  const data = await res.json();
+  alert(data.message || (editingId ? "Class update ho gayi" : "Class uploaded"));
+  cancelEditClass();
+  loadClasses();
+}
+// ===== ALARM SETTINGS (Admin Control) =====
+let alarmSettings = {
+  start_alarm_enabled: 1,
+  start_alarm_duration_seconds: 60,
+  end_reminder_enabled: 1,
+  end_reminder_minutes_before: 10,
+  end_reminder_repeat_count: 3,
+  end_reminder_beep_seconds: 2,
+  custom_alarm_enabled: 0,
+  custom_alarm_title: '',
+  custom_alarm_start: '',
+  custom_alarm_end: '',
+  qa_global_access: 1
+};
+
+function populate12HourDropdowns() {
+  ['customAlarmStartHour','customAlarmEndHour','eventStartHour','eventEndHour'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel && !sel.options.length) {
+      for (let h = 1; h <= 12; h++) sel.innerHTML += `<option value="${h}">${h}</option>`;
+    }
+  });
+  ['customAlarmStartMin','customAlarmEndMin','eventStartMin','eventEndMin'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel && !sel.options.length) {
+      for (let m = 0; m < 60; m += 5) sel.innerHTML += `<option value="${m}">${String(m).padStart(2,'0')}</option>`;
+    }
+  });
+}
+
+function set12HourFields(prefix, time24) {
+  // time24 jaisa "14:30" -> Hour=2, Min=30, AmPm=PM
+  if (!time24) return;
+  const [h, m] = time24.split(':').map(Number);
+  let hour12 = h % 12; if (hour12 === 0) hour12 = 12;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const nearestMin = Math.round(m / 5) * 5 % 60;
+  const hourSel = document.getElementById(prefix + 'Hour');
+  const minSel = document.getElementById(prefix + 'Min');
+  const ampmSel = document.getElementById(prefix + 'AmPm');
+  if (hourSel) hourSel.value = String(hour12);
+  if (minSel) minSel.value = String(nearestMin);
+  if (ampmSel) ampmSel.value = ampm;
+}
+
+function get24HourFromFields(prefix) {
+  const hour12 = parseInt(document.getElementById(prefix + 'Hour').value, 10);
+  const min = parseInt(document.getElementById(prefix + 'Min').value, 10);
+  const ampm = document.getElementById(prefix + 'AmPm').value;
+  let hour24 = hour12 % 12;
+  if (ampm === 'PM') hour24 += 12;
+  return String(hour24).padStart(2,'0') + ':' + String(min).padStart(2,'0');
+}
+
+async function loadAlarmSettings() {
+  try {
+    populate12HourDropdowns();
+    const res = await fetch(API + '/api/alarm-settings');
+    const data = await res.json();
+    if (data.settings) {
+      alarmSettings = data.settings;
+      const s = document.getElementById('startAlarmEnabled');
+      const su = document.getElementById('startAlarmDuration');
+      const e = document.getElementById('endReminderEnabled');
+      const em = document.getElementById('endReminderMinutesBefore');
+      const er = document.getElementById('endReminderRepeatCount');
+      const eb = document.getElementById('endReminderBeepSeconds');
+      if (s) s.checked = !!alarmSettings.start_alarm_enabled;
+      if (su) su.value = alarmSettings.start_alarm_duration_seconds;
+      if (e) e.checked = !!alarmSettings.end_reminder_enabled;
+      if (em) em.value = alarmSettings.end_reminder_minutes_before;
+      if (er) er.value = alarmSettings.end_reminder_repeat_count;
+      if (eb) eb.value = alarmSettings.end_reminder_beep_seconds;
+
+      const ce = document.getElementById('customAlarmEnabled');
+      const ct = document.getElementById('customAlarmTitleInput');
+      if (ce) ce.checked = !!alarmSettings.custom_alarm_enabled;
+      if (ct) ct.value = alarmSettings.custom_alarm_title || '';
+      set12HourFields('customAlarmStart', alarmSettings.custom_alarm_start || '09:00');
+      set12HourFields('customAlarmEnd', alarmSettings.custom_alarm_end || '10:00');
+
+      window.khanqahMapLink = alarmSettings.khanqah_map_link || '';
+      window.khanqahAddress = alarmSettings.khanqah_address || '';
+      const kai = document.getElementById('khanqahAddressInput');
+      const kmi = document.getElementById('khanqahMapLinkInput');
+      if (kai && !kai.value) kai.value = window.khanqahAddress;
+      if (kmi && !kmi.value) kmi.value = window.khanqahMapLink;
+
+      const toneNameBox = document.getElementById('alarmToneCurrentName');
+      if (toneNameBox) {
+        toneNameBox.innerText = alarmSettings.alarm_tone_url
+          ? '✅ Ab tak upload ki hui tone use ho rahi hai'
+          : 'Abhi default "ding-dong" tone use ho rahi hai';
+      }
+
+      checkCustomAlarm();
+      // Settings ko save kar lo, taaki internet chala jaaye to bhi
+      // sahi (admin ne jo set kiya wahi) settings se alarm chale, hardcoded default se nahi
+      try { localStorage.setItem('zahidiya_alarm_settings', JSON.stringify(alarmSettings)); } catch(e2) {}
+    }
+  } catch (e) {
+    console.error(e);
+    // Internet nahi mila — agar pehle se settings cache mein hain to wahi use karo
+    try {
+      const cached = localStorage.getItem('zahidiya_alarm_settings');
+      if (cached) alarmSettings = JSON.parse(cached);
+    } catch (e2) {}
+  }
+  updateQaTabVisibility();
+}
+
+// Sirf ek hi global switch se sab mureedon ke liye "Sawal-Jawab" tab dikhta/gayab hota hai.
+function updateQaTabVisibility() {
+  const qaTabBtn = document.getElementById('tabQA');
+  if (!qaTabBtn || !currentUser) return;
+  const globalOn = Number(alarmSettings.qa_global_access) !== 0;
+  if (currentUser.role === 'admin' || globalOn) {
+    qaTabBtn.classList.remove('hidden');
+  } else {
+    qaTabBtn.classList.add('hidden');
+  }
+  const btn = document.getElementById('globalQaToggleBtn');
+  if (btn && currentUser.role === 'admin') {
+    btn.innerText = globalOn ? '✅ ON hai (dabao OFF karne ke liye)' : '⛔ OFF hai (dabao ON karne ke liye)';
+  }
+}
+
+async function toggleGlobalQaAccess() {
+  const newState = Number(alarmSettings.qa_global_access) === 0 ? 1 : 0;
+  const action = newState ? 'ON' : 'OFF';
+  if (!confirm(`Sab mureedon ke liye Sawal-Jawab ${action} karna hai?`)) return;
+  try {
+    const res = await fetch(API + '/api/toggle-global-qa', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ qa_global_access: newState })
+    });
+    const data = await res.json();
+    if (!data.success) { alert(data.message || 'Kuch galat ho gaya'); return; }
+    alarmSettings.qa_global_access = newState;
+    updateQaTabVisibility();
+  } catch (e) { alert('Kuch galat ho gaya'); }
+}
+
+async function saveCustomAlarm() {
+  const body = {
+    custom_alarm_enabled: document.getElementById('customAlarmEnabled').checked,
+    custom_alarm_title: document.getElementById('customAlarmTitleInput').value.trim(),
+    custom_alarm_start: get24HourFromFields('customAlarmStart'),
+    custom_alarm_end: get24HourFromFields('customAlarmEnd')
+  };
+  try {
+    const res = await fetch(API + '/api/alarm-settings', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    alert(data.message || 'Custom alarm saved');
+    loadAlarmSettings();
+  } catch (e) { alert('Error saving custom alarm'); }
+}
+
+function checkCustomAlarm() {
+  const card = document.getElementById('customAlarmCard');
+  const titleEl = document.getElementById('customAlarmTitle');
+  if (!card) return;
+  if (!alarmSettings.custom_alarm_enabled || !alarmSettings.custom_alarm_start || !alarmSettings.custom_alarm_end) {
+    card.classList.add('hidden');
+    return;
+  }
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const [sh, sm] = alarmSettings.custom_alarm_start.split(':').map(Number);
+  const [eh, em2] = alarmSettings.custom_alarm_end.split(':').map(Number);
+  const startMinutes = sh * 60 + sm;
+  const endMinutes = eh * 60 + em2;
+  const active = startMinutes <= endMinutes
+    ? (nowMinutes >= startMinutes && nowMinutes <= endMinutes)
+    : (nowMinutes >= startMinutes || nowMinutes <= endMinutes); // raat paar hone wala case
+  if (active) {
+    const titleText = '🔔 ' + (alarmSettings.custom_alarm_title || 'Alarm') + ' — abhi chal raha hai';
+    titleEl.innerText = titleText;
+    card.classList.remove('hidden');
+
+    // Sound bhi bajayenge - din mein ek baar (jab tak silence na kiya ho)
+    const key = 'custom-' + alarmSettings.custom_alarm_start + '-' + now.toDateString();
+    if (!alarmSilenced[key]) {
+      currentAlarmKey = key;
+      showAlarmBanner(titleText);
+      playAlarmSound((alarmSettings.start_alarm_duration_seconds || 3) * 1000);
+    }
+  } else {
+    card.classList.add('hidden');
+  }
+}
+
+const HIJRI_MONTHS = ['Muharram','Safar',"Rabi' al-Awwal","Rabi' al-Thani","Jumada al-Awwal","Jumada al-Thani","Rajab","Sha'ban","Ramadan","Shawwal","Dhu al-Qi'dah","Dhu al-Hijjah"];
+
+function getHijriParts(date) {
+  const parts = new Intl.DateTimeFormat('en-u-ca-islamic', { day: 'numeric', month: 'numeric', year: 'numeric' }).formatToParts(date);
+  const day = parseInt(parts.find(p => p.type === 'day').value, 10);
+  const month = parseInt(parts.find(p => p.type === 'month').value, 10);
+  const year = parts.find(p => p.type === 'year').value;
+  return { day, month, year };
+}
+
+function showIslamicDate() {
+  const box = document.getElementById('islamicDateBox');
+  if (!box) return;
+  try {
+    const today = new Date();
+    const english = today.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' });
+    const h = getHijriParts(today);
+    const hijri = `${h.day} ${HIJRI_MONTHS[h.month - 1]} ${h.year} AH`;
+    box.innerHTML = `
+      <div style="cursor:pointer; text-decoration:underline; text-decoration-style:dotted;" onclick="openCalendarGrid('gregorian')">📆 ${english}</div>
+      <div style="margin-top:4px; cursor:pointer; text-decoration:underline; text-decoration-style:dotted;" onclick="openCalendarGrid('islamic')">🌙 ${hijri} (Hijri)</div>
+    `;
+  } catch (e) {
+    box.innerHTML = '';
+  }
+}
+
+function getIslamicDayNumber(date) {
+  return getHijriParts(date).day;
+}
+function getIslamicMonthYear(date) {
+  const h = getHijriParts(date);
+  return { month: h.month, year: h.year };
+}
+
+// Hijri calendar ke zaroori din (month-day ke hisaab se, har saal wahi rehte hain)
+const HIJRI_EVENTS = {
+  '1-1': 'Islamic New Year (Muharram)',
+  '1-10': 'Ashura',
+  '3-12': "Eid Milad-un-Nabi ﷺ",
+  '7-27': "Shab-e-Mairaj",
+  '8-15': 'Shab-e-Baraat',
+  '9-1': 'Ramadan Shuru',
+  '9-27': 'Shab-e-Qadr (ehtiyaatan)',
+  '10-1': 'Eid-ul-Fitr',
+  '12-9': 'Youm-e-Arafah',
+  '12-10': 'Eid-ul-Adha'
+};
+
+// Gregorian calendar ke National holidays
+const GREGORIAN_EVENTS = {
+  '0-26': 'Republic Day',
+  '7-15': 'Independence Day',
+  '9-2': 'Gandhi Jayanti',
+  '11-25': 'Christmas'
+};
+
+function buildIslamicMonthDates(anchor) {
+  let d = new Date(anchor);
+  let guard = 0;
+  while (getIslamicDayNumber(d) !== 1 && guard < 40) { d.setDate(d.getDate() - 1); guard++; }
+  const { month, year } = getIslamicMonthYear(d);
+  const dates = [];
+  let cur = new Date(d);
+  guard = 0;
+  while (guard < 35) {
+    const my = getIslamicMonthYear(cur);
+    if (my.month !== month || my.year !== year) break;
+    dates.push(new Date(cur));
+    cur.setDate(cur.getDate() + 1);
+    guard++;
+  }
+  return { title: HIJRI_MONTHS[month - 1] + ' ' + year + ' AH', dates, hijriMonth: month };
+}
+
+function buildGregorianMonthDates(anchor) {
+  const year = anchor.getFullYear();
+  const month = anchor.getMonth();
+  const last = new Date(year, month + 1, 0);
+  const dates = [];
+  for (let d = 1; d <= last.getDate(); d++) dates.push(new Date(year, month, d));
+  const title = anchor.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  return { title, dates };
+}
+
+let calendarType = 'gregorian';
+let calendarAnchorDate = new Date();
+
+function openCalendarGrid(type, anchor) {
+  calendarType = type;
+  calendarAnchorDate = anchor || new Date();
+  const today = new Date();
+  const built = type === 'islamic' ? buildIslamicMonthDates(calendarAnchorDate) : buildGregorianMonthDates(calendarAnchorDate);
+  const { title, dates } = built;
+  document.getElementById('calendarGridTitle').innerText = (type === 'islamic' ? '🌙 ' : '📆 ') + title;
+
+  const switchBtn = document.getElementById('calSwitchPrimaryBtn');
+  if (switchBtn) {
+    switchBtn.innerText = type === 'islamic' ? '📆 English ko Bada Dikhao' : '🌙 Hijri ko Bada Dikhao';
+  }
+
+  const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const gregShortMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const hijriShortMonths = ['Muh','Saf','Rab-I','Rab-II','Jum-I','Jum-II','Raj',"Sha'",'Ram','Shw','Dhu-Q','Dhu-H'];
+  let html = '<div id="calGridContainer" style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; font-size:12px;">';
+  dayNames.forEach(dn => html += `<div style="color:#ffd700; font-weight:bold;">${dn}</div>`);
+
+  // pehle date ke din se pehle khaali boxes
+  const firstDow = dates[0].getDay();
+  for (let i = 0; i < firstDow; i++) html += '<div></div>';
+
+  const eventsThisMonth = [];
+  const cellEventMap = {};
+
+  dates.forEach((d, idx) => {
+    const isToday = d.toDateString() === today.toDateString();
+    const primaryDayNum = type === 'islamic' ? (idx + 1) : d.getDate();
+
+    // Doosra (secondary) calendar ka date bhi nikaal lo, taaki ek hi box mein dono dikhein
+    let secondaryLabel;
+    if (type === 'islamic') {
+      secondaryLabel = d.getDate() + ' ' + gregShortMonths[d.getMonth()];
+    } else {
+      const hp = getHijriParts(d);
+      secondaryLabel = hp.day + ' ' + hijriShortMonths[hp.month - 1];
+    }
+
+    let eventName = null;
+    if (type === 'islamic') {
+      eventName = HIJRI_EVENTS[built.hijriMonth + '-' + primaryDayNum] || null;
+    } else {
+      eventName = GREGORIAN_EVENTS[d.getMonth() + '-' + primaryDayNum] || null;
+    }
+    if (eventName) eventsThisMonth.push({ day: primaryDayNum, name: eventName });
+
+    const gridPos = firstDow + idx;
+    cellEventMap[gridPos] = { dayNum: primaryDayNum, secondaryLabel, eventName };
+
+    let style = isToday ? 'background:#ffd700; color:#1a3a1a; font-weight:bold;' : 'background:#0f2a0f;';
+    if (eventName && !isToday) style = 'background:#8b1a1a; color:#fff; font-weight:bold;';
+    const shortLabel = eventName ? `<div style="font-size:8px; line-height:1.1; margin-top:2px; padding:0 2px; word-break:break-word;">${eventName}</div>` : '';
+    html += `<div id="calCell-${gridPos}" tabindex="0" style="padding:6px 2px; border-radius:6px; position:relative; min-height:38px; outline-offset:2px; cursor:pointer; ${style}" title="${eventName || ''}">
+      <div>${primaryDayNum}</div>
+      <div style="font-size:9px; opacity:0.8;">${secondaryLabel}</div>
+      ${shortLabel}
+    </div>`;
+  });
+
+  html += '</div>';
+
+  if (eventsThisMonth.length) {
+    html += '<div style="margin-top:10px; font-size:12px;">';
+    eventsThisMonth.forEach(ev => {
+      html += `<div style="margin-top:4px;">🔴 <strong>${ev.day}:</strong> ${ev.name}</div>`;
+    });
+    html += '</div>';
+  }
+
+  document.getElementById('calendarGridBody').innerHTML = html;
+  document.getElementById('calendarGridCard').classList.remove('hidden');
+  document.getElementById('calendarGridCard').scrollIntoView({ behavior: 'smooth' });
+  setupCalendarKeyboardNav(cellEventMap);
+}
+
+// Ek hi button se dusra calendar (Hijri/English) primary bana do — anchor date wahi rehta hai
+function switchCalendarPrimary() {
+  const otherType = calendarType === 'islamic' ? 'gregorian' : 'islamic';
+  openCalendarGrid(otherType, calendarAnchorDate);
+}
+
+function setupCalendarKeyboardNav(cellEventMap) {
+  const container = document.getElementById('calGridContainer');
+  if (!container) return;
+  container.onkeydown = function(e) {
+    const active = document.activeElement;
+    if (!active || !active.id || !active.id.startsWith('calCell-')) return;
+    const pos = parseInt(active.id.replace('calCell-', ''), 10);
+    let newPos = null;
+    if (e.key === 'ArrowLeft') newPos = pos - 1;
+    else if (e.key === 'ArrowRight') newPos = pos + 1;
+    else if (e.key === 'ArrowUp') newPos = pos - 7;
+    else if (e.key === 'ArrowDown') newPos = pos + 7;
+    else if (e.key === 'Enter') {
+      const info = cellEventMap[pos];
+      if (info) alert(info.dayNum + ' (' + info.secondaryLabel + ')' + (info.eventName ? ' — ' + info.eventName : ' — Koi khaas din nahi'));
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    } else {
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    const nextCell = document.getElementById('calCell-' + newPos);
+    if (nextCell) nextCell.focus();
+  };
+  // Pehla din focus mein le aao taaki turant arrow keys se chal sake
+  const firstCell = container.querySelector('[id^="calCell-"]');
+  if (firstCell) firstCell.focus();
+}
+
+function changeCalendarMonth(direction) {
+  if (calendarType === 'gregorian') {
+    const next = new Date(calendarAnchorDate.getFullYear(), calendarAnchorDate.getMonth() + direction, 1);
+    openCalendarGrid('gregorian', next);
+  } else {
+    const built = buildIslamicMonthDates(calendarAnchorDate);
+    let newAnchor;
+    if (direction > 0) {
+      newAnchor = new Date(built.dates[built.dates.length - 1]);
+      newAnchor.setDate(newAnchor.getDate() + 1); // agle Hijri month ka pehla din
+    } else {
+      newAnchor = new Date(built.dates[0]);
+      newAnchor.setDate(newAnchor.getDate() - 1); // pichhle Hijri month ka aakhri din
+    }
+    openCalendarGrid('islamic', newAnchor);
+  }
+}
+
+function closeCalendarGrid() {
+  document.getElementById('calendarGridCard').classList.add('hidden');
+}
+
+async function saveAlarmSettings() {
+  const body = {
+    start_alarm_enabled: document.getElementById('startAlarmEnabled').checked,
+    start_alarm_duration_seconds: parseInt(document.getElementById('startAlarmDuration').value) || 60,
+    end_reminder_enabled: document.getElementById('endReminderEnabled').checked,
+    end_reminder_minutes_before: parseInt(document.getElementById('endReminderMinutesBefore').value) || 10,
+    end_reminder_repeat_count: parseInt(document.getElementById('endReminderRepeatCount').value) || 3,
+    end_reminder_beep_seconds: parseInt(document.getElementById('endReminderBeepSeconds').value) || 2
+  };
+  try {
+    const res = await fetch(API + '/api/alarm-settings', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    alert(data.message || 'Settings saved');
+    loadAlarmSettings();
+  } catch (e) { alert('Error saving settings'); }
+}
+
+let sharedAudioCtx = null;
+function getAudioCtx() {
+  if (!sharedAudioCtx) {
+    sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (sharedAudioCtx.state === 'suspended') {
+    sharedAudioCtx.resume().catch(() => {});
+  }
+  return sharedAudioCtx;
+}
+function unlockAudio() {
+  // Login jaise real click par AudioContext ko "unlock" kar dete hain,
+  // taaki baad mein timer se (bina click ke) bhi alarm sound baj sake.
+  try { getAudioCtx(); } catch (e) {}
+}
+
+window.activeOscillators = [];
+
+function playTone(ctx, freq, startTime, durationSec) {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.0001, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.35, startTime + 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + durationSec);
+  osc.start(startTime);
+  osc.stop(startTime + durationSec + 0.05);
+  window.activeOscillators.push(osc);
+  osc.onended = () => {
+    window.activeOscillators = window.activeOscillators.filter(o => o !== osc);
+  };
+}
+
+function beep(durationMs) {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    const totalSec = Math.max(durationMs / 1000, 0.6);
+    // "Ding-dong" jaisa do-tone chime
+    playTone(ctx, 880, now, totalSec / 2);       // Ding (upar wala sur)
+    playTone(ctx, 659, now + totalSec / 2, totalSec / 2); // Dong (neeche wala sur)
+  } catch (e) { console.error('Beep error', e); }
+}
+
+window.currentAlarmAudio = null;
+
+function playAlarmSound(durationMs) {
+  stopAlarmSound(); // pehle se koi baj raha ho to pehle usse rok do, do sound ek sath na bajein
+  // Agar admin ne apni ringtone upload ki hai, wahi bajao. Warna default ding-dong.
+  if (alarmSettings && alarmSettings.alarm_tone_url) {
+    try {
+      const audio = new Audio(alarmSettings.alarm_tone_url);
+      window.currentAlarmAudio = audio;
+      audio.play().catch(() => { beep(durationMs); });
+      // durationMs ke baad khud rok do, taaki lambi audio file bhi hamesha na bajti rahe
+      if (durationMs && durationMs > 0 && durationMs < 3600000) {
+        window.currentAlarmAudioTimeout = setTimeout(() => {
+          if (window.currentAlarmAudio === audio) stopAlarmSound();
+        }, durationMs);
+      }
+      return;
+    } catch (e) {
+      beep(durationMs);
+      return;
+    }
+  }
+  beep(durationMs);
+}
+
+// Chahe custom tone bajay ho ya default beep — ek hi function se turant rok deta hai
+function stopAlarmSound() {
+  if (window.currentAlarmAudioTimeout) { clearTimeout(window.currentAlarmAudioTimeout); window.currentAlarmAudioTimeout = null; }
+  if (window.repeatBeepInterval) { clearInterval(window.repeatBeepInterval); window.repeatBeepInterval = null; }
+  if (window.testToneInterval) { clearInterval(window.testToneInterval); window.testToneInterval = null; }
+  if (window.currentAlarmAudio) {
+    try { window.currentAlarmAudio.pause(); window.currentAlarmAudio.currentTime = 0; } catch (e) {}
+    window.currentAlarmAudio = null;
+  }
+  if (window.activeOscillators && window.activeOscillators.length) {
+    window.activeOscillators.forEach(osc => { try { osc.stop(); } catch (e) {} });
+    window.activeOscillators = [];
+  }
+  // Jo bhi "Suno" button abhi "Roko" dikha raha tha, use wapas normal kar do
+  ['testToneBtn', 'testToneBtn2'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn && btn.dataset.playing === '1') {
+      btn.innerText = btn.dataset.label;
+      btn.dataset.playing = '0';
+    }
+  });
+}
+
+// Ek hi button — pehli baar dabao to bajta rahega (loop), dobara dabao to turant ruk jaayega
+function toggleTestTone(btnId) {
+  const btn = document.getElementById(btnId);
+  if (btn && btn.dataset.playing === '1') {
+    stopAlarmSound();
+    return;
+  }
+  stopAlarmSound(); // koi aur test/alarm baj raha ho to pehle usse rok do
+  if (btn) {
+    btn.dataset.label = btn.innerText;
+    btn.dataset.playing = '1';
+    btn.innerText = '⏹ Roko (bajna band karo)';
+  }
+  if (alarmSettings && alarmSettings.alarm_tone_url) {
+    try {
+      const audio = new Audio(alarmSettings.alarm_tone_url);
+      audio.loop = true; // jab tak "Roko" na dabao, bajta rahe
+      window.currentAlarmAudio = audio;
+      audio.play().catch(() => { startLoopingBeep(); });
+    } catch (e) { startLoopingBeep(); }
+  } else {
+    startLoopingBeep();
+  }
+}
+
+function startLoopingBeep() {
+  beep(1200);
+  window.testToneInterval = setInterval(() => beep(1200), 1800);
+}
+
+async function uploadAlarmTone() {
+  const fileInput = document.getElementById('alarmToneFile');
+  const file = fileInput.files[0];
+  if (!file) { alert('Pehle koi audio file choose karo'); return; }
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const uploadRes = await fetch(API + '/api/upload', { method: 'POST', body: formData });
+    const uploadData = await uploadRes.json();
+    if (!uploadData.url) { alert('Upload fail ho gaya'); return; }
+
+    const res = await fetch(API + '/api/alarm-settings', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ alarm_tone_url: uploadData.url })
+    });
+    const data = await res.json();
+    alert('🎵 Tone upload ho gayi! Ab yehi alarm mein bajegi.');
+    loadAlarmSettings();
+  } catch (e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+
+async function deleteAlarmTone() {
+  if (!confirm('Tone delete karke default "ding-dong" par wapas jaana hai?')) return;
+  try {
+    const res = await fetch(API + '/api/alarm-settings', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ alarm_tone_url: '' })
+    });
+    await res.json();
+    alert('✅ Tone delete ho gayi, ab default "ding-dong" bajega.');
+    loadAlarmSettings();
+  } catch (e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+
+let alarmSilenced = {};
+
+// ---------- ADMIN PANEL ACCORDION (ek box khulega, baaki sab band ho jaayenge) ----------
+function setupAdminAccordion() {
+  const cards = document.querySelectorAll('#adminScreen > .card');
+  cards.forEach((card) => {
+    if (card.dataset.accordionInit === '1') return;
+    const header = card.querySelector('h3');
+    if (!header) return;
+    card.dataset.accordionInit = '1';
+
+    // h3 ke alawa card ke andar jo bhi hai, usko ek collapsible body mein daal do
+    const body = document.createElement('div');
+    body.className = 'accordion-body hidden';
+    Array.from(card.children).forEach(child => {
+      if (child !== header) body.appendChild(child);
+    });
+
+    // h3 ko ek clickable header-row mein rakhte hain, arrow ko alag rakha hai taaki
+    // baad mein kahin h3.innerText badle to arrow mit na jaaye
+    const headerRow = document.createElement('div');
+    headerRow.className = 'accordion-header-row';
+    headerRow.style.cssText = 'display:flex; justify-content:space-between; align-items:center; cursor:pointer;';
+    card.insertBefore(headerRow, header);
+    headerRow.appendChild(header);
+    const arrow = document.createElement('span');
+    arrow.className = 'accordion-arrow';
+    arrow.style.cssText = 'margin-left:8px; flex-shrink:0;';
+    arrow.innerText = '▶';
+    headerRow.appendChild(arrow);
+    card.appendChild(body);
+
+    headerRow.onclick = () => toggleAdminAccordion(card);
+  });
+}
+
+function toggleAdminAccordion(openCard) {
+  const cards = document.querySelectorAll('#adminScreen > .card');
+  const wasOpen = openCard.querySelector('.accordion-body') && !openCard.querySelector('.accordion-body').classList.contains('hidden');
+  cards.forEach(card => {
+    const body = card.querySelector('.accordion-body');
+    const arrow = card.querySelector('.accordion-arrow');
+    if (!body) return;
+    if (card === openCard && !wasOpen) {
+      body.classList.remove('hidden');
+      if (arrow) arrow.innerText = '▼';
+    } else {
+      body.classList.add('hidden');
+      if (arrow) arrow.innerText = '▶';
+    }
+  });
+}
+
+// Kisi khaas card ko zabardasti khol do (jaise "Edit" dabane par), baaki sab band karke
+function openAdminAccordionCard(cardId) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  const cards = document.querySelectorAll('#adminScreen > .card');
+  cards.forEach(c => {
+    const body = c.querySelector('.accordion-body');
+    const arrow = c.querySelector('.accordion-arrow');
+    if (!body) return;
+    if (c === card) { body.classList.remove('hidden'); if (arrow) arrow.innerText = '▼'; }
+    else { body.classList.add('hidden'); if (arrow) arrow.innerText = '▶'; }
+  });
+}
+
+function silenceAlarm(key) {
+  alarmSilenced[key] = true;
+  stopAlarmSound(); // sound turant band — banner hide karne se pehle hi
+  const bar = document.getElementById('alarmBanner');
+  if (bar) bar.classList.add('hidden');
+}
+
+function showAlarmBanner(text) {
+  let bar = document.getElementById('alarmBanner');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'alarmBanner';
+    bar.style.cssText = 'position:fixed; top:0; left:0; right:0; background:#ffd700; color:#0f3d2e; padding:14px; text-align:center; font-weight:bold; z-index:9999;';
+    document.body.prepend(bar);
+  }
+  bar.innerHTML = text + ' <button style="width:auto; margin-left:10px; padding:6px 14px;" onclick="silenceAlarm(currentAlarmKey)">Silence</button>';
+  bar.classList.remove('hidden');
+}
+
+let currentAlarmKey = '';
+let lastCheckedMinute = -1;
+
+// "HH:MM" ko minute-number mein badalte hain, taaki string-match ki gadbad (space/format) na ho
+function toMinutes(hhmm) {
+  if (!hhmm) return null;
+  const parts = String(hhmm).trim().split(':');
+  const h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  if (isNaN(h) || isNaN(m)) return null;
+  return h * 60 + m;
+}
+
+// D1/DB se kabhi-kabhi 1/0 ki jagah null/undefined aa sakta hai — usko bhi "enabled" hi maano
+// jab tak explicitly 0/false na ho
+function isAlarmOn(val) {
+  return !(val === 0 || val === false || val === '0');
+}
+
+function checkNamazAlarms() {
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  if (!window.namazTimesToday) {
+    updateAlarmStatusLine('Namaz auqaat load nahi hue — internet check karo');
+    return;
+  }
+  if (nowMin === lastCheckedMinute) return;
+  lastCheckedMinute = nowMin;
+
+  const names = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+  let statusMsg = '⏰ Alarm check chal raha hai (' + now.toTimeString().slice(0,5) + ')';
+
+  names.forEach((name, idx) => {
+    const tMin = toMinutes(window.namazTimesToday[name]);
+    if (tMin === null) return;
+
+    if (isAlarmOn(alarmSettings.start_alarm_enabled) && tMin === nowMin) {
+      const key = 'start-' + name + '-' + now.toDateString();
+      if (!alarmSilenced[key]) {
+        currentAlarmKey = key;
+        showAlarmBanner('🕌 ' + name + ' ki namaz ka waqt ho gaya hai');
+        playAlarmSound(Math.min((alarmSettings.start_alarm_duration_seconds || 60) * 1000, 5000));
+      }
+    }
+
+    const nextName = names[idx + 1];
+    const nextTMin = nextName ? toMinutes(window.namazTimesToday[nextName]) : null;
+    if (isAlarmOn(alarmSettings.end_reminder_enabled) && nextTMin !== null) {
+      const reminderMin = nextTMin - (alarmSettings.end_reminder_minutes_before || 0);
+      if (reminderMin === nowMin) {
+        const key = 'end-' + name + '-' + now.toDateString();
+        if (!alarmSilenced[key]) {
+          currentAlarmKey = key;
+          showAlarmBanner('⏳ ' + name + ' ki namaz khatam hone wali hai (' + alarmSettings.end_reminder_minutes_before + ' min)');
+          let count = 0;
+          window.repeatBeepInterval = setInterval(() => {
+            playAlarmSound(alarmSettings.end_reminder_beep_seconds * 1000);
+            count++;
+            if (count >= alarmSettings.end_reminder_repeat_count) { clearInterval(window.repeatBeepInterval); window.repeatBeepInterval = null; }
+          }, (alarmSettings.end_reminder_beep_seconds + 1) * 1000);
+        }
+      }
+    }
+  });
+
+  updateAlarmStatusLine(statusMsg);
+}
+
+function updateAlarmStatusLine(msg) {
+  const el = document.getElementById('alarmStatusLine');
+  if (el) el.innerText = msg;
+}
+
+setInterval(checkNamazAlarms, 15000);
+checkNamazAlarms();
+
+// ---------- EVENTS (Weekly / Monthly / Ek-baar, content ke saath) ----------
+window.eventsList = [];
+window.eventRecordedBlob = null;
+let eventMediaRecorder = null;
+let eventRecordedChunks = [];
+
+function toggleEventScheduleFields() {
+  const type = document.getElementById('eventRepeatType').value;
+  document.getElementById('eventDayOfWeek').style.display = type === 'weekly' ? 'block' : 'none';
+  document.getElementById('eventDayOfMonth').style.display = type === 'monthly' ? 'block' : 'none';
+  document.getElementById('eventDate').style.display = type === 'once' ? 'block' : 'none';
+}
+
+function toggleEventContentFields() {
+  const type = document.getElementById('eventContentType').value;
+  document.getElementById('eventTextContent').style.display = type === 'text' ? 'block' : 'none';
+  const fileInput = document.getElementById('eventFileInput');
+  fileInput.style.display = (type === 'image' || type === 'pdf') ? 'block' : 'none';
+  fileInput.accept = type === 'pdf' ? 'application/pdf' : 'image/*';
+  document.getElementById('eventAudioBox').style.display = type === 'audio' ? 'block' : 'none';
+}
+
+async function startEventRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    eventRecordedChunks = [];
+    eventMediaRecorder = new MediaRecorder(stream);
+    eventMediaRecorder.ondataavailable = e => { if (e.data.size > 0) eventRecordedChunks.push(e.data); };
+    eventMediaRecorder.onstop = () => {
+      stream.getTracks().forEach(t => t.stop());
+      window.eventRecordedBlob = new Blob(eventRecordedChunks, { type: 'audio/webm' });
+      document.getElementById('eventRecordStatus').innerText = '✅ Recording taiyar hai (' + Math.round(window.eventRecordedBlob.size / 1024) + ' KB) — ab "Event Save Karo" dabao';
+      const btn = document.getElementById('eventRecordBtn');
+      btn.innerText = '🎙️ Dobara Record Karo';
+      btn.onclick = startEventRecording;
+    };
+    eventMediaRecorder.start();
+    document.getElementById('eventRecordStatus').innerText = '🔴 Recording ho rahi hai...';
+    const btn = document.getElementById('eventRecordBtn');
+    btn.innerText = '⏹️ Roko (Stop)';
+    btn.onclick = stopEventRecording;
+  } catch (e) {
+    alert('Mic ki permission nahi mili. Browser settings mein mic allow karo.');
+  }
+}
+function stopEventRecording() {
+  if (eventMediaRecorder && eventMediaRecorder.state !== 'inactive') eventMediaRecorder.stop();
+}
+
+async function uploadFileGetUrl(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(API + '/api/upload', { method: 'POST', body: formData });
+  const data = await res.json();
+  if (!data.url) throw new Error(data.error || 'Upload fail ho gaya');
+  return data.url;
+}
+
+async function saveEvent() {
+  const editingId = document.getElementById('editingEventId').value;
+  const title = document.getElementById('eventTitle').value.trim();
+  const repeat_type = document.getElementById('eventRepeatType').value;
+  const group_type = document.getElementById('eventGroup').value;
+  const content_type = document.getElementById('eventContentType').value;
+  const start_time = get24HourFromFields('event' + 'Start');
+  const end_time = get24HourFromFields('event' + 'End');
+
+  if (!title) { alert('Event ka naam likho'); return; }
+
+  let day_of_week = null, day_of_month = null, event_date = null;
+  if (repeat_type === 'weekly') {
+    day_of_week = Number(document.getElementById('eventDayOfWeek').value);
+  } else if (repeat_type === 'monthly') {
+    day_of_month = Number(document.getElementById('eventDayOfMonth').value);
+    if (!day_of_month || day_of_month < 1 || day_of_month > 31) { alert('Mahine ki sahi tareekh (1-31) daalo'); return; }
+  } else {
+    event_date = document.getElementById('eventDate').value;
+    if (!event_date) { alert('Date choose karo'); return; }
+  }
+
+  let content_text = '';
+  let file_url = '';
+  const existing = editingId ? window.eventsList.find(e => e.id == editingId) : null;
+
+  try {
+    if (content_type === 'text') {
+      content_text = document.getElementById('eventTextContent').value.trim();
+      if (!content_text) { alert('Text likho'); return; }
+    } else if (content_type === 'image' || content_type === 'pdf') {
+      const file = document.getElementById('eventFileInput').files[0];
+      if (file) { file_url = await uploadFileGetUrl(file); }
+      else if (existing) { file_url = existing.file_url || ''; }
+      else { alert('File choose karo'); return; }
+    } else if (content_type === 'audio') {
+      const file = document.getElementById('eventAudioFileInput').files[0];
+      if (file) { file_url = await uploadFileGetUrl(file); }
+      else if (window.eventRecordedBlob) { file_url = await uploadFileGetUrl(new File([window.eventRecordedBlob], 'recording.webm', { type: 'audio/webm' })); }
+      else if (existing) { file_url = existing.file_url || ''; }
+      else { alert('Audio file choose karo ya record karo'); return; }
+    }
+  } catch (e) { alert(e.message || 'Upload fail ho gaya'); return; }
+
+  const body = {
+    id: editingId ? Number(editingId) : undefined,
+    title, repeat_type, day_of_week, day_of_month, event_date,
+    start_time, end_time, group_type, content_type, content_text, file_url
+  };
+
+  try {
+    const res = await fetch(API + '/api/events', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(editingId ? '✅ Event update ho gaya' : '✅ Event add ho gaya');
+      cancelEditEvent();
+      loadEvents();
+    } else {
+      alert(data.message || 'Kuch gadbad ho gayi');
+    }
+  } catch (e) { alert('Error saving event'); }
+}
+
+async function loadEvents() {
+  try {
+    const res = await fetch(API + '/api/events');
+    const data = await res.json();
+    window.eventsList = data.events || [];
+    try { localStorage.setItem('zahidiya_events', JSON.stringify(window.eventsList)); } catch(e) {}
+  } catch (e) {
+    try {
+      const cached = localStorage.getItem('zahidiya_events');
+      if (cached) window.eventsList = JSON.parse(cached);
+    } catch (e2) {}
+  }
+  renderEventsAdminList();
+}
+
+function renderEventsAdminList() {
+  const box = document.getElementById('eventsAdminList');
+  if (!box || !currentUser || currentUser.role !== 'admin') return;
+  if (!window.eventsList.length) { box.innerHTML = '<p style="font-size:12px; color:#cde;">Abhi koi event nahi hai.</p>'; return; }
+  const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  box.innerHTML = window.eventsList.map(ev => {
+    let schedule = ev.repeat_type === 'weekly' ? (dayNames[ev.day_of_week] + ' (har hafte)')
+      : ev.repeat_type === 'monthly' ? (ev.day_of_month + ' tareekh (har mahine)')
+      : (ev.event_date + ' (ek baar)');
+    return `<div style="border:1px solid #2a6b2a; border-radius:8px; padding:10px; margin-top:8px;">
+      <b style="color:#ffd700;">${ev.title}</b><br>
+      <span style="font-size:12px; color:#cde;">${schedule} • ${to12Hour(ev.start_time)} - ${to12Hour(ev.end_time)} • ${ev.group_type} • ${ev.content_type}</span><br>
+      <button class="secondary" style="width:auto; margin-top:6px; padding:6px 12px;" onclick="editEvent(${ev.id})">✏️ Edit</button>
+      <button class="secondary" style="width:auto; margin-top:6px; margin-left:6px; padding:6px 12px; background:#8b1a1a;" onclick="deleteEvent(${ev.id})">🗑️ Delete</button>
+    </div>`;
+  }).join('');
+}
+
+function editEvent(id) {
+  const ev = window.eventsList.find(e => e.id == id);
+  if (!ev) return;
+  document.getElementById('editingEventId').value = ev.id;
+  document.getElementById('eventTitle').value = ev.title;
+  document.getElementById('eventRepeatType').value = ev.repeat_type;
+  toggleEventScheduleFields();
+  if (ev.repeat_type === 'weekly') document.getElementById('eventDayOfWeek').value = ev.day_of_week;
+  if (ev.repeat_type === 'monthly') document.getElementById('eventDayOfMonth').value = ev.day_of_month;
+  if (ev.repeat_type === 'once') document.getElementById('eventDate').value = ev.event_date;
+  set12HourFields('eventStart', ev.start_time);
+  set12HourFields('eventEnd', ev.end_time);
+  document.getElementById('eventGroup').value = ev.group_type;
+  document.getElementById('eventContentType').value = ev.content_type || 'text';
+  toggleEventContentFields();
+  document.getElementById('eventTextContent').value = ev.content_text || '';
+  document.getElementById('cancelEditEventBtn').style.display = 'block';
+  document.getElementById('saveEventBtn').innerText = 'Event Update Karo';
+  document.getElementById('eventTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function cancelEditEvent() {
+  document.getElementById('editingEventId').value = '';
+  document.getElementById('eventTitle').value = '';
+  document.getElementById('eventTextContent').value = '';
+  document.getElementById('eventFileInput').value = '';
+  document.getElementById('eventAudioFileInput').value = '';
+  window.eventRecordedBlob = null;
+  document.getElementById('eventRecordStatus').innerText = '';
+  document.getElementById('cancelEditEventBtn').style.display = 'none';
+  document.getElementById('saveEventBtn').innerText = 'Event Save Karo';
+}
+
+function deleteEvent(id) {
+  if (!confirm('Yeh event hamesha ke liye delete karna hai?')) return;
+  fetch(API + '/api/delete-event', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id })
+  }).then(r => r.json()).then(data => {
+    if (data.success) loadEvents(); else alert(data.message || 'Delete fail ho gaya');
+  }).catch(() => alert('Error deleting event'));
+}
+
+function checkEvents() {
+  if (!window.eventsList || !window.eventsList.length) return;
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const todayDow = now.getDay();
+  const todayDate = now.getDate();
+  const todayISO = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+
+  window.eventsList.forEach(ev => {
+    if (!isAlarmOn(ev.is_enabled)) return;
+    if (currentUser && currentUser.role !== 'admin' && ev.group_type !== 'both' && ev.group_type !== currentUser.group_type) return;
+
+    let matchesToday = false;
+    if (ev.repeat_type === 'weekly' && Number(ev.day_of_week) === todayDow) matchesToday = true;
+    else if (ev.repeat_type === 'monthly' && Number(ev.day_of_month) === todayDate) matchesToday = true;
+    else if (ev.repeat_type === 'once' && ev.event_date === todayISO) matchesToday = true;
+    if (!matchesToday) return;
+
+    const sMin = toMinutes(ev.start_time);
+    const eMin = toMinutes(ev.end_time);
+    if (sMin === null || eMin === null) return;
+    const active = sMin <= eMin ? (nowMin >= sMin && nowMin <= eMin) : (nowMin >= sMin || nowMin <= eMin);
+    if (!active) return;
+
+    const key = 'event-' + ev.id + '-' + now.toDateString();
+    if (!alarmSilenced[key]) {
+      currentAlarmKey = key;
+      showEventBanner(ev);
+      playAlarmSound(3000);
+    }
+  });
+}
+setInterval(checkEvents, 15000);
+
+function showEventBanner(ev) {
+  let bar = document.getElementById('alarmBanner');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'alarmBanner';
+    bar.style.cssText = 'position:fixed; top:0; left:0; right:0; background:#ffd700; color:#0f3d2e; padding:14px; text-align:center; font-weight:bold; z-index:9999;';
+    document.body.prepend(bar);
+  }
+  bar.innerHTML = '📅 ' + ev.title +
+    ' <button style="width:auto; margin-left:10px; padding:6px 14px;" onclick="openEventContent(' + ev.id + ')">Dekho</button>' +
+    ' <button style="width:auto; margin-left:6px; padding:6px 14px;" onclick="silenceAlarm(currentAlarmKey)">Silence</button>';
+  bar.classList.remove('hidden');
+}
+
+function openEventContent(id) {
+  const ev = (window.eventsList || []).find(e => e.id == id);
+  if (!ev) return;
+  let modal = document.getElementById('eventContentModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'eventContentModal';
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px;';
+    document.body.appendChild(modal);
+  }
+  let inner = '<div style="background:#0f2a0f; border-radius:12px; padding:20px; max-width:500px; width:100%; max-height:80vh; overflow:auto; border:1px solid #2a6b2a;">';
+  inner += '<h3 style="color:#ffd700; margin-top:0;">' + ev.title + '</h3>';
+  if (ev.content_type === 'text') {
+    inner += '<p style="white-space:pre-wrap;">' + (ev.content_text || 'Koi text nahi hai.') + '</p>';
+  } else if (ev.content_type === 'image' && ev.file_url) {
+    inner += '<img src="' + ev.file_url + '" style="max-width:100%; border-radius:8px;">';
+  } else if (ev.content_type === 'pdf' && ev.file_url) {
+    inner += '<a href="' + ev.file_url + '" target="_blank" style="color:#ffd700; font-weight:bold;">📄 PDF Kholo / Download Karo</a>';
+  } else if (ev.content_type === 'audio' && ev.file_url) {
+    inner += '<audio controls style="width:100%;" src="' + ev.file_url + '"></audio>';
+  } else {
+    inner += '<p>Is event ke saath koi content nahi hai.</p>';
+  }
+  inner += '<button style="margin-top:16px;" onclick="document.getElementById(\'eventContentModal\').remove()">Band Karo</button>';
+  inner += '</div>';
+  modal.innerHTML = inner;
+}
+
+// ---------- AUTO LOGIN (dobara refresh karne par login yaad rahe) ----------
+async function tryAutoLogin() {
+  const savedMobile = localStorage.getItem('zahidiya_mobile');
+  const savedPassword = localStorage.getItem('zahidiya_password');
+  if (!savedMobile || !savedPassword) return;
+  try {
+    const res = await fetch(API + '/api/state?mobile=' + encodeURIComponent(savedMobile) + '&password=' + encodeURIComponent(savedPassword));
+    const data = await res.json();
+    if (res.ok && data.user && !['pending','rejected','blocked'].includes(data.user.status)) {
+      currentUser = data.user;
+      loginSuccess();
+    } else {
+      localStorage.removeItem('zahidiya_mobile');
+      localStorage.removeItem('zahidiya_password');
+    }
+  } catch(e) { console.error(e); }
+}
+window.addEventListener('DOMContentLoaded', tryAutoLogin);
+window.addEventListener('DOMContentLoaded', showIslamicDate);
+
+// Auto-login se bina button dabaye seedha andar aa jaate hain, isliye Login click ke bharose
+// audio unlock nahi ho pata. Isliye page par jahan bhi pehla click/tap/key ho, wahin audio unlock kar do.
+['click', 'touchstart', 'keydown'].forEach(evt => {
+  document.addEventListener(evt, unlockAudio);
+});
+
+// ---------- POORI WEBSITE KEYBOARD SE CHALE (arrow keys + Enter, mouse ki zaroorat nahi) ----------
+function getPageFocusableElements() {
+  const selector = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  return Array.from(document.querySelectorAll(selector)).filter(el => {
+    if (el.closest('.hidden')) return false;
+    const rect = el.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) return false;
+    const style = window.getComputedStyle(el);
+    if (style.display === 'none' || style.visibility === 'hidden') return false;
+    return true;
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.stat-box').forEach(el => {
+    if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+  });
+});
+
+document.addEventListener('keydown', function(e) {
+  if (!['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Enter'].includes(e.key)) return;
+
+  const active = document.activeElement;
+  const tag = (active.tagName || '').toLowerCase();
+  const isTypingField = (tag === 'input' && !['checkbox','radio','button','submit'].includes(active.type)) || tag === 'textarea' || tag === 'select';
+
+  // Text/number fields ke andar Left/Right ko chhedna nahi (cursor move karne dena)
+  if (isTypingField && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) return;
+
+  if (e.key === 'Enter') {
+    if (isTypingField) {
+      // Text/number field mein Enter dabane par agle box mein chale jao
+      const focusables = getPageFocusableElements();
+      const idx = focusables.indexOf(active);
+      if (idx !== -1 && focusables[idx + 1]) {
+        focusables[idx + 1].focus();
+        focusables[idx + 1].scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+      e.preventDefault();
+      return;
+    }
+    if (active && typeof active.click === 'function') {
+      active.click();
+      e.preventDefault();
+    }
+    return;
+  }
+
+  const focusables = getPageFocusableElements();
+  const idx = focusables.indexOf(active);
+  let nextIdx;
+  if (idx === -1) {
+    nextIdx = 0;
+  } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+    nextIdx = Math.min(idx + 1, focusables.length - 1);
+  } else {
+    nextIdx = Math.max(idx - 1, 0);
+  }
+  if (focusables[nextIdx]) {
+    focusables[nextIdx].focus();
+    focusables[nextIdx].scrollIntoView({ block: 'center', behavior: 'smooth' });
+    e.preventDefault();
+  }
+});
+
+// ---------- AUTO REFRESH (bina refresh kiye naya class/notification dikhna) ----------
+let autoRefreshTimer = null;
+let fastRefreshTimer = null;
+let slowRefreshTimer = null;
+function startAutoRefresh() {
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  if (fastRefreshTimer) clearInterval(fastRefreshTimer);
+  if (slowRefreshTimer) clearInterval(slowRefreshTimer);
+
+  // Online/Offline status turant (fast) update ho, isliye alag chhota timer
+  fastRefreshTimer = setInterval(() => {
+    if (currentUser) {
+      sendHeartbeat();
+      if (currentUser.role === 'admin') { loadAdminData(); }
+    }
+  }, 5000); // har 5 second
+
+  autoRefreshTimer = setInterval(() => {
+    if (currentUser) {
+      loadClasses();
+      loadNotifications();
+      checkCustomAlarm();
+    }
+  }, 15000); // baaki cheezein har 15 second mein
+
+  // Namaz auqaat baar-baar (15 sec) load karna zaroori nahi tha aur GPS/network
+  // ko bewajah load kar raha tha — ab har 5 minute mein ek baar refresh hoga
+  if (slowRefreshTimer) clearInterval(slowRefreshTimer);
+  slowRefreshTimer = setInterval(() => {
+    if (currentUser) { loadPrayerTimes(); loadEvents(); }
+  }, 300000);
+}
+function sendHeartbeat(goingOffline) {
+  if (!currentUser) return;
+  fetch(API + '/api/heartbeat', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ mobile: currentUser.mobile, offline: !!goingOffline })
+  }).catch(() => {});
+}
+function stopAutoRefresh() {
+  if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+  if (fastRefreshTimer) { clearInterval(fastRefreshTimer); fastRefreshTimer = null; }
+  if (slowRefreshTimer) { clearInterval(slowRefreshTimer); slowRefreshTimer = null; }
+}
+
+// ---------- NOTES SE SAWAL-JAWAB ----------
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+window.qaNotesList = [];
+window.qaHistoryList = [];
+window.qaLastAnswer = '';
+
+async function extractPdfText(file) {
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it => it.str).join(' ') + '\n\n';
+  }
+  return text.trim();
+}
+
+async function uploadQaNote() {
+  const title = document.getElementById('qaNoteTitle').value.trim();
+  const file = document.getElementById('qaNoteFile').files[0];
+  if (!title) { alert('Notes ka naam likho'); return; }
+  if (!file) { alert('PDF choose karo'); return; }
+
+  const statusEl = document.getElementById('qaUploadStatus');
+  const btn = document.getElementById('qaUploadBtn');
+  btn.disabled = true;
+
+  try {
+    statusEl.innerText = '📄 PDF se text nikal rahe hain...';
+    const extracted_text = await extractPdfText(file);
+    if (!extracted_text) {
+      statusEl.innerText = '❌ Is PDF mein se text nahi mila (shayad scanned/photo wala PDF hai)';
+      btn.disabled = false;
+      return;
+    }
+
+    statusEl.innerText = '⬆️ PDF upload ho rahi hai...';
+    const formData = new FormData();
+    formData.append('file', file);
+    const uploadRes = await fetch(API + '/api/upload', { method: 'POST', body: formData });
+    const uploadData = await uploadRes.json();
+    const file_url = uploadData.url || '';
+
+    statusEl.innerText = '💾 Save ho raha hai...';
+    const res = await fetch(API + '/api/notes', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ title, file_url, extracted_text })
+    });
+    const data = await res.json();
+    if (data.success) {
+      statusEl.innerText = '✅ Notes upload ho gaye';
+      document.getElementById('qaNoteTitle').value = '';
+      document.getElementById('qaNoteFile').value = '';
+      loadQaNotes();
+    } else {
+      statusEl.innerText = '❌ ' + (data.message || 'Kuch gadbad ho gayi');
+    }
+  } catch (e) {
+    statusEl.innerText = '❌ Error: ' + e.message;
+  }
+  btn.disabled = false;
+}
+
+async function loadQaNotes() {
+  try {
+    const res = await fetch(API + '/api/notes');
+    const data = await res.json();
+    window.qaNotesList = data.notes || [];
+  } catch (e) { window.qaNotesList = []; }
+  const box = document.getElementById('qaNotesAdminList');
+  if (!box) return;
+  if (!window.qaNotesList.length) { box.innerHTML = '<p style="font-size:12px; color:#cde;">Abhi koi notes upload nahi hui hai.</p>'; return; }
+  box.innerHTML = '<p style="font-size:12px; color:#ffd700;">Upload ki hui notes:</p>' + window.qaNotesList.map(n =>
+    `<div style="font-size:12px; display:flex; justify-content:space-between; align-items:center; border:1px solid #2a6b2a; border-radius:6px; padding:6px 8px; margin-top:6px;">
+      <span>📄 ${n.title}</span>
+      <button class="secondary" style="width:auto; padding:4px 10px;" onclick="deleteQaNote(${n.id})">🗑️</button>
+    </div>`
+  ).join('');
+}
+
+function deleteQaNote(id) {
+  if (!confirm('Yeh notes delete karni hain? Sawal-jawab inhi se milte hain.')) return;
+  fetch(API + '/api/delete-note', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id })
+  }).then(r => r.json()).then(data => {
+    if (data.success) loadQaNotes(); else alert(data.message || 'Delete fail ho gaya');
+  }).catch(() => alert('Error deleting notes'));
+}
+
+async function askQaQuestion() {
+  const question = document.getElementById('qaQuestionInput').value.trim();
+  if (!question) { alert('Pehle sawal likho'); return; }
+  if (!currentUser) return;
+
+  const btn = document.getElementById('qaAskBtn');
+  const answerBox = document.getElementById('qaAnswerBox');
+  const answerText = document.getElementById('qaAnswerText');
+  btn.disabled = true;
+  btn.innerText = 'Jawab dhoond rahe hain...';
+  answerBox.classList.add('hidden');
+
+  try {
+    const res = await fetch(API + '/api/ask-question', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ question, mobile: currentUser.mobile })
+    });
+    const data = await res.json();
+    if (data.success) {
+      window.qaLastAnswer = data.answer;
+      answerText.innerText = data.answer;
+      answerBox.classList.remove('hidden');
+      document.getElementById('qaQuestionInput').value = '';
+      loadQaHistory();
+    } else {
+      alert(data.message || 'Jawab nahi mil saka');
+    }
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.innerText = 'Sawal Poocho';
+}
+
+function speakQaAnswer() {
+  if (!window.qaLastAnswer) return;
+  if (!('speechSynthesis' in window)) { alert('Is browser mein awaaz (text-to-speech) support nahi hai'); return; }
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(window.qaLastAnswer);
+  utter.lang = 'ur-PK';
+  speechSynthesis.speak(utter);
+}
+function stopQaSpeak() {
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+}
+
+async function loadQaHistory() {
+  if (!currentUser) return;
+  try {
+    const res = await fetch(API + '/api/qa-history?mobile=' + encodeURIComponent(currentUser.mobile));
+    const data = await res.json();
+    window.qaHistoryList = data.history || [];
+  } catch (e) { window.qaHistoryList = []; }
+  const box = document.getElementById('qaHistoryList');
+  if (!box) return;
+  if (!window.qaHistoryList.length) { box.innerHTML = ''; return; }
+  box.innerHTML = '<p style="font-size:12px; color:#ffd700;">Aapke purane sawal-jawab:</p>' + window.qaHistoryList.map(qa =>
+    `<div style="font-size:12px; border:1px solid #2a6b2a; border-radius:6px; padding:8px; margin-top:6px;">
+      <b>Q:</b> ${qa.question}<br><b>A:</b> ${qa.answer}
+    </div>`
+  ).join('');
+}
+
+async function downloadQaHistoryPdf() {
+  if (!window.qaHistoryList || !window.qaHistoryList.length) { alert('Abhi aapke koi sawal-jawab nahi hain'); return; }
+
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed; left:-9999px; top:0; width:700px; background:#fff; color:#000; padding:24px; font-size:16px; direction:rtl; font-family:Arial, sans-serif;';
+  let html = '<h2 style="text-align:center;">Mere Sawal-Jawab</h2>';
+  window.qaHistoryList.forEach((qa, i) => {
+    html += `<div style="margin-bottom:16px; border-bottom:1px solid #ccc; padding-bottom:10px;">
+      <p><b>Sawal ${i + 1}:</b> ${qa.question}</p>
+      <p><b>Jawab:</b> ${qa.answer}</p>
+    </div>`;
+  });
+  container.innerHTML = html;
+  document.body.appendChild(container);
+
+  try {
+    const canvas = await html2canvas(container, { scale: 2 });
+    document.body.removeChild(container);
+
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = 210, pageHeight = 297;
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+    pdf.save('mere-sawal-jawab.pdf');
+  } catch (e) {
+    document.body.removeChild(container);
+    alert('PDF banane mein error: ' + e.message);
+  }
+}
+</script>
+</body>
+</html>
