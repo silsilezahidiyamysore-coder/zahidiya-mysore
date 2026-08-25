@@ -1,8 +1,0 @@
-{
-  "name": "zahidiya-mysore",
-  "private": true,
-  "version": "1.0.0",
-  "dependencies": {
-    "@pushforge/builder": "^2.0.5"
-  }
-}
