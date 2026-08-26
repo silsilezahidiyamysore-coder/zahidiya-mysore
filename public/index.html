@@ -1548,13 +1548,14 @@ async function toggleGlobalQaAccess() {
 async function saveHijriAdjustment() {
   const val = parseInt(document.getElementById('hijriAdjustmentInput').value, 10) || 0;
   try {
-    const res = await fetch(API + '/api/alarm-settings', {
+    const res = await fetch(API + '/api/save-hijri-adjustment', {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ hijri_adjustment_days: val })
     });
     const data = await res.json();
     if (data.success) {
       hijriAdjustmentDays = val;
+      alarmSettings.hijri_adjustment_days = val;
       showIslamicDate();
       alert('✅ Save ho gaya. Ab calendar check karo.');
     } else {
