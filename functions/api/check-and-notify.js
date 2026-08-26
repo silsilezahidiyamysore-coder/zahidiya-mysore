@@ -168,6 +168,38 @@ async function handle(context) {
       sentCount++;
     }
 
+    // ---------- 4) NAYI/EDIT CLASSES (existing "notifications" table use karte hain) ----------
+    const recentNotifs = (await db.prepare(
+      `SELECT * FROM notifications ORDER BY id DESC LIMIT 30`
+    ).all()).results || [];
+    for (const n of recentNotifs) {
+      const key = 'classnotif-' + n.id;
+      if (!(await shouldSend(db, key))) continue;
+
+      let targetSubs;
+      if (n.target_mobile) {
+        targetSubs = allSubs.filter(sub => sub.mobile === n.target_mobile);
+      } else if (n.target_role === 'admin') {
+        targetSubs = allSubs.filter(sub => {
+          const m = mureedByMobile[sub.mobile];
+          return m && m.role === 'admin';
+        });
+      } else if (n.target_role === 'mureed') {
+        targetSubs = allSubs.filter(sub => {
+          const m = mureedByMobile[sub.mobile];
+          return m && m.role !== 'admin';
+        });
+      } else {
+        targetSubs = allSubs;
+      }
+
+      await sendToSubscriptions(context.env, db, targetSubs, {
+        title: '📚 ' + (n.message || 'Nayi Class Aayi Hai'),
+        body: 'Silsila-e-Zahidiya Mysore', tag: 'class-notif-' + n.id
+      });
+      sentCount++;
+    }
+
     return Response.json({ success: true, checked_at_ist: ist.toISOString(), sent: sentCount });
   } catch (err) {
     return Response.json({ success: false, message: err.message, stack: err.stack }, { status: 500 });
