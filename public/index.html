@@ -312,6 +312,13 @@ a { color: #ffd700; }
         <button id="uploadClassBtn" onclick="uploadClass()">Upload Class</button>
         <button class="secondary" id="cancelEditBtn" style="display:none;" onclick="cancelEditClass()">Cancel Edit</button>
       </div>
+      <div class="card">
+        <h3>🌙 Islamic Calendar Adjustment</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Agar Hijri tareekh Google Calendar se 1-2 din alag dikhe, to yahan se match kar lo (chaand dikhne ki wajah se yeh jagah-jagah alag hoti hai).</p>
+        <label style="font-size:13px;">Kitne din aage/peeche karna hai</label>
+        <input type="number" id="hijriAdjustmentInput" placeholder="jaise: 2 ya -1" min="-3" max="3">
+        <button onclick="saveHijriAdjustment()">Save Karo</button>
+      </div>
        <div class="card">
         <h3>⏰ Alarm Settings</h3>
         <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Namaz shuru hone par alarm, aur khatam hone se pehle reminder — yahan control karein.</p>
@@ -1482,6 +1489,13 @@ async function loadAlarmSettings() {
       }
 
       checkCustomAlarm();
+
+      // Hijri calendar adjustment apply karo aur admin input box bhi bhar do
+      hijriAdjustmentDays = parseInt(alarmSettings.hijri_adjustment_days, 10) || 0;
+      const hijriInput = document.getElementById('hijriAdjustmentInput');
+      if (hijriInput && document.activeElement !== hijriInput) hijriInput.value = hijriAdjustmentDays;
+      showIslamicDate();
+
       // Settings ko save kar lo, taaki internet chala jaaye to bhi
       // sahi (admin ne jo set kiya wahi) settings se alarm chale, hardcoded default se nahi
       try { localStorage.setItem('zahidiya_alarm_settings', JSON.stringify(alarmSettings)); } catch(e2) {}
@@ -1492,6 +1506,8 @@ async function loadAlarmSettings() {
     try {
       const cached = localStorage.getItem('zahidiya_alarm_settings');
       if (cached) alarmSettings = JSON.parse(cached);
+      hijriAdjustmentDays = parseInt(alarmSettings.hijri_adjustment_days, 10) || 0;
+      showIslamicDate();
     } catch (e2) {}
   }
   updateQaTabVisibility();
@@ -1526,6 +1542,24 @@ async function toggleGlobalQaAccess() {
     if (!data.success) { alert(data.message || 'Kuch galat ho gaya'); return; }
     alarmSettings.qa_global_access = newState;
     updateQaTabVisibility();
+  } catch (e) { alert('Kuch galat ho gaya'); }
+}
+
+async function saveHijriAdjustment() {
+  const val = parseInt(document.getElementById('hijriAdjustmentInput').value, 10) || 0;
+  try {
+    const res = await fetch(API + '/api/alarm-settings', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ hijri_adjustment_days: val })
+    });
+    const data = await res.json();
+    if (data.success) {
+      hijriAdjustmentDays = val;
+      showIslamicDate();
+      alert('✅ Save ho gaya. Ab calendar check karo.');
+    } else {
+      alert(data.message || 'Kuch galat ho gaya');
+    }
   } catch (e) { alert('Kuch galat ho gaya'); }
 }
 
@@ -1583,8 +1617,13 @@ function checkCustomAlarm() {
 
 const HIJRI_MONTHS = ['Muharram','Safar',"Rabi' al-Awwal","Rabi' al-Thani","Jumada al-Awwal","Jumada al-Thani","Rajab","Sha'ban","Ramadan","Shawwal","Dhu al-Qi'dah","Dhu al-Hijjah"];
 
+// Hijri calendar mein kabhi-kabhi 1-2 din ka farak aata hai (chaand dikhne ki wajah se,
+// yeh jagah-jagah alag hoti hai). Admin isko yahan se match kara sakta hai.
+let hijriAdjustmentDays = 0;
+
 function getHijriParts(date) {
-  const parts = new Intl.DateTimeFormat('en-u-ca-islamic', { day: 'numeric', month: 'numeric', year: 'numeric' }).formatToParts(date);
+  const shifted = new Date(date.getTime() + hijriAdjustmentDays * 86400000);
+  const parts = new Intl.DateTimeFormat('en-u-ca-islamic', { day: 'numeric', month: 'numeric', year: 'numeric' }).formatToParts(shifted);
   const day = parseInt(parts.find(p => p.type === 'day').value, 10);
   const month = parseInt(parts.find(p => p.type === 'month').value, 10);
   const year = parts.find(p => p.type === 'year').value;
