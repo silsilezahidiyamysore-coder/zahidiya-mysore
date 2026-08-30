@@ -71,6 +71,8 @@ export async function onRequestGet(context) {
     const schedule = [];
 
     const alarmSettings = await db.prepare(`SELECT * FROM alarm_settings WHERE id = 1`).first();
+
+    // ---------- 1) NAMAZ TIMES ----------
     if (alarmSettings && Number(alarmSettings.start_alarm_enabled) !== 0) {
       const prayerTimes = await getTodayPrayerTimes(db, todayISO);
       if (prayerTimes) {
@@ -92,6 +94,20 @@ export async function onRequestGet(context) {
       }
     }
 
+    // ---------- 1b) CUSTOM ALARM ----------
+    if (alarmSettings && Number(alarmSettings.custom_alarm_enabled) !== 0 && alarmSettings.custom_alarm_start) {
+      const dt = buildISTDateTime(todayISO, alarmSettings.custom_alarm_start);
+      if (dt) {
+        schedule.push({
+          id: 'customalarm-' + todayISO,
+          type: 'custom_alarm',
+          title: alarmSettings.custom_alarm_title || 'Alarm',
+          dateTime: dt
+        });
+      }
+    }
+
+    // ---------- 2) TODAY'S EVENTS ----------
     const events = (await db.prepare(`SELECT * FROM events WHERE is_enabled = 1`).all()).results || [];
     for (const ev of events) {
       let matchesToday = false;
