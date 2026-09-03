@@ -1928,11 +1928,7 @@ function playAlarmSound(durationMs) {
         window.currentAlarmAudioTimeout = setTimeout(() => {
           if (window.currentAlarmAudio === audio) stopAlarmSound();
         }, durationMs);
-      }document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && window.currentAlarmAudio) {
-    stopAlarmSound();
-  }
-});
+      }
       return;
     } catch (e) {
       beep(durationMs);
