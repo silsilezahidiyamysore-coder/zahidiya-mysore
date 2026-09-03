@@ -2154,8 +2154,8 @@ function checkNamazAlarms() {
       }
     }
 
-    const nextName = names[idx + 1];
-    const nextTMin = nextName ? toMinutes(window.namazTimesToday[nextName]) : null;
+   const nextName = names[idx + 1];
+const nextTMin = nextName ? toMinutes(window.namazTimesToday[nextName]) : (tMin + 45);
     if (isAlarmOn(alarmSettings.end_reminder_enabled) && nextTMin !== null) {
       const reminderMin = nextTMin - (alarmSettings.end_reminder_minutes_before || 0);
       if (reminderMin === nowMin) {
