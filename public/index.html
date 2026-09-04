@@ -1928,19 +1928,20 @@ function playAlarmSound(durationMs) {
         window.currentAlarmAudioTimeout = setTimeout(() => {
           if (window.currentAlarmAudio === audio) stopAlarmSound();
         }, durationMs);
-      }document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && window.currentAlarmAudio) {
-    stopAlarmSound();
-  }
-});
-      return;
-    } catch (e) {
-      beep(durationMs);
-      return;
+           }
+      } catch (e) {
+        beep(durationMs);
+        return;
+      }
     }
+    beep(durationMs);
   }
-  beep(durationMs);
-}
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && window.currentAlarmAudio) {
+      stopAlarmSound();
+    }
+  });
 
 // Chahe custom tone bajay ho ya default beep — ek hi function se turant rok deta hai
 function stopAlarmSound() {
