@@ -124,7 +124,31 @@ async function handle(context) {
         }
       }
     }
-
+    // ---------- 1.5) END REMINDER (namaz khatam hone se pehle) ----------
+    if (alarmSettings && Number(alarmSettings.end_reminder_enabled) !== 0) {
+      const prayerTimes = await getTodayPrayerTimes(db, todayISO);
+      if (prayerTimes) {
+        const names = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+        const times = [prayerTimes.fajr, prayerTimes.dhuhr, prayerTimes.asr, prayerTimes.maghrib, prayerTimes.isha];
+        for (let i = 0; i < names.length; i++) {
+          const tMin = toMinutes(times[i]);
+          if (tMin === null) continue;
+          const nextTMin = (i + 1 < names.length) ? toMinutes(times[i + 1]) : (tMin + 45);
+          if (nextTMin === null) continue;
+          const reminderMin = nextTMin - (alarmSettings.end_reminder_minutes_before || 0);
+          if (reminderMin === nowMin) {
+            const key = 'endreminder-' + names[i] + '-' + todayISO;
+            if (await shouldSend(db, key)) {
+              await sendToSubscriptions(context.env, db, allSubs, {
+                title: '⏳ ' + names[i] + ' ki namaz khatam hone wali hai (' + alarmSettings.end_reminder_minutes_before + ' min)',
+                body: 'Silsila-e-Zahidiya Mysore', tag: 'end-reminder-' + names[i]
+              });
+              sentCount++;
+            }
+          }
+        }
+      }
+    }
     // ---------- 2) CUSTOM ALARM ----------
     if (alarmSettings && Number(alarmSettings.custom_alarm_enabled) !== 0 && alarmSettings.custom_alarm_start) {
       const sMin = toMinutes(alarmSettings.custom_alarm_start);
