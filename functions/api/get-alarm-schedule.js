@@ -94,6 +94,33 @@ export async function onRequestGet(context) {
       }
     }
 
+    // ---------- 1a) END REMINDER (namaz khatam hone se pehle) ----------
+    if (alarmSettings && Number(alarmSettings.end_reminder_enabled) !== 0) {
+      const prayerTimes = await getTodayPrayerTimes(db, todayISO);
+      if (prayerTimes) {
+        const names = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+        const times = [prayerTimes.fajr, prayerTimes.dhuhr, prayerTimes.asr, prayerTimes.maghrib, prayerTimes.isha];
+        for (let i = 0; i < names.length; i++) {
+          const tMin = toMinutes(times[i]);
+          if (tMin === null) continue;
+          const nextTMin = (i + 1 < names.length) ? toMinutes(times[i + 1]) : (tMin + 45);
+          if (nextTMin === null) continue;
+          const reminderMin = nextTMin - (alarmSettings.end_reminder_minutes_before || 0);
+          const hh = String(Math.floor(reminderMin / 60)).padStart(2, '0');
+          const mm = String(((reminderMin % 60) + 60) % 60).padStart(2, '0');
+          const dt = buildISTDateTime(todayISO, hh + ':' + mm);
+          if (dt) {
+            schedule.push({
+              id: 'endreminder-' + names[i] + '-' + todayISO,
+              type: 'end_reminder',
+              title: '⏳ ' + names[i] + ' ki namaz khatam hone wali hai',
+              dateTime: dt
+            });
+          }
+        }
+      }
+    }
+
     // ---------- 1b) CUSTOM ALARM ----------
     if (alarmSettings && Number(alarmSettings.custom_alarm_enabled) !== 0 && alarmSettings.custom_alarm_start) {
       const dt = buildISTDateTime(todayISO, alarmSettings.custom_alarm_start);
