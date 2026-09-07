@@ -92,3 +92,48 @@ export async function sendLiveAlarmPush(env, title, groupType) {
     await sendToToken(accessToken, sa.project_id, row.fcm_token, title);
   }
 }
+
+// Admin ne Alarm Settings badli (tone/duration/etc) — sabhi mureedon ki
+// Zahidiya Alarm app ko ek chhota "silent" push bhejo taaki app turant
+// naya tone/duration fetch kar le, bina raat 1 baje ka wait kiye.
+async function sendRefreshToToken(accessToken, projectId, token) {
+  try {
+    const res = await fetch(
+      `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: {
+            token,
+            data: { type: 'refresh_settings' },
+            android: { priority: 'high' },
+          },
+        }),
+      }
+    );
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+export async function sendRefreshSettingsPush(env) {
+  const serviceAccountJson = env.FIREBASE_SERVICE_ACCOUNT;
+  if (!serviceAccountJson) return;
+
+  const { results } = await env.DB
+    .prepare('SELECT fcm_token FROM mureeds WHERE fcm_token IS NOT NULL AND is_blocked = 0')
+    .all();
+  if (!results || results.length === 0) return;
+
+  const accessToken = await getAccessToken(serviceAccountJson);
+  const sa = JSON.parse(serviceAccountJson);
+
+  for (const row of results) {
+    await sendRefreshToToken(accessToken, sa.project_id, row.fcm_token);
+  }
+}
