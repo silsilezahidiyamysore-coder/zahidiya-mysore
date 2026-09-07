@@ -100,15 +100,36 @@ export async function onRequestGet(context) {
       if (prayerTimes) {
         const names = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
         const times = [prayerTimes.fajr, prayerTimes.dhuhr, prayerTimes.asr, prayerTimes.maghrib, prayerTimes.isha];
+
+        // Isha ka asli "Khatam" waqt agle din ka Fajr hota hai (jaisa homepage
+        // par bhi dikhta hai) — isliye kal ka Fajr alag se fetch karna zaroori hai.
+        const tomorrow = new Date(ist.getTime() + 24 * 60 * 60 * 1000);
+        const tomorrowISO = istDateStr(tomorrow);
+        const tomorrowPrayerTimes = await getTodayPrayerTimes(db, tomorrowISO);
+
         for (let i = 0; i < names.length; i++) {
           const tMin = toMinutes(times[i]);
           if (tMin === null) continue;
-          const nextTMin = (i + 1 < names.length) ? toMinutes(times[i + 1]) : (tMin + 45);
-          if (nextTMin === null) continue;
-          const reminderMin = nextTMin - (alarmSettings.end_reminder_minutes_before || 0);
-          const hh = String(Math.floor(reminderMin / 60)).padStart(2, '0');
-          const mm = String(((reminderMin % 60) + 60) % 60).padStart(2, '0');
-          const dt = buildISTDateTime(todayISO, hh + ':' + mm);
+
+          let dt;
+          if (i + 1 < names.length) {
+            const nextTMin = toMinutes(times[i + 1]);
+            if (nextTMin === null) continue;
+            const reminderMin = nextTMin - (alarmSettings.end_reminder_minutes_before || 0);
+            const hh = String(Math.floor(reminderMin / 60)).padStart(2, '0');
+            const mm = String(((reminderMin % 60) + 60) % 60).padStart(2, '0');
+            dt = buildISTDateTime(todayISO, hh + ':' + mm);
+          } else {
+            // Isha — agle din ke asli Fajr time se reminder nikalo
+            if (!tomorrowPrayerTimes) continue;
+            const nextFajrMin = toMinutes(tomorrowPrayerTimes.fajr);
+            if (nextFajrMin === null) continue;
+            const reminderMin = ((nextFajrMin - (alarmSettings.end_reminder_minutes_before || 0)) % 1440 + 1440) % 1440;
+            const hh = String(Math.floor(reminderMin / 60)).padStart(2, '0');
+            const mm = String(reminderMin % 60).padStart(2, '0');
+            dt = buildISTDateTime(tomorrowISO, hh + ':' + mm);
+          }
+
           if (dt) {
             schedule.push({
               id: 'endreminder-' + names[i] + '-' + todayISO,
