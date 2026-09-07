@@ -1,5 +1,6 @@
 // GET /api/alarm-settings -> current settings laata hai
 // POST /api/alarm-settings -> Admin naye settings save karta hai
+import { sendRefreshSettingsPush } from './fcm-helper.js';
 
 export async function onRequestGet(context) {
   const db = context.env.DB;
@@ -70,6 +71,9 @@ export async function onRequestPost(context) {
         alarm_tone_url
       )
       .run();
+
+    // Sabhi mureedon ki app ko turant naya tone/duration fetch karne ka signal bhejo
+    context.waitUntil(sendRefreshSettingsPush(context.env).catch(() => {}));
 
     return Response.json({ message: 'Alarm settings updated successfully' });
   } catch (err) {
