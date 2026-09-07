@@ -156,7 +156,13 @@ export async function onRequestGet(context) {
       }
     }
 
-    return Response.json({ success: true, checked_at_ist: ist.toISOString(), schedule });
+    return Response.json({
+      success: true,
+      checked_at_ist: ist.toISOString(),
+      schedule,
+      tone_url: (alarmSettings && alarmSettings.alarm_tone_url) || '',
+      start_alarm_duration_seconds: (alarmSettings && alarmSettings.start_alarm_duration_seconds) || 60
+    });
   } catch (err) {
     return Response.json({ success: false, message: err.message }, { status: 500 });
   }
