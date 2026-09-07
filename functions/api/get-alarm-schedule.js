@@ -156,11 +156,16 @@ export async function onRequestGet(context) {
       }
     }
 
+    let toneUrl = (alarmSettings && alarmSettings.alarm_tone_url) || '';
+    if (toneUrl && toneUrl.startsWith('/')) {
+      toneUrl = 'https://zahidiya-mysore.pages.dev' + toneUrl;
+    }
+
     return Response.json({
       success: true,
       checked_at_ist: ist.toISOString(),
       schedule,
-      tone_url: (alarmSettings && alarmSettings.alarm_tone_url) || '',
+      tone_url: toneUrl,
       start_alarm_duration_seconds: (alarmSettings && alarmSettings.start_alarm_duration_seconds) || 60
     });
   } catch (err) {
