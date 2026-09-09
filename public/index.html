@@ -524,6 +524,11 @@ const TRANSLATIONS = {
     listen_btn: "🔊 Listen", stop_btn: "⏹️ Stop",
     download_qa_pdf_btn: "📄 Download My Q&A PDF",
     tab_home: "🏠 Home", tab_qa: "📖 Q&A", tab_admin: "⚙️ Admin",
+    prayer_fajr: "Fajr", prayer_zuhr: "Zuhr", prayer_asr: "Asr", prayer_maghrib: "Maghrib", prayer_isha: "Isha",
+    prayer_start_label: "Start", prayer_end_label: "End",
+    loc_current: " 📍 (Your current location)", loc_default: " 📍 (Mysore - default)",
+    offline_saved: " 📡 (Offline — previously saved time)",
+    no_internet_data: "Could not connect to internet and no saved time available — please open once with internet on.",
   },
   ur: {
     login_title: "لاگ ان", new_user_register: "نئے صارف؟ یہاں رجسٹر کریں",
@@ -543,6 +548,11 @@ const TRANSLATIONS = {
     listen_btn: "🔊 سنیں", stop_btn: "⏹️ روکیں",
     download_qa_pdf_btn: "📄 میرے سوال و جواب کی پی ڈی ایف ڈاؤنلوڈ کریں",
     tab_home: "🏠 ہوم", tab_qa: "📖 سوال و جواب", tab_admin: "⚙️ ایڈمن",
+    prayer_fajr: "فجر", prayer_zuhr: "ظہر", prayer_asr: "عصر", prayer_maghrib: "مغرب", prayer_isha: "عشاء",
+    prayer_start_label: "شروع", prayer_end_label: "ختم",
+    loc_current: " 📍 (آپ کا موجودہ مقام)", loc_default: " 📍 (میسور - ڈیفالٹ)",
+    offline_saved: " 📡 (آف لائن — پہلے سے محفوظ وقت)",
+    no_internet_data: "انٹرنیٹ نہیں ملا اور کوئی محفوظ وقت بھی موجود نہیں — ایک بار انٹرنیٹ آن کر کے کھولیں۔",
   }
 };
 let currentLang = localStorage.getItem('zahidiya_lang') || 'ur';
@@ -568,6 +578,7 @@ function toggleLang() {
   currentLang = currentLang === 'ur' ? 'en' : 'ur';
   localStorage.setItem('zahidiya_lang', currentLang);
   applyLang();
+  if (typeof loadPrayerTimes === 'function' && window.namazTimesToday) loadPrayerTimes();
 }
 
 document.addEventListener('DOMContentLoaded', applyLang);
@@ -1034,13 +1045,13 @@ async function loadPrayerTimes() {
     const url = await getNamazApiUrl();
     const res = await fetch(url);
     const data = await res.json();
-    const t = data.data.timings;
+    const timings = data.data.timings;
     const clean = s => (s || '').split(' ')[0]; // timezone suffix hata do
     const usedGps = url.includes('latitude');
 
     window.namazTimesToday = {
-      Fajr: clean(t.Fajr), Dhuhr: clean(t.Dhuhr), Asr: clean(t.Asr),
-      Maghrib: clean(t.Maghrib), Isha: clean(t.Isha)
+      Fajr: clean(timings.Fajr), Dhuhr: clean(timings.Dhuhr), Asr: clean(timings.Asr),
+      Maghrib: clean(timings.Maghrib), Isha: clean(timings.Isha)
     };
     // Aaj ke time save kar lo, taaki agar aage internet chala jaaye to bhi
     // yehi cached time se alarm chalta rahe (jab tak app khuli hai)
@@ -1052,16 +1063,16 @@ async function loadPrayerTimes() {
     } catch(e) {}
 
     const prayers = [
-      { key: 'Fajr', label: 'Fajr', start: clean(t.Fajr), end: clean(t.Sunrise) },
-      { key: 'Dhuhr', label: 'Zuhr', start: clean(t.Dhuhr), end: clean(t.Asr) },
-      { key: 'Asr', label: 'Asr', start: clean(t.Asr), end: clean(t.Maghrib) },
-      { key: 'Maghrib', label: 'Maghrib', start: clean(t.Maghrib), end: clean(t.Isha) },
-      { key: 'Isha', label: 'Isha', start: clean(t.Isha), end: clean(t.Fajr) }
+      { key: 'Fajr', label: t('prayer_fajr'), start: clean(timings.Fajr), end: clean(timings.Sunrise) },
+      { key: 'Dhuhr', label: t('prayer_zuhr'), start: clean(timings.Dhuhr), end: clean(timings.Asr) },
+      { key: 'Asr', label: t('prayer_asr'), start: clean(timings.Asr), end: clean(timings.Maghrib) },
+      { key: 'Maghrib', label: t('prayer_maghrib'), start: clean(timings.Maghrib), end: clean(timings.Isha) },
+      { key: 'Isha', label: t('prayer_isha'), start: clean(timings.Isha), end: clean(timings.Fajr) }
     ];
 
     document.getElementById('namazDateLabel').innerText =
       new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
-      (usedGps ? ' 📍 (Aapki current location)' : ' 📍 (Mysore - default)');
+      (usedGps ? t('loc_current') : t('loc_default'));
 
     document.getElementById('prayerTimes').innerHTML = prayers.map(p => {
       const active = isPrayerActive(p.start, p.end);
@@ -1069,9 +1080,9 @@ async function loadPrayerTimes() {
         <div style="flex:1; min-width:130px; border:1px solid ${active ? '#ffd700' : '#2a6b2a'}; border-radius:8px; padding:10px; text-align:center; background:${active ? '#1f4d1f' : '#0f2a0f'};">
           <div style="font-weight:bold; color:#ffd700; font-size:14px;">${p.label}${active ? ' ●' : ''}</div>
           <div style="font-size:15px; font-weight:bold; margin-top:6px;">${to12Hour(p.start)}</div>
-          <div style="font-size:11px; color:#cde;">Shuru</div>
+          <div style="font-size:11px; color:#cde;">${t('prayer_start_label')}</div>
           <div style="font-size:15px; font-weight:bold; margin-top:6px;">${to12Hour(p.end)}</div>
-          <div style="font-size:11px; color:#cde;">Khatam</div>
+          <div style="font-size:11px; color:#cde;">${t('prayer_end_label')}</div>
         </div>
       `;
     }).join('');
@@ -1083,7 +1094,7 @@ async function loadPrayerTimes() {
         window.namazTimesToday = JSON.parse(cached);
         document.getElementById('namazDateLabel').innerText =
           new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
-          ' 📡 (Offline — pehle se saved time)';
+          t('offline_saved');
         return;
       }
     } catch(e2) {}
@@ -1097,11 +1108,11 @@ async function loadPrayerTimes() {
         window.namazTimesToday = last.times;
         document.getElementById('namazDateLabel').innerText =
           new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
-          ' ⚠️ (Internet nahi mila — ' + last.date + ' ke saved time use ho rahe hain, 1-2 min farak ho sakta hai)';
+          (currentLang === 'ur' ? ' ⚠️ (انٹرنیٹ نہیں ملا — ' + last.date + ' کا محفوظ شدہ وقت استعمال ہو رہا ہے، 1-2 منٹ کا فرق ہو سکتا ہے)' : ' ⚠️ (No internet — using saved time from ' + last.date + ', may differ by 1-2 min)');
         return;
       }
     } catch(e3) {}
-    document.getElementById('prayerTimes').innerHTML = '<p style="font-size:13px;">Internet nahi mila aur pehle se koi time bhi saved nahi hai — ek baar internet on karke khol lo.</p>';
+    document.getElementById('prayerTimes').innerHTML = '<p style="font-size:13px;">' + t('no_internet_data') + '</p>';
   }
 }
 
