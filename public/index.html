@@ -46,22 +46,22 @@ a { color: #ffd700; }
   <div id="loginScreen">
     <h1>🕌 Silsila-e-Zahidiya Mysore</h1>
     <div class="card">
-      <h3 id="loginTitle">Login</h3>
+      <h3 id="loginTitle" data-i18n="login_title">Login</h3>
       <div id="loginFields">
-        <input type="text" id="loginMobile" placeholder="Mobile Number">
-        <input type="password" id="loginPassword" placeholder="Password">
+        <input type="text" id="loginMobile" data-i18n-placeholder="mobile_ph" placeholder="Mobile Number">
+        <input type="password" id="loginPassword" data-i18n-placeholder="password_ph" placeholder="Password">
       </div>
       <div id="registerFields" class="hidden">
-        <input type="text" id="regName" placeholder="Full Name">
-        <input type="text" id="regMobile" placeholder="Mobile Number">
-        <input type="password" id="regPassword" placeholder="Password">
+        <input type="text" id="regName" data-i18n-placeholder="full_name_ph" placeholder="Full Name">
+        <input type="text" id="regMobile" data-i18n-placeholder="mobile_ph" placeholder="Mobile Number">
+        <input type="password" id="regPassword" data-i18n-placeholder="password_ph" placeholder="Password">
         <select id="regGroup">
-          <option value="mardana">Mardana</option>
-          <option value="zanana">Zanana</option>
+          <option value="mardana" data-i18n="group_mardana">Mardana</option>
+          <option value="zanana" data-i18n="group_zanana">Zanana</option>
         </select>
       </div>
-      <button onclick="unlockAudio(); handleLoginOrRegister()" id="loginActionBtn">Login</button>
-      <button class="secondary" onclick="toggleLoginRegister()" id="toggleBtn">New user? Register here</button>
+      <button onclick="unlockAudio(); handleLoginOrRegister()" id="loginActionBtn" data-i18n="login_title">Login</button>
+      <button class="secondary" onclick="toggleLoginRegister()" id="toggleBtn" data-i18n="new_user_register">New user? Register here</button>
       <p id="loginMsg" style="margin-top:8px; font-size:13px; color:#ffd700;"></p>
     </div>
   </div>
@@ -82,19 +82,20 @@ a { color: #ffd700; }
           </svg>
         </button>
         <button class="secondary" style="width:auto;" onclick="showScreen('notifications')">🔔<span id="notifBadge" class="hidden">0</span></button>
-        <button class="secondary" style="width:auto;" onclick="logout()">Logout</button>
+        <button class="secondary" style="width:auto;" id="langToggleBtn" onclick="toggleLang()">🌐 اردو</button>
+        <button class="secondary" style="width:auto;" data-i18n="logout_btn" onclick="logout()">Logout</button>
       </div>
     </div>
 
     <div class="card hidden" id="khanqahLocationCard">
       <div class="row" style="justify-content:space-between;">
-        <h3 style="margin:0;">📍 Khanqah Location</h3>
+        <h3 style="margin:0;" data-i18n="khanqah_location_heading">📍 Khanqah Location</h3>
         <button class="secondary" style="width:auto;" onclick="document.getElementById('khanqahLocationCard').classList.add('hidden')">✖</button>
       </div>
       <p id="khanqahAddressText" style="font-size:13px; margin-top:8px;"></p>
       <div class="row" style="margin-top:8px;">
-        <button style="width:auto;" onclick="window.open(window.khanqahMapLink, '_blank')">🗺️ Google Maps mein kholo</button>
-        <button class="secondary" style="width:auto;" onclick="shareKhanqahLocation()">🔗 Share Karo</button>
+        <button style="width:auto;" onclick="window.open(window.khanqahMapLink, '_blank')" data-i18n="open_gmaps_btn">🗺️ Google Maps mein kholo</button>
+        <button class="secondary" style="width:auto;" onclick="shareKhanqahLocation()" data-i18n="share_btn">🔗 Share Karo</button>
       </div>
     </div>
 
@@ -102,18 +103,18 @@ a { color: #ffd700; }
     <!-- Search Bar --> <!-- Search Bar -->
     <div class="card">
       <div class="row">
-        <input type="text" id="searchBox" placeholder="Search classes..." oninput="filterClasses()">
+        <input type="text" id="searchBox" data-i18n-placeholder="search_ph" placeholder="Search classes..." oninput="filterClasses()">
         <button style="width:auto;" onclick="startVoiceSearch()">🎤</button>
       </div>
     </div>
     <!-- Push Notification Permission -->
     <div class="card" id="notifPermCard">
-      <button class="secondary" id="notifPermBtn" style="width:100%;" onclick="enableNotifications()">🔔 Notification ON Karo (Screen Lock mein bhi Alarm ke liye)</button>
+      <button class="secondary" id="notifPermBtn" style="width:100%;" onclick="enableNotifications()" data-i18n="notif_perm_btn">🔔 Notification ON Karo (Screen Lock mein bhi Alarm ke liye)</button>
     </div>
 
     <!-- Islamic Calendar -->
     <div class="card">
-      <h3>📅 Islamic Calendar</h3>
+      <h3 data-i18n="islamic_calendar_heading">📅 Islamic Calendar</h3>
       <div id="islamicDateBox" style="font-size:14px;"></div>
     </div>
 
@@ -123,8 +124,8 @@ a { color: #ffd700; }
         <button class="secondary" style="width:auto;" onclick="closeCalendarGrid()">✖ Band Karo</button>
       </div>
       <div class="row" style="justify-content:space-between; margin-top:8px;">
-        <button class="secondary" style="width:auto;" onclick="changeCalendarMonth(-1)">⬅ Pichla Mahina</button>
-        <button class="secondary" style="width:auto;" onclick="changeCalendarMonth(1)">Agla Mahina ➡</button>
+        <button class="secondary" style="width:auto;" onclick="changeCalendarMonth(-1)" data-i18n="prev_month_btn">⬅ Pichla Mahina</button>
+        <button class="secondary" style="width:auto;" onclick="changeCalendarMonth(1)" data-i18n="next_month_btn">Agla Mahina ➡</button>
       </div>
       <button class="secondary" style="width:100%; margin-top:8px;" id="calSwitchPrimaryBtn" onclick="switchCalendarPrimary()"></button>
       <div id="calendarGridBody" style="margin-top:10px;"></div>
@@ -132,7 +133,7 @@ a { color: #ffd700; }
 
     <!-- Namaz Times -->
     <div class="card">
-      <h3 style="margin:0;">🌙 Aaj ke Namaz Auqaat</h3>
+      <h3 style="margin:0;" data-i18n="namaz_times_heading">🌙 Aaj ke Namaz Auqaat</h3>
       <div id="namazDateLabel" style="font-size:13px; color:#ffd700; margin-top:6px;"></div>
       <div id="prayerTimes" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;"></div>
       <div id="alarmStatusLine" style="font-size:11px; color:#8fbf8f; margin-top:8px;"></div>
@@ -145,7 +146,7 @@ a { color: #ffd700; }
 
 <!-- Classes List -->
     <div class="card">
-      <h3 style="cursor:pointer;" onclick="toggleClassList()">📚 Classes (<span id="classCount">0</span>) <span id="liveIndicator"></span> <span id="classToggleIcon">▼</span></h3>
+      <h3 style="cursor:pointer;" onclick="toggleClassList()"><span data-i18n="classes_heading">📚 Classes</span> (<span id="classCount">0</span>) <span id="liveIndicator"></span> <span id="classToggleIcon">▼</span></h3>
       <div id="classList" class="hidden"></div>
     </div>
 
@@ -155,8 +156,8 @@ a { color: #ffd700; }
     <div id="notificationsScreen" class="hidden">
       <div class="card">
         <div class="row" style="justify-content:space-between;">
-          <h3>🔔 Notifications</h3>
-          <button class="secondary" style="width:auto;" onclick="showScreen('home')">← Back</button>
+          <h3 data-i18n="notifications_heading">🔔 Notifications</h3>
+          <button class="secondary" style="width:auto;" onclick="showScreen('home')" data-i18n="back_btn">← Back</button>
         </div>
         <div id="notifList"></div>
       </div>
@@ -167,7 +168,7 @@ a { color: #ffd700; }
       <div class="card">
         <div class="row" style="justify-content:space-between;">
           <h3>📖 Notes se Sawal-Jawab</h3>
-          <button class="secondary" style="width:auto;" onclick="showScreen('home')">← Back</button>
+          <button class="secondary" style="width:auto;" onclick="showScreen('home')" data-i18n="back_btn">← Back</button>
         </div>
       </div>
 
@@ -261,8 +262,8 @@ a { color: #ffd700; }
         <input type="text" id="invName" placeholder="Full Name">
         <input type="text" id="invMobile" placeholder="Mobile Number">
         <select id="invGroup">
-          <option value="mardana">Mardana</option>
-          <option value="zanana">Zanana</option>
+          <option value="mardana" data-i18n="group_mardana">Mardana</option>
+          <option value="zanana" data-i18n="group_zanana">Zanana</option>
         </select>
         <button onclick="inviteMureed()">Allow Karo</button>
       </div>
@@ -273,8 +274,8 @@ a { color: #ffd700; }
         <input type="text" id="daMobile" placeholder="Mobile Number">
         <input type="password" id="daPassword" placeholder="Password">
         <select id="daGroup">
-          <option value="mardana">Mardana</option>
-          <option value="zanana">Zanana</option>
+          <option value="mardana" data-i18n="group_mardana">Mardana</option>
+          <option value="zanana" data-i18n="group_zanana">Zanana</option>
         </select>
         <button onclick="directAddMureed()">Add Mureed</button>
       </div>
@@ -306,8 +307,8 @@ a { color: #ffd700; }
         </div>
         <select id="classGroup">
           <option value="both">Both</option>
-          <option value="mardana">Mardana</option>
-          <option value="zanana">Zanana</option>
+          <option value="mardana" data-i18n="group_mardana">Mardana</option>
+          <option value="zanana" data-i18n="group_zanana">Zanana</option>
         </select>
         <button id="uploadClassBtn" onclick="uploadClass()">Upload Class</button>
         <button class="secondary" id="cancelEditBtn" style="display:none;" onclick="cancelEditClass()">Cancel Edit</button>
@@ -413,7 +414,7 @@ a { color: #ffd700; }
 
         <select id="eventGroup">
           <option value="both">Both</option>
-          <option value="mardana">Mardana</option>
+          <option value="mardana" data-i18n="group_mardana">Mardana</option>
           <option value="zanana" selected>Zanana</option>
         </select>
 
@@ -447,45 +448,45 @@ a { color: #ffd700; }
 <!-- ============ NOTES SE SAWAL-JAWAB SCREEN ============ -->
 <div id="qaScreen" class="hidden">
   <div class="card">
-    <h3>📖 Notes se Sawal-Jawab</h3>
+    <h3 data-i18n="notes_qa_heading">📖 Notes se Sawal-Jawab</h3>
 
     <div id="qaAdminUploadBox" class="hidden">
       <div style="border:1px solid #2a6b2a; border-radius:8px; padding:10px; margin-bottom:12px;">
         <p style="font-size:13px; color:#ffd700; margin:0 0 6px;">🌐 Sab Mureedon ke liye Sawal-Jawab</p>
-        <button class="secondary" id="globalQaToggleBtn" style="width:100%;" onclick="toggleGlobalQaAccess()">Loading...</button>
+        <button class="secondary" id="globalQaToggleBtn" style="width:100%;" onclick="toggleGlobalQaAccess()" data-i18n="loading_text">Loading...</button>
         <p style="font-size:11px; color:#cde; margin-top:6px;">Ek hi button se sab mureedon ke liye tab dikhega ya gayab ho jaayega.</p>
       </div>
       <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Urdu Notes (PDF) upload karo:</p>
-      <input type="text" id="qaNoteTitle" placeholder="Notes ka naam (jaise: Malfoozat Hissa 1)">
+      <input type="text" id="qaNoteTitle" data-i18n-placeholder="notes_name_ph" placeholder="Notes ka naam (jaise: Malfoozat Hissa 1)">
       <input type="file" id="qaNoteFile" accept="application/pdf">
-      <button onclick="uploadQaNote()" id="qaUploadBtn">Notes Upload Karo</button>
+      <button onclick="uploadQaNote()" id="qaUploadBtn" data-i18n="notes_upload_btn">Notes Upload Karo</button>
       <p id="qaUploadStatus" style="font-size:12px; color:#ffd700;"></p>
       <div id="qaNotesAdminList" style="margin-top:10px;"></div>
       <hr style="border-color:#2a6b2a; margin:14px 0;">
     </div>
 
     <p style="font-size:12px; color:#cde;">Apna sawal likho:</p>
-    <textarea id="qaQuestionInput" placeholder="Yahan apna sawal likho..." style="min-height:60px;"></textarea>
-    <button onclick="askQaQuestion()" id="qaAskBtn">Sawal Poocho</button>
+    <textarea id="qaQuestionInput" data-i18n-placeholder="question_ph" placeholder="Yahan apna sawal likho..." style="min-height:60px;"></textarea>
+    <button onclick="askQaQuestion()" id="qaAskBtn" data-i18n="ask_btn">Sawal Poocho</button>
 
     <div id="qaAnswerBox" class="hidden" style="margin-top:14px; border:1px solid #2a6b2a; border-radius:8px; padding:12px;">
       <p style="font-size:12px; color:#ffd700; margin-top:0;">Jawab:</p>
       <p id="qaAnswerText" style="white-space:pre-wrap;"></p>
-      <button class="secondary" style="width:auto; padding:6px 14px;" onclick="speakQaAnswer()">🔊 Suno</button>
-      <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px;" onclick="stopQaSpeak()">⏹️ Roko</button>
+      <button class="secondary" style="width:auto; padding:6px 14px;" onclick="speakQaAnswer()" data-i18n="listen_btn">🔊 Suno</button>
+      <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px;" onclick="stopQaSpeak()" data-i18n="stop_btn">⏹️ Roko</button>
     </div>
 
     <hr style="border-color:#2a6b2a; margin:14px 0;">
-    <button class="secondary" onclick="downloadQaHistoryPdf()">📄 Mere Sawal-Jawab PDF Download Karo</button>
+    <button class="secondary" onclick="downloadQaHistoryPdf()" data-i18n="download_qa_pdf_btn">📄 Mere Sawal-Jawab PDF Download Karo</button>
     <div id="qaHistoryList" style="margin-top:12px;"></div>
   </div>
 </div>
 
 <!-- ============ BOTTOM TAB BAR ============ -->
 <div class="tab-bar hidden" id="tabBar">
-  <button onclick="showScreen('home')" id="tabHome" class="active">🏠 Home</button>
-  <button onclick="showScreen('qa')" id="tabQA" class="hidden">📖 Sawal-Jawab</button>
-  <button onclick="showScreen('admin')" id="tabAdmin" class="hidden">⚙️ Admin</button>
+  <button onclick="showScreen('home')" id="tabHome" class="active" data-i18n="tab_home">🏠 Home</button>
+  <button onclick="showScreen('qa')" id="tabQA" class="hidden" data-i18n="tab_qa">📖 Sawal-Jawab</button>
+  <button onclick="showScreen('admin')" id="tabAdmin" class="hidden" data-i18n="tab_admin">⚙️ Admin</button>
 </div>
 
 <!-- PDF text extraction, PDF banane, aur screenshot ke liye libraries -->
@@ -494,6 +495,74 @@ a { color: #ffd700; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
  <script>
 const API = ""; // same domain, so empty base
+
+// ---------- LANGUAGE (Urdu / English) ----------
+const TRANSLATIONS = {
+  en: {
+    login_title: "Login", new_user_register: "New user? Register here",
+    mobile_ph: "Mobile Number", password_ph: "Password", full_name_ph: "Full Name",
+    group_mardana: "Mardana", group_zanana: "Zanana",
+    logout_btn: "Logout", khanqah_location_heading: "📍 Khanqah Location",
+    open_gmaps_btn: "🗺️ Open in Google Maps", share_btn: "🔗 Share",
+    search_ph: "Search classes...",
+    notif_perm_btn: "🔔 Turn ON Notifications (for Alarm even when screen locked)",
+    islamic_calendar_heading: "📅 Islamic Calendar",
+    prev_month_btn: "⬅ Previous Month", next_month_btn: "Next Month ➡",
+    namaz_times_heading: "🌙 Today's Prayer Times",
+    classes_heading: "📚 Classes", notifications_heading: "🔔 Notifications",
+    back_btn: "← Back", notes_qa_heading: "📖 Notes Q&A", loading_text: "Loading...",
+    notes_name_ph: "Notes name (e.g. Malfoozat Part 1)", notes_upload_btn: "Upload Notes",
+    question_ph: "Type your question here...", ask_btn: "Ask",
+    listen_btn: "🔊 Listen", stop_btn: "⏹️ Stop",
+    download_qa_pdf_btn: "📄 Download My Q&A PDF",
+    tab_home: "🏠 Home", tab_qa: "📖 Q&A", tab_admin: "⚙️ Admin",
+  },
+  ur: {
+    login_title: "لاگ ان", new_user_register: "نئے صارف؟ یہاں رجسٹر کریں",
+    mobile_ph: "موبائل نمبر", password_ph: "پاس ورڈ", full_name_ph: "پورا نام",
+    group_mardana: "مردانہ", group_zanana: "زنانہ",
+    logout_btn: "لاگ آؤٹ", khanqah_location_heading: "📍 خانقاہ کا پتہ",
+    open_gmaps_btn: "🗺️ گوگل میپس میں کھولیں", share_btn: "🔗 شیئر کریں",
+    search_ph: "کلاسیں تلاش کریں...",
+    notif_perm_btn: "🔔 نوٹیفیکیشن آن کریں (اسکرین لاک میں بھی الارم کے لیے)",
+    islamic_calendar_heading: "📅 اسلامی کیلنڈر",
+    prev_month_btn: "⬅ پچھلا مہینہ", next_month_btn: "اگلا مہینہ ➡",
+    namaz_times_heading: "🌙 آج کے نماز کے اوقات",
+    classes_heading: "📚 کلاسیں", notifications_heading: "🔔 اطلاعات",
+    back_btn: "← واپس", notes_qa_heading: "📖 نوٹس سے سوال و جواب", loading_text: "لوڈ ہو رہا ہے...",
+    notes_name_ph: "نوٹس کا نام (مثلاً: ملفوظات حصہ 1)", notes_upload_btn: "نوٹس اپلوڈ کریں",
+    question_ph: "اپنا سوال یہاں لکھیں...", ask_btn: "پوچھیں",
+    listen_btn: "🔊 سنیں", stop_btn: "⏹️ روکیں",
+    download_qa_pdf_btn: "📄 میرے سوال و جواب کی پی ڈی ایف ڈاؤنلوڈ کریں",
+    tab_home: "🏠 ہوم", tab_qa: "📖 سوال و جواب", tab_admin: "⚙️ ایڈمن",
+  }
+};
+let currentLang = localStorage.getItem('zahidiya_lang') || 'ur';
+
+function t(key) { return (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) || (TRANSLATIONS.en[key] || key); }
+
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
+  document.documentElement.setAttribute('lang', currentLang);
+  document.documentElement.setAttribute('dir', currentLang === 'ur' ? 'rtl' : 'ltr');
+  const btn = document.getElementById('langToggleBtn');
+  if (btn) btn.textContent = currentLang === 'ur' ? '🌐 English' : '🌐 اردو';
+  // login/register buttons ka text register-mode ke hisaab se dobara set karo
+  if (typeof isRegisterMode !== 'undefined') {
+    document.getElementById('loginActionBtn').textContent = isRegisterMode ? t('register_btn_alt') || (currentLang==='ur' ? 'رجسٹر کریں' : 'Register') : t('login_title');
+    document.getElementById('loginTitle').textContent = isRegisterMode ? (currentLang==='ur' ? 'رجسٹر کریں' : 'Register') : t('login_title');
+    document.getElementById('toggleBtn').textContent = isRegisterMode ? (currentLang==='ur' ? 'پہلے سے ممبر ہیں؟ لاگ ان کریں' : 'Already a member? Login') : t('new_user_register');
+  }
+}
+
+function toggleLang() {
+  currentLang = currentLang === 'ur' ? 'en' : 'ur';
+  localStorage.setItem('zahidiya_lang', currentLang);
+  applyLang();
+}
+
+document.addEventListener('DOMContentLoaded', applyLang);
 
 // ---------- PUSH NOTIFICATIONS (screen lock mein bhi kaam karta hai, WhatsApp jaisa) ----------
 const VAPID_PUBLIC_KEY = "BB6nEl89eXyVZKAbLuiY1z79zA9S_lNGvtzmyliFQos6l6LICc-B0DmKzmoj1JeQ4FEXq4ZhMrAQOSmmq2y7f_w";
@@ -571,9 +640,7 @@ function toggleLoginRegister() {
   isRegisterMode = !isRegisterMode;
   document.getElementById('loginFields').classList.toggle('hidden', isRegisterMode);
   document.getElementById('registerFields').classList.toggle('hidden', !isRegisterMode);
-  document.getElementById('loginActionBtn').innerText = isRegisterMode ? 'Register' : 'Login';
-  document.getElementById('toggleBtn').innerText = isRegisterMode ? 'Already a member? Login' : 'New user? Register here';
-  document.getElementById('loginTitle').innerText = isRegisterMode ? 'Register' : 'Login';
+  applyLang();
 }
 
 async function handleLoginOrRegister() {
@@ -1298,8 +1365,8 @@ function addBulkRow() {
     <input type="text" placeholder="Mobile" class="bulkMobile" style="flex:1; min-width:100px; margin:0;">
     <input type="text" placeholder="Password" class="bulkPassword" style="flex:1; min-width:100px; margin:0;">
     <select class="bulkGroup" style="flex:1; min-width:100px; margin:0;">
-      <option value="mardana">Mardana</option>
-      <option value="zanana">Zanana</option>
+      <option value="mardana" data-i18n="group_mardana">Mardana</option>
+      <option value="zanana" data-i18n="group_zanana">Zanana</option>
     </select>
     <button class="secondary" style="width:auto; margin:0; padding:8px 12px;" onclick="document.getElementById('${rowId}').remove()">✖</button>
   `;
