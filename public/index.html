@@ -1061,7 +1061,6 @@ async function loadPrayerTimes() {
       localStorage.setItem('zahidiya_namaz_last', JSON.stringify({ date: new Date().toDateString(), times: window.namazTimesToday }));
     } catch(e) {}
 
-    const prayerIcons = { Fajr: '🌅', Dhuhr: '☀️', Asr: '🌤️', Maghrib: '🌇', Isha: '🌙' };
     const prayers = [
       { key: 'Fajr', label: t('prayer_fajr'), start: clean(timings.Fajr), end: clean(timings.Sunrise) },
       { key: 'Dhuhr', label: t('prayer_zuhr'), start: clean(timings.Dhuhr), end: clean(timings.Asr) },
@@ -1078,9 +1077,8 @@ async function loadPrayerTimes() {
       const active = isPrayerActive(p.start, p.end);
       return `
         <div style="border:1.5px solid ${active ? '#ffd700' : '#2a6b2a'}; border-radius:12px; padding:8px 4px; text-align:center; background:${active ? 'linear-gradient(180deg,#1f4d1f,#173d17)' : 'linear-gradient(180deg,#123312,#0f2a0f)'}; box-shadow:${active ? '0 0 8px rgba(255,215,0,0.35)' : '0 1px 3px rgba(0,0,0,0.3)'};">
-          <div style="font-size:16px; line-height:1;">${prayerIcons[p.key] || ''}</div>
-          <div style="font-weight:bold; color:#ffd700; font-size:12.5px; margin-top:3px; white-space:nowrap;">${p.label}${active ? ' ●' : ''}</div>
-          <div style="font-size:13px; font-weight:bold; margin-top:5px; white-space:nowrap;">${to12Hour(p.start)}</div>
+          <div style="font-weight:bold; color:#ffd700; font-size:12.5px; white-space:nowrap;">${p.label}${active ? ' ●' : ''}</div>
+          <div style="font-size:13px; font-weight:bold; margin-top:6px; white-space:nowrap;">${to12Hour(p.start)}</div>
           <div style="font-size:9.5px; color:#cde;">${t('prayer_start_label')}</div>
           <div style="font-size:13px; font-weight:bold; margin-top:4px; white-space:nowrap;">${to12Hour(p.end)}</div>
           <div style="font-size:9.5px; color:#cde;">${t('prayer_end_label')}</div>
