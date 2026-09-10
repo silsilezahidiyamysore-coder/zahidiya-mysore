@@ -77,13 +77,13 @@ a { color: #ffd700; }
   <!-- ============ MAIN APP (after login) ============ -->
   <div id="mainApp" class="hidden">
 
-    <div class="row" style="justify-content:space-between; margin-bottom:10px;">
+    <div class="row" style="justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; row-gap:8px;">
      <div>
         <h1 style="font-size:18px;">🕌Silsila-e-Zahidiya Mysore</h1>
         <p id="welcomeUser" style="font-size:12px;color:#ffd700;margin-top:2px;"></p>
       </div>
-      <div class="row" style="width:auto;">
-        <button class="secondary" style="width:auto; padding:6px 10px;" onclick="openKhanqahLocation()" title="Khanqah Location">
+      <div class="row" style="width:auto; flex-wrap:wrap; justify-content:flex-end; row-gap:6px;">
+        <button class="secondary" style="width:auto; padding:6px 10px; white-space:nowrap;" onclick="openKhanqahLocation()" title="Khanqah Location">
           <svg width="20" height="20" viewBox="0 0 24 24" style="vertical-align:middle;">
             <path fill="#EA4335" d="M12 2C7.6 2 4 5.6 4 10c0 5.4 7 11.5 7.3 11.8c.2.2.5.3.7.3s.5-.1.7-.3C13 21.5 20 15.4 20 10c0-4.4-3.6-8-8-8z"/>
             <circle cx="12" cy="10" r="3.2" fill="#fff"/>
@@ -143,7 +143,7 @@ a { color: #ffd700; }
     <div class="card">
       <h3 style="margin:0;" data-i18n="namaz_times_heading">🌙 Aaj ke Namaz Auqaat</h3>
       <div id="namazDateLabel" style="font-size:13px; color:#ffd700; margin-top:6px;"></div>
-      <div id="prayerTimes" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;"></div>
+      <div id="prayerTimes" style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-top:10px;"></div>
       <div id="alarmStatusLine" style="font-size:11px; color:#8fbf8f; margin-top:8px;"></div>
     </div>
 
@@ -563,7 +563,6 @@ function applyLang() {
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
   document.documentElement.setAttribute('lang', currentLang);
-  document.documentElement.setAttribute('dir', currentLang === 'ur' ? 'rtl' : 'ltr');
   const btn = document.getElementById('langToggleBtn');
   if (btn) btn.textContent = currentLang === 'ur' ? '🌐 English' : '🌐 اردو';
   // login/register buttons ka text register-mode ke hisaab se dobara set karo
@@ -1062,6 +1061,7 @@ async function loadPrayerTimes() {
       localStorage.setItem('zahidiya_namaz_last', JSON.stringify({ date: new Date().toDateString(), times: window.namazTimesToday }));
     } catch(e) {}
 
+    const prayerIcons = { Fajr: '🌅', Dhuhr: '☀️', Asr: '🌤️', Maghrib: '🌇', Isha: '🌙' };
     const prayers = [
       { key: 'Fajr', label: t('prayer_fajr'), start: clean(timings.Fajr), end: clean(timings.Sunrise) },
       { key: 'Dhuhr', label: t('prayer_zuhr'), start: clean(timings.Dhuhr), end: clean(timings.Asr) },
@@ -1077,12 +1077,13 @@ async function loadPrayerTimes() {
     document.getElementById('prayerTimes').innerHTML = prayers.map(p => {
       const active = isPrayerActive(p.start, p.end);
       return `
-        <div style="flex:1; min-width:130px; border:1px solid ${active ? '#ffd700' : '#2a6b2a'}; border-radius:8px; padding:10px; text-align:center; background:${active ? '#1f4d1f' : '#0f2a0f'};">
-          <div style="font-weight:bold; color:#ffd700; font-size:14px;">${p.label}${active ? ' ●' : ''}</div>
-          <div style="font-size:15px; font-weight:bold; margin-top:6px;">${to12Hour(p.start)}</div>
-          <div style="font-size:11px; color:#cde;">${t('prayer_start_label')}</div>
-          <div style="font-size:15px; font-weight:bold; margin-top:6px;">${to12Hour(p.end)}</div>
-          <div style="font-size:11px; color:#cde;">${t('prayer_end_label')}</div>
+        <div style="border:1.5px solid ${active ? '#ffd700' : '#2a6b2a'}; border-radius:12px; padding:8px 4px; text-align:center; background:${active ? 'linear-gradient(180deg,#1f4d1f,#173d17)' : 'linear-gradient(180deg,#123312,#0f2a0f)'}; box-shadow:${active ? '0 0 8px rgba(255,215,0,0.35)' : '0 1px 3px rgba(0,0,0,0.3)'};">
+          <div style="font-size:16px; line-height:1;">${prayerIcons[p.key] || ''}</div>
+          <div style="font-weight:bold; color:#ffd700; font-size:12.5px; margin-top:3px; white-space:nowrap;">${p.label}${active ? ' ●' : ''}</div>
+          <div style="font-size:13px; font-weight:bold; margin-top:5px; white-space:nowrap;">${to12Hour(p.start)}</div>
+          <div style="font-size:9.5px; color:#cde;">${t('prayer_start_label')}</div>
+          <div style="font-size:13px; font-weight:bold; margin-top:4px; white-space:nowrap;">${to12Hour(p.end)}</div>
+          <div style="font-size:9.5px; color:#cde;">${t('prayer_end_label')}</div>
         </div>
       `;
     }).join('');
@@ -1799,6 +1800,43 @@ function buildGregorianMonthDates(anchor) {
 let calendarType = 'gregorian';
 let calendarAnchorDate = new Date();
 
+// Har khaas din ka thoda tafseeli (detail) matn — box par click karne par dikhega
+const EVENT_DESCRIPTIONS = {
+  'Islamic New Year (Muharram)': 'Hijri saal ka pehla din — Islamic calendar ka aaghaz.',
+  'Ashura': '10 Muharram — Karbala mein Imam Hussain (RA) ki shahadat ka din, roza rakhna mustahab hai.',
+  "Eid Milad-un-Nabi ﷺ": '12 Rabi-ul-Awwal — Huzoor Nabi-e-Kareem ﷺ ki wiladat (paidaish) ka mubarak din.',
+  'Shab-e-Mairaj': '27 Rajab — Huzoor ﷺ ka Meraj (Aasman ki taraf raat ka safar) ki mubarak raat.',
+  'Shab-e-Baraat': '15 Sha\'baan ki raat — Maghfirat aur ibadat ki khaas raat.',
+  'Ramadan Shuru': 'Ramadan-ul-Mubarak ka pehla roza — poore mahine roze rakhe jaate hain.',
+  'Shab-e-Qadr (ehtiyaatan)': 'Ramadan ki sab se afzal raat (Alfaz-e-Nuzool-e-Quran) — ehtiyaatan yeh taareekh li gayi hai.',
+  'Eid-ul-Fitr': 'Ramadan ke roze poore hone ki khushi mein manaya jaane wala Eid ka din.',
+  'Youm-e-Arafah': '9 Zil-Hijjah — Hajj ka sab se aham din, Arafat ke maidan mein wuquf.',
+  'Eid-ul-Adha': 'Qurbani ki Eid — Hazrat Ibrahim (AS) ki sunnat ki yaad mein manaya jaata hai.',
+  'Republic Day': 'Bharat ka Aaeen (Constitution) lagu hone ka din.',
+  'Independence Day': 'Bharat ki azaadi ka din.',
+  'Gandhi Jayanti': 'Mahatma Gandhi ki paidaish ka din.',
+  'Christmas': 'Hazrat Isa (AS) ki paidaish ki yaad mein manaya jaane wala din.',
+};
+
+let currentCellEventMap = {};
+
+function showDayDetails(pos) {
+  const info = currentCellEventMap[pos];
+  if (!info) return;
+  const panel = document.getElementById('dayDetailsPanel');
+  if (!panel) return;
+  const desc = info.eventName ? (EVENT_DESCRIPTIONS[info.eventName] || '') : '';
+  panel.innerHTML = `
+    <div style="margin-top:12px; padding:12px; border-radius:10px; background:#0f2a0f; border:1px solid ${info.eventName ? '#ffd700' : '#2a6b2a'};">
+      <div style="font-weight:bold; font-size:15px; color:#ffd700;">📅 ${info.dayNum} <span style="font-weight:normal; font-size:12px; opacity:0.8;">(${info.secondaryLabel})</span></div>
+      ${info.eventName
+        ? `<div style="margin-top:6px; font-weight:bold;">🔴 ${info.eventName}</div><div style="margin-top:4px; font-size:13px; color:#dde;">${desc}</div>`
+        : `<div style="margin-top:6px; font-size:13px; color:#cde;">Koi khaas din nahi hai.</div>`
+      }
+    </div>`;
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
 function openCalendarGrid(type, anchor) {
   calendarType = type;
   calendarAnchorDate = anchor || new Date();
@@ -1852,7 +1890,7 @@ function openCalendarGrid(type, anchor) {
     let style = isToday ? 'background:#ffd700; color:#1a3a1a; font-weight:bold;' : 'background:#0f2a0f;';
     if (eventName && !isToday) style = 'background:#8b1a1a; color:#fff; font-weight:bold;';
     const shortLabel = eventName ? `<div style="font-size:8px; line-height:1.1; margin-top:2px; padding:0 2px; word-break:break-word;">${eventName}</div>` : '';
-    html += `<div id="calCell-${gridPos}" tabindex="0" style="padding:6px 2px; border-radius:6px; position:relative; min-height:38px; outline-offset:2px; cursor:pointer; ${style}" title="${eventName || ''}">
+    html += `<div id="calCell-${gridPos}" tabindex="0" onclick="showDayDetails(${gridPos})" style="padding:6px 2px; border-radius:6px; position:relative; min-height:38px; outline-offset:2px; cursor:pointer; ${style}" title="${eventName || ''}">
       <div>${primaryDayNum}</div>
       <div style="font-size:9px; opacity:0.8;">${secondaryLabel}</div>
       ${shortLabel}
@@ -1860,6 +1898,8 @@ function openCalendarGrid(type, anchor) {
   });
 
   html += '</div>';
+  html += '<div id="dayDetailsPanel"></div>';
+  currentCellEventMap = cellEventMap;
 
   if (eventsThisMonth.length) {
     html += '<div style="margin-top:10px; font-size:12px;">';
@@ -1894,8 +1934,7 @@ function setupCalendarKeyboardNav(cellEventMap) {
     else if (e.key === 'ArrowUp') newPos = pos - 7;
     else if (e.key === 'ArrowDown') newPos = pos + 7;
     else if (e.key === 'Enter') {
-      const info = cellEventMap[pos];
-      if (info) alert(info.dayNum + ' (' + info.secondaryLabel + ')' + (info.eventName ? ' — ' + info.eventName : ' — Koi khaas din nahi'));
+      showDayDetails(pos);
       e.preventDefault();
       e.stopPropagation();
       return;
