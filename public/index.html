@@ -2264,7 +2264,8 @@ function checkNamazAlarms() {
   const nowMin = now.getHours() * 60 + now.getMinutes();
 
   if (!window.namazTimesToday) {
-    updateAlarmStatusLine('Namaz auqaat load nahi hue — internet check karo');
+    // Abhi Namaz auqaat load hi ho rahe hain (page abhi khula hai) —
+    // isse galat "internet check karo" wala message na dikhe, chup-chaap wait karo.
     return;
   }
   if (nowMin === lastCheckedMinute) return;
