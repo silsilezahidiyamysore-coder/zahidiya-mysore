@@ -52,7 +52,7 @@ a { color: #ffd700; }
 
   <!-- ============ LOGIN SCREEN ============ -->
   <div id="loginScreen">
-    <h1>🕌 Silsila-e-Zahidiya Mysore</h1>
+    <h1 data-i18n="site_name">🕌 Silsila-e-Zahidiya Mysore</h1>
     <div class="card">
       <h3 id="loginTitle" data-i18n="login_title">Login</h3>
       <div id="loginFields">
@@ -79,7 +79,7 @@ a { color: #ffd700; }
 
     <div class="row" style="justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; row-gap:8px;">
      <div>
-        <h1 style="font-size:18px;">🕌Silsila-e-Zahidiya Mysore</h1>
+        <h1 style="font-size:18px;" data-i18n="site_name">🕌Silsila-e-Zahidiya Mysore</h1>
         <p id="welcomeUser" style="font-size:12px;color:#ffd700;margin-top:2px;"></p>
       </div>
       <div class="row" style="width:auto; flex-wrap:wrap; justify-content:flex-end; row-gap:6px;">
@@ -143,7 +143,7 @@ a { color: #ffd700; }
     <div class="card">
       <h3 style="margin:0;" data-i18n="namaz_times_heading">🌙 Aaj ke Namaz Auqaat</h3>
       <div id="namazDateLabel" style="font-size:13px; color:#ffd700; margin-top:6px;"></div>
-      <div id="prayerTimes" style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-top:10px;"></div>
+      <div id="prayerTimes" style="display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:6px; margin-top:10px;"></div>
       <div id="alarmStatusLine" style="font-size:11px; color:#8fbf8f; margin-top:8px;"></div>
     </div>
 
@@ -524,6 +524,7 @@ const TRANSLATIONS = {
     listen_btn: "🔊 Listen", stop_btn: "⏹️ Stop",
     download_qa_pdf_btn: "📄 Download My Q&A PDF",
     tab_home: "🏠 Home", tab_qa: "📖 Q&A", tab_admin: "⚙️ Admin",
+    site_name: "🕌 Silsila-e-Zahidiya Mysore",
     prayer_fajr: "Fajr", prayer_zuhr: "Zuhr", prayer_asr: "Asr", prayer_maghrib: "Maghrib", prayer_isha: "Isha",
     prayer_start_label: "Start", prayer_end_label: "End",
     loc_current: " 📍 (Your current location)", loc_default: " 📍 (Mysore - default)",
@@ -548,6 +549,7 @@ const TRANSLATIONS = {
     listen_btn: "🔊 سنیں", stop_btn: "⏹️ روکیں",
     download_qa_pdf_btn: "📄 میرے سوال و جواب کی پی ڈی ایف ڈاؤنلوڈ کریں",
     tab_home: "🏠 ہوم", tab_qa: "📖 سوال و جواب", tab_admin: "⚙️ ایڈمن",
+    site_name: "🕌 سلسلہ زاہدیہ میسور",
     prayer_fajr: "فجر", prayer_zuhr: "ظہر", prayer_asr: "عصر", prayer_maghrib: "مغرب", prayer_isha: "عشاء",
     prayer_start_label: "شروع", prayer_end_label: "ختم",
     loc_current: " 📍 (آپ کا موجودہ مقام)", loc_default: " 📍 (میسور - ڈیفالٹ)",
@@ -1076,12 +1078,12 @@ async function loadPrayerTimes() {
     document.getElementById('prayerTimes').innerHTML = prayers.map(p => {
       const active = isPrayerActive(p.start, p.end);
       return `
-        <div style="border:1.5px solid ${active ? '#ffd700' : '#2a6b2a'}; border-radius:12px; padding:8px 4px; text-align:center; background:${active ? 'linear-gradient(180deg,#1f4d1f,#173d17)' : 'linear-gradient(180deg,#123312,#0f2a0f)'}; box-shadow:${active ? '0 0 8px rgba(255,215,0,0.35)' : '0 1px 3px rgba(0,0,0,0.3)'};">
-          <div style="font-weight:bold; color:#ffd700; font-size:12.5px; white-space:nowrap;">${p.label}${active ? ' ●' : ''}</div>
-          <div style="font-size:13px; font-weight:bold; margin-top:6px; white-space:nowrap;">${to12Hour(p.start)}</div>
-          <div style="font-size:9.5px; color:#cde;">${t('prayer_start_label')}</div>
-          <div style="font-size:13px; font-weight:bold; margin-top:4px; white-space:nowrap;">${to12Hour(p.end)}</div>
-          <div style="font-size:9.5px; color:#cde;">${t('prayer_end_label')}</div>
+        <div style="border:1.5px solid ${active ? '#ffd700' : '#2a6b2a'}; border-radius:12px; padding:8px 2px; text-align:center; overflow:hidden; background:${active ? 'linear-gradient(180deg,#1f4d1f,#173d17)' : 'linear-gradient(180deg,#123312,#0f2a0f)'}; box-shadow:${active ? '0 0 8px rgba(255,215,0,0.35)' : '0 1px 3px rgba(0,0,0,0.3)'};">
+          <div style="font-weight:bold; color:#ffd700; font-size:11px; white-space:nowrap; overflow:hidden;">${p.label}${active ? ' ●' : ''}</div>
+          <div style="font-size:11.5px; font-weight:bold; margin-top:6px; white-space:nowrap; overflow:hidden;">${to12Hour(p.start)}</div>
+          <div style="font-size:8.5px; color:#cde;">${t('prayer_start_label')}</div>
+          <div style="font-size:11.5px; font-weight:bold; margin-top:4px; white-space:nowrap; overflow:hidden;">${to12Hour(p.end)}</div>
+          <div style="font-size:8.5px; color:#cde;">${t('prayer_end_label')}</div>
         </div>
       `;
     }).join('');
