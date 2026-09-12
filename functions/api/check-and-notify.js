@@ -5,6 +5,7 @@
 // chahe unki screen lock ho ya app band ho.
 
 import { buildPushHTTPRequest } from "@pushforge/builder";
+import { sendAlarmRingPush } from "./fcm-helper.js";
 
 function nowIST() {
   // Cloudflare Worker hamesha UTC mein chalta hai, isliye 5:30 add karke IST nikalte hain
@@ -118,6 +119,7 @@ async function handle(context) {
                 title: '🕌 ' + name + ' ki namaz ka waqt ho gaya hai',
                 body: 'Silsila-e-Zahidiya Mysore', tag: 'namaz-' + name
               });
+              await sendAlarmRingPush(context.env, name + ' ki namaz ka waqt ho gaya hai', alarmSettings.start_alarm_duration_seconds || 60, 'both');
               sentCount++;
             }
           }
@@ -143,6 +145,7 @@ async function handle(context) {
                 title: '⏳ ' + names[i] + ' ki namaz khatam hone wali hai (' + alarmSettings.end_reminder_minutes_before + ' min)',
                 body: 'Silsila-e-Zahidiya Mysore', tag: 'end-reminder-' + names[i]
               });
+              await sendAlarmRingPush(context.env, names[i] + ' ki namaz khatam hone wali hai', alarmSettings.end_reminder_beep_seconds || 20, 'both');
               sentCount++;
             }
           }
@@ -159,6 +162,7 @@ async function handle(context) {
             title: '🔔 ' + (alarmSettings.custom_alarm_title || 'Alarm'),
             body: 'Silsila-e-Zahidiya Mysore', tag: 'custom-alarm'
           });
+          await sendAlarmRingPush(context.env, alarmSettings.custom_alarm_title || 'Alarm', alarmSettings.start_alarm_duration_seconds || 60, 'both');
           sentCount++;
         }
       }
@@ -189,6 +193,7 @@ async function handle(context) {
         title: '📅 ' + ev.title,
         body: 'Silsila-e-Zahidiya Mysore', tag: 'event-' + ev.id
       });
+      await sendAlarmRingPush(context.env, ev.title, alarmSettings ? (alarmSettings.start_alarm_duration_seconds || 60) : 60, ev.group_type);
       sentCount++;
     }
 
