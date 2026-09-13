@@ -990,6 +990,17 @@ function speakPdf(url) {
 
 // Backend se aane wale notification messages fixed pattern mein hote hain
 // (jaise 'Nayi class upload hui: "Title"'). Urdu mode mein yahin translate karte hain.
+// Custom Event/Alarm title agar "English | اردو" format mein likha ho,
+// to sahi language wala hissa dikhao.
+function bilingualTitle(raw) {
+  if (!raw) return raw;
+  const parts = raw.split('|');
+  if (parts.length >= 2) {
+    return currentLang === 'ur' ? parts[1].trim() : parts[0].trim();
+  }
+  return raw.trim();
+}
+
 function translateNotifMsg(msg) {
   if (currentLang !== 'ur') return msg;
   let m = msg.match(/^Nayi class upload hui: "(.+)"$/);
@@ -1737,7 +1748,7 @@ function checkCustomAlarm() {
     ? (nowMinutes >= startMinutes && nowMinutes <= endMinutes)
     : (nowMinutes >= startMinutes || nowMinutes <= endMinutes); // raat paar hone wala case
   if (active) {
-    const titleText = '🔔 ' + (alarmSettings.custom_alarm_title || 'Alarm') + ' — abhi chal raha hai';
+    const titleText = '🔔 ' + bilingualTitle(alarmSettings.custom_alarm_title || 'Alarm') + ' — abhi chal raha hai';
     titleEl.innerText = titleText;
     card.classList.remove('hidden');
 
@@ -2514,7 +2525,7 @@ function renderEventsAdminList() {
       : ev.repeat_type === 'monthly' ? (ev.day_of_month + t('monthly_suffix'))
       : (ev.event_date + t('once_suffix'));
     return `<div style="border:1px solid #2a6b2a; border-radius:8px; padding:10px; margin-top:8px;">
-      <b style="color:#ffd700;">${ev.title}</b><br>
+      <b style="color:#ffd700;">${bilingualTitle(ev.title)}</b><br>
       <span style="font-size:12px; color:#cde;">${schedule} • ${to12Hour(ev.start_time)} - ${to12Hour(ev.end_time)} • ${ev.group_type} • ${ev.content_type}</span><br>
       <button class="secondary" style="width:auto; margin-top:6px; padding:6px 12px;" onclick="editEvent(${ev.id})">${t('edit_btn')}</button>
       <button class="secondary" style="width:auto; margin-top:6px; margin-left:6px; padding:6px 12px; background:#8b1a1a;" onclick="deleteEvent(${ev.id})">${t('delete_btn')}</button>
@@ -2606,7 +2617,7 @@ function showEventBanner(ev) {
     bar.style.cssText = 'position:fixed; top:0; left:0; right:0; background:#ffd700; color:#0f3d2e; padding:14px; text-align:center; font-weight:bold; z-index:9999;';
     document.body.prepend(bar);
   }
-  bar.innerHTML = '📅 ' + ev.title +
+  bar.innerHTML = '📅 ' + bilingualTitle(ev.title) +
     ' <button style="width:auto; margin-left:10px; padding:6px 14px;" onclick="openEventContent(' + ev.id + ')">' + t('view_btn') + '</button>' +
     ' <button style="width:auto; margin-left:6px; padding:6px 14px;" onclick="silenceAlarm(currentAlarmKey)">' + t('silence_btn') + '</button>';
   bar.classList.remove('hidden');
@@ -2623,7 +2634,7 @@ function openEventContent(id) {
     document.body.appendChild(modal);
   }
   let inner = '<div style="background:#0f2a0f; border-radius:12px; padding:20px; max-width:500px; width:100%; max-height:80vh; overflow:auto; border:1px solid #2a6b2a;">';
-  inner += '<h3 style="color:#ffd700; margin-top:0;">' + ev.title + '</h3>';
+  inner += '<h3 style="color:#ffd700; margin-top:0;">' + bilingualTitle(ev.title) + '</h3>';
   if (ev.content_type === 'text') {
     inner += '<p style="white-space:pre-wrap;">' + (ev.content_text || 'Koi text nahi hai.') + '</p>';
   } else if (ev.content_type === 'image' && ev.file_url) {
