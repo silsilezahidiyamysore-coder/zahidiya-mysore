@@ -183,10 +183,10 @@ a { color: #ffd700; }
 
       <div class="card hidden" id="notesAdminUploadCard">
         <h3 style="margin-top:0;">📄 Notes PDF Upload Karo (Urdu)</h3>
-        <p style="font-size:12px; color:#ffd700;">Yeh sab mureedon ko dikhega jab wo sawal poochenge.</p>
+        <p style="font-size:12px; color:#ffd700;" data-i18n="notes_visible_note">Yeh sab mureedon ko dikhega jab wo sawal poochenge.</p>
         <input type="text" id="notesDocTitle" placeholder="Notes ka naam (jaise: Malfoozat Jild 1)">
         <input type="file" id="notesDocFile" accept="application/pdf">
-        <button onclick="uploadNotesDoc()" id="notesUploadBtn">PDF Upload Karo</button>
+        <button onclick="uploadNotesDoc()" id="notesUploadBtn" data-i18n="pdf_upload_karo_btn">PDF Upload Karo</button>
         <p id="notesUploadStatus" style="font-size:12px; color:#ffd700;"></p>
         <div id="notesDocsList" style="margin-top:10px;"></div>
       </div>
@@ -194,7 +194,7 @@ a { color: #ffd700; }
       <div class="card">
         <h3 style="margin-top:0;">❓ Sawal Poochho</h3>
         <textarea id="qaQuestionInput" placeholder="Apna sawal yahan likho..." style="min-height:70px;"></textarea>
-        <button onclick="askNotesQuestion()" id="qaAskBtn">Poochho</button>
+        <button onclick="askNotesQuestion()" id="qaAskBtn" data-i18n="ask_btn">Poochho</button>
         <div id="qaAnswerBox" class="hidden" style="margin-top:12px; border:1px solid #2a6b2a; border-radius:8px; padding:12px;">
           <p id="qaAnswerText" style="white-space:pre-wrap;"></p>
           <button class="secondary" style="width:auto; margin-top:8px;" onclick="speakAnswer()">🔊 Suno</button>
@@ -223,7 +223,7 @@ a { color: #ffd700; }
 
       <div class="card">
         <h3>👤 Meri Profile (Admin)</h3>
-        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Apna naam, mobile ya password badalne ke liye yahan bharo. Password khaali chhodo to purana wahi rahega.</p>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="profile_edit_note">Apna naam, mobile ya password badalne ke liye yahan bharo. Password khaali chhodo to purana wahi rahega.</p>
         <input type="text" id="myProfileName" placeholder="Full Name">
         <input type="text" id="myProfileMobile" placeholder="Mobile Number">
         <input type="text" id="myProfilePassword" placeholder="Naya Password (khaali chhodo agar badalna nahi)">
@@ -232,7 +232,7 @@ a { color: #ffd700; }
 
       <div class="card">
         <h3>🛡️ Naya Admin Banao</h3>
-        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Isse jo bhi mobile-password banaoge, wo bhi Admin Panel access kar sakega.</p>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="new_admin_note">Isse jo bhi mobile-password banaoge, wo bhi Admin Panel access kar sakega.</p>
         <input type="text" id="newAdminName" placeholder="Full Name">
         <input type="text" id="newAdminMobile" placeholder="Mobile Number">
         <input type="text" id="newAdminPassword" placeholder="Password">
@@ -261,7 +261,7 @@ a { color: #ffd700; }
         <input type="text" id="editMureedPassword" placeholder="Naya Password (khaali chhodo agar badalna nahi)">
         <div class="row" style="margin-top:8px;">
           <button style="width:auto;" onclick="saveMureedEdit()">💾 Save Karo</button>
-          <button class="secondary" style="width:auto;" onclick="cancelMureedEdit()">Cancel</button>
+          <button class="secondary" style="width:auto;" onclick="cancelMureedEdit()" data-i18n="cancel_btn">Cancel</button>
         </div>
       </div>
 
@@ -274,7 +274,7 @@ a { color: #ffd700; }
           <option value="mardana" data-i18n="group_mardana">Mardana</option>
           <option value="zanana" data-i18n="group_zanana">Zanana</option>
         </select>
-        <button onclick="inviteMureed()">Allow Karo</button>
+        <button onclick="inviteMureed()" data-i18n="allow_karo_btn">Allow Karo</button>
       </div>
 
       <div class="card">
@@ -286,7 +286,7 @@ a { color: #ffd700; }
           <option value="mardana" data-i18n="group_mardana">Mardana</option>
           <option value="zanana" data-i18n="group_zanana">Zanana</option>
         </select>
-        <button onclick="directAddMureed()">Add Mureed</button>
+        <button onclick="directAddMureed()" data-i18n="add_mureed_btn">Add Mureed</button>
       </div>
 
       <div class="card">
@@ -294,7 +294,7 @@ a { color: #ffd700; }
         <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Har row mein ek mureed ki details bharo. Zaroorat ho to "+ Row Add Karo" se aur row badha sakte ho.</p>
         <div id="bulkRowsContainer"></div>
         <button class="secondary" style="width:auto; margin-top:8px;" onclick="addBulkRow()">➕ Row Add Karo</button>
-        <button style="margin-top:8px;" onclick="bulkAddMureeds()">Bulk Add</button>
+        <button style="margin-top:8px;" onclick="bulkAddMureeds()" data-i18n="bulk_add_btn">Bulk Add</button>
       </div>
 
       <div class="card">
@@ -302,10 +302,10 @@ a { color: #ffd700; }
         <input type="hidden" id="editingClassId" value="">
         <input type="text" id="classTitle" placeholder="Class Title">
     <select id="classType" onchange="toggleClassUrlOrFile()">
-          <option value="audio">Audio (MP3)</option>
-          <option value="video">Video</option>
-          <option value="pdf">PDF</option>
-          <option value="link">Link (WhatsApp/Website)</option>
+          <option value="audio" data-i18n="opt_audio">Audio (MP3)</option>
+          <option value="video" data-i18n="opt_video">Video</option>
+          <option value="pdf" data-i18n="opt_pdf">PDF</option>
+          <option value="link" data-i18n="opt_link">Link (WhatsApp/Website)</option>
         </select>
 <input type="text" id="classUrl" placeholder="File URL (link)" style="display:none;">
         <input type="file" id="classFile" onchange="autoFillTitle()">
@@ -315,42 +315,42 @@ a { color: #ffd700; }
           <span style="font-size:13px;">🔴 Yeh abhi Live hai (YouTube/Zoom link)</span>
         </div>
         <select id="classGroup">
-          <option value="both">Both</option>
+          <option value="both" data-i18n="opt_both">Both</option>
           <option value="mardana" data-i18n="group_mardana">Mardana</option>
           <option value="zanana" data-i18n="group_zanana">Zanana</option>
         </select>
-        <button id="uploadClassBtn" onclick="uploadClass()">Upload Class</button>
-        <button class="secondary" id="cancelEditBtn" style="display:none;" onclick="cancelEditClass()">Cancel Edit</button>
+        <button id="uploadClassBtn" onclick="uploadClass()" data-i18n="upload_class_btn">Upload Class</button>
+        <button class="secondary" id="cancelEditBtn" style="display:none;" onclick="cancelEditClass()" data-i18n="cancel_edit_btn">Cancel Edit</button>
       </div>
       <div class="card">
         <h3>🌙 Islamic Calendar Adjustment</h3>
-        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Agar Hijri tareekh Google Calendar se 1-2 din alag dikhe, to yahan se match kar lo (chaand dikhne ki wajah se yeh jagah-jagah alag hoti hai).</p>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="hijri_adjust_note">Agar Hijri tareekh Google Calendar se 1-2 din alag dikhe, to yahan se match kar lo (chaand dikhne ki wajah se yeh jagah-jagah alag hoti hai).</p>
         <label style="font-size:13px;">Kitne din aage/peeche karna hai</label>
         <input type="number" id="hijriAdjustmentInput" placeholder="jaise: 2 ya -1" min="-3" max="3">
-        <button onclick="saveHijriAdjustment()">Save Karo</button>
+        <button onclick="saveHijriAdjustment()" data-i18n="save_karo_btn">Save Karo</button>
       </div>
        <div class="card">
         <h3>⏰ Alarm Settings</h3>
         <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Namaz shuru hone par alarm, aur khatam hone se pehle reminder — yahan control karein.</p>
-        <label style="font-size:13px;">Start Alarm (Namaz shuru hone par)</label>
+        <label style="font-size:13px;" data-i18n="label_start_alarm">Start Alarm (Namaz shuru hone par)</label>
         <div class="row">
           <input type="checkbox" id="startAlarmEnabled" style="width:auto;">
           <span style="font-size:13px;">On/Off</span>
         </div>
-       <label style="font-size:12px; color:#cde; margin-top:6px; display:block;">Kitne second tak alarm baje</label>
+       <label style="font-size:12px; color:#cde; margin-top:6px; display:block;" data-i18n="label_alarm_seconds">Kitne second tak alarm baje</label>
 <input type="number" id="startAlarmDuration" placeholder="e.g. 60">
-        <label style="font-size:13px; margin-top:8px; display:block;">End Reminder (Namaz khatam hone se pehle)</label>
+        <label style="font-size:13px; margin-top:8px; display:block;" data-i18n="label_end_reminder">End Reminder (Namaz khatam hone se pehle)</label>
         <div class="row">
           <input type="checkbox" id="endReminderEnabled" style="width:auto;">
           <span style="font-size:13px;">On/Off</span>
         </div>
-       <label style="font-size:12px; color:#cde; margin-top:6px; display:block;">Kitne minute pehle reminder aaye</label>
+       <label style="font-size:12px; color:#cde; margin-top:6px; display:block;" data-i18n="label_reminder_minutes">Kitne minute pehle reminder aaye</label>
 <input type="number" id="endReminderMinutesBefore" placeholder="e.g. 10">
-<label style="font-size:12px; color:#cde; margin-top:6px; display:block;">Kitni baar beep baje</label>
+<label style="font-size:12px; color:#cde; margin-top:6px; display:block;" data-i18n="label_beep_count">Kitni baar beep baje</label>
 <input type="number" id="endReminderRepeatCount" placeholder="e.g. 3">
-<label style="font-size:12px; color:#cde; margin-top:6px; display:block;">Har baar kitne second beep</label>
+<label style="font-size:12px; color:#cde; margin-top:6px; display:block;" data-i18n="label_beep_seconds">Har baar kitne second beep</label>
 <input type="number" id="endReminderBeepSeconds" placeholder="e.g. 2">
-        <button onclick="saveAlarmSettings()">Save Alarm Settings</button>
+        <button onclick="saveAlarmSettings()" data-i18n="save_alarm_settings_btn">Save Alarm Settings</button>
 
         <label style="font-size:13px; margin-top:12px; display:block;">🎵 Alarm Tone (Ringtone)</label>
         <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Koi audio file (mp3) upload karo — yehi tone alarm baja tega. Kuch upload nahi karoge to default "ding-dong" chalega.</p>
@@ -369,19 +369,19 @@ a { color: #ffd700; }
           <span style="font-size:13px;">On/Off</span>
         </div>
         <input type="text" id="customAlarmTitleInput" placeholder="Alarm ka naam (jaise: Ijtema Time)">
-        <label style="font-size:13px;">Start Time</label>
+        <label style="font-size:13px;" data-i18n="label_start_time">Start Time</label>
         <div class="row" style="gap:6px;">
           <select id="customAlarmStartHour" style="margin:0;"></select>
           <select id="customAlarmStartMin" style="margin:0;"></select>
           <select id="customAlarmStartAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
         </div>
-        <label style="font-size:13px; margin-top:8px;">End Time</label>
+        <label style="font-size:13px; margin-top:8px;" data-i18n="label_end_time">End Time</label>
         <div class="row" style="gap:6px;">
           <select id="customAlarmEndHour" style="margin:0;"></select>
           <select id="customAlarmEndMin" style="margin:0;"></select>
           <select id="customAlarmEndAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
         </div>
-        <button onclick="saveCustomAlarm()">Save Custom Alarm</button>
+        <button onclick="saveCustomAlarm()" data-i18n="save_custom_alarm_btn">Save Custom Alarm</button>
         <button class="secondary" id="testToneBtn2" onclick="toggleTestTone('testToneBtn2')">🔊 Test Sound (abhi suno)</button>
       </div>
 
@@ -392,29 +392,29 @@ a { color: #ffd700; }
         <input type="text" id="eventTitle" placeholder="Event ka naam (jaise: Zanana Class)">
 
         <select id="eventRepeatType" onchange="toggleEventScheduleFields()">
-          <option value="weekly">Har Hafte (Weekly)</option>
-          <option value="monthly">Har Mahine (Monthly)</option>
-          <option value="once">Sirf Ek Baar</option>
+          <option value="weekly" data-i18n="opt_weekly">Har Hafte (Weekly)</option>
+          <option value="monthly" data-i18n="opt_monthly">Har Mahine (Monthly)</option>
+          <option value="once" data-i18n="opt_once">Sirf Ek Baar</option>
         </select>
         <select id="eventDayOfWeek">
-          <option value="0">Sunday</option>
-          <option value="1">Monday</option>
-          <option value="2">Tuesday</option>
-          <option value="3">Wednesday</option>
-          <option value="4">Thursday</option>
-          <option value="5">Friday</option>
-          <option value="6" selected>Saturday</option>
+          <option value="0" data-i18n="day_sun">Sunday</option>
+          <option value="1" data-i18n="day_mon">Monday</option>
+          <option value="2" data-i18n="day_tue">Tuesday</option>
+          <option value="3" data-i18n="day_wed">Wednesday</option>
+          <option value="4" data-i18n="day_thu">Thursday</option>
+          <option value="5" data-i18n="day_fri">Friday</option>
+          <option value="6" selected data-i18n="day_sat">Saturday</option>
         </select>
         <input type="number" id="eventDayOfMonth" placeholder="Mahine ki tareekh (1 se 31)" min="1" max="31" style="display:none;">
         <input type="date" id="eventDate" style="display:none;">
 
-        <label style="font-size:13px; margin-top:8px;">Start Time</label>
+        <label style="font-size:13px; margin-top:8px;" data-i18n="label_start_time">Start Time</label>
         <div class="row" style="gap:6px;">
           <select id="eventStartHour" style="margin:0;"></select>
           <select id="eventStartMin" style="margin:0;"></select>
           <select id="eventStartAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
         </div>
-        <label style="font-size:13px; margin-top:8px;">End Time</label>
+        <label style="font-size:13px; margin-top:8px;" data-i18n="label_end_time">End Time</label>
         <div class="row" style="gap:6px;">
           <select id="eventEndHour" style="margin:0;"></select>
           <select id="eventEndMin" style="margin:0;"></select>
@@ -422,17 +422,17 @@ a { color: #ffd700; }
         </div>
 
         <select id="eventGroup">
-          <option value="both">Both</option>
+          <option value="both" data-i18n="opt_both">Both</option>
           <option value="mardana" data-i18n="group_mardana">Mardana</option>
-          <option value="zanana" selected>Zanana</option>
+          <option value="zanana" selected data-i18n="group_zanana">Zanana</option>
         </select>
 
         <select id="eventContentType" onchange="toggleEventContentFields()">
-          <option value="text">Text (khud likh kar)</option>
-          <option value="image">Image</option>
-          <option value="pdf">PDF</option>
-          <option value="audio">Audio (record ya upload)</option>
-          <option value="none">Kuch nahi, sirf reminder</option>
+          <option value="text" data-i18n="opt_content_text">Text (khud likh kar)</option>
+          <option value="image" data-i18n="opt_image">Image</option>
+          <option value="pdf" data-i18n="opt_pdf">PDF</option>
+          <option value="audio" data-i18n="opt_content_audio">Audio (record ya upload)</option>
+          <option value="none" data-i18n="opt_no_reminder">Kuch nahi, sirf reminder</option>
         </select>
 
         <textarea id="eventTextContent" placeholder="Yahan likho jo mureedon ko dikhna hai..." style="display:block; min-height:70px;"></textarea>
@@ -444,8 +444,8 @@ a { color: #ffd700; }
           <p id="eventRecordStatus" style="font-size:12px; color:#ffd700;"></p>
         </div>
 
-        <button onclick="saveEvent()" id="saveEventBtn">Event Save Karo</button>
-        <button class="secondary" id="cancelEditEventBtn" style="display:none;" onclick="cancelEditEvent()">Cancel Edit</button>
+        <button onclick="saveEvent()" id="saveEventBtn" data-i18n="save_event_btn">Event Save Karo</button>
+        <button class="secondary" id="cancelEditEventBtn" style="display:none;" onclick="cancelEditEvent()" data-i18n="cancel_edit_btn">Cancel Edit</button>
 
         <div id="eventsAdminList" style="margin-top:14px;"></div>
       </div>
@@ -463,9 +463,9 @@ a { color: #ffd700; }
       <div style="border:1px solid #2a6b2a; border-radius:8px; padding:10px; margin-bottom:12px;">
         <p style="font-size:13px; color:#ffd700; margin:0 0 6px;">🌐 Sab Mureedon ke liye Sawal-Jawab</p>
         <button class="secondary" id="globalQaToggleBtn" style="width:100%;" onclick="toggleGlobalQaAccess()" data-i18n="loading_text">Loading...</button>
-        <p style="font-size:11px; color:#cde; margin-top:6px;">Ek hi button se sab mureedon ke liye tab dikhega ya gayab ho jaayega.</p>
+        <p style="font-size:11px; color:#cde; margin-top:6px;" data-i18n="event_toggle_note">Ek hi button se sab mureedon ke liye tab dikhega ya gayab ho jaayega.</p>
       </div>
-      <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Urdu Notes (PDF) upload karo:</p>
+      <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="urdu_notes_label">Urdu Notes (PDF) upload karo:</p>
       <input type="text" id="qaNoteTitle" data-i18n-placeholder="notes_name_ph" placeholder="Notes ka naam (jaise: Malfoozat Hissa 1)">
       <input type="file" id="qaNoteFile" accept="application/pdf">
       <button onclick="uploadQaNote()" id="qaUploadBtn" data-i18n="notes_upload_btn">Notes Upload Karo</button>
@@ -474,12 +474,12 @@ a { color: #ffd700; }
       <hr style="border-color:#2a6b2a; margin:14px 0;">
     </div>
 
-    <p style="font-size:12px; color:#cde;">Apna sawal likho:</p>
+    <p style="font-size:12px; color:#cde;" data-i18n="write_question_label">Apna sawal likho:</p>
     <textarea id="qaQuestionInput" data-i18n-placeholder="question_ph" placeholder="Yahan apna sawal likho..." style="min-height:60px;"></textarea>
     <button onclick="askQaQuestion()" id="qaAskBtn" data-i18n="ask_btn">Sawal Poocho</button>
 
     <div id="qaAnswerBox" class="hidden" style="margin-top:14px; border:1px solid #2a6b2a; border-radius:8px; padding:12px;">
-      <p style="font-size:12px; color:#ffd700; margin-top:0;">Jawab:</p>
+      <p style="font-size:12px; color:#ffd700; margin-top:0;" data-i18n="answer_label">Jawab:</p>
       <p id="qaAnswerText" style="white-space:pre-wrap;"></p>
       <button class="secondary" style="width:auto; padding:6px 14px;" onclick="speakQaAnswer()" data-i18n="listen_btn">🔊 Suno</button>
       <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px;" onclick="stopQaSpeak()" data-i18n="stop_btn">⏹️ Roko</button>
@@ -543,6 +543,31 @@ const TRANSLATIONS = {
     weekly_suffix: " (weekly)", monthly_suffix: " (monthly)", once_suffix: " (one-time)",
     day_sun: "Sunday", day_mon: "Monday", day_tue: "Tuesday", day_wed: "Wednesday",
     day_thu: "Thursday", day_fri: "Friday", day_sat: "Saturday",
+    pdf_upload_karo_btn: "Upload PDF", cancel_btn: "Cancel", allow_karo_btn: "Allow",
+    add_mureed_btn: "Add Member", bulk_add_btn: "Bulk Add",
+    opt_audio: "Audio (MP3)", opt_video: "Video", opt_pdf: "PDF",
+    opt_link: "Link (WhatsApp/Website)", opt_both: "Both",
+    upload_class_btn: "Upload Class", cancel_edit_btn: "Cancel Edit", save_karo_btn: "Save",
+    label_start_alarm: "Start Alarm (when prayer begins)",
+    label_alarm_seconds: "How many seconds should the alarm ring",
+    label_end_reminder: "End Reminder (before prayer ends)",
+    label_reminder_minutes: "How many minutes before should the reminder come",
+    label_beep_count: "How many times should it beep", label_beep_seconds: "Seconds between each beep",
+    save_alarm_settings_btn: "Save Alarm Settings", save_custom_alarm_btn: "Save Custom Alarm",
+    label_start_time: "Start Time", label_end_time: "End Time",
+    opt_weekly: "Every Week (Weekly)", opt_monthly: "Every Month (Monthly)", opt_once: "One Time Only",
+    opt_content_text: "Text (write yourself)", opt_image: "Image",
+    opt_content_audio: "Audio (record or upload)", opt_no_reminder: "None, just a reminder",
+    save_event_btn: "Save Event",
+    event_toggle_note: "One button will show/hide the tab for all members.",
+    no_event_content_msg: "There is no content with this event.", close_btn: "Close",
+    notes_visible_note: "This will show to all members when they ask a question.",
+    profile_edit_note: "Fill in here to change your name, mobile or password. Leave password blank to keep the old one.",
+    new_admin_note: "Whoever's mobile-password you create with this will also get Admin Panel access.",
+    hijri_adjust_note: "If the Hijri date differs by 1-2 days from Google Calendar, match it here (this varies by location due to moon sighting).",
+    urdu_notes_label: "Upload Urdu Notes (PDF):", write_question_label: "Write your question:",
+    answer_label: "Answer:", no_notes_uploaded_msg: "No notes uploaded yet.",
+    uploaded_notes_label: "Uploaded notes:",
   },
   ur: {
     login_title: "لاگ ان", new_user_register: "نئے صارف؟ یہاں رجسٹر کریں",
@@ -580,6 +605,31 @@ const TRANSLATIONS = {
     weekly_suffix: " (ہر ہفتے)", monthly_suffix: " (ہر مہینے)", once_suffix: " (ایک بار)",
     day_sun: "اتوار", day_mon: "پیر", day_tue: "منگل", day_wed: "بدھ",
     day_thu: "جمعرات", day_fri: "جمعہ", day_sat: "ہفتہ",
+    pdf_upload_karo_btn: "پی ڈی ایف اپلوڈ کریں", cancel_btn: "منسوخ کریں", allow_karo_btn: "اجازت دیں",
+    add_mureed_btn: "ممبر شامل کریں", bulk_add_btn: "بلک ایڈ کریں",
+    opt_audio: "آڈیو (ایم پی 3)", opt_video: "ویڈیو", opt_pdf: "پی ڈی ایف",
+    opt_link: "لنک (واٹس ایپ/ویب سائٹ)", opt_both: "دونوں",
+    upload_class_btn: "کلاس اپلوڈ کریں", cancel_edit_btn: "ترمیم منسوخ کریں", save_karo_btn: "محفوظ کریں",
+    label_start_alarm: "شروع کا الارم (نماز شروع ہونے پر)",
+    label_alarm_seconds: "کتنے سیکنڈ تک الارم بجے",
+    label_end_reminder: "اختتامی یاد دہانی (نماز ختم ہونے سے پہلے)",
+    label_reminder_minutes: "کتنے منٹ پہلے یاد دہانی آئے",
+    label_beep_count: "کتنی بار بیپ بجے", label_beep_seconds: "ہر بار کتنے سیکنڈ بیپ",
+    save_alarm_settings_btn: "الارم سیٹنگز محفوظ کریں", save_custom_alarm_btn: "کسٹم الارم محفوظ کریں",
+    label_start_time: "شروع ہونے کا وقت", label_end_time: "ختم ہونے کا وقت",
+    opt_weekly: "ہر ہفتے (ویکلی)", opt_monthly: "ہر مہینے (منتھلی)", opt_once: "صرف ایک بار",
+    opt_content_text: "تحریر (خود لکھیں)", opt_image: "تصویر",
+    opt_content_audio: "آڈیو (ریکارڈ یا اپلوڈ کریں)", opt_no_reminder: "کچھ نہیں، صرف یاد دہانی",
+    save_event_btn: "ایونٹ محفوظ کریں",
+    event_toggle_note: "ایک ہی بٹن سے سب مریدوں کے لیے ٹیب دکھے گا یا غائب ہو جائے گا۔",
+    no_event_content_msg: "اس ایونٹ کے ساتھ کوئی مواد نہیں ہے۔", close_btn: "بند کریں",
+    notes_visible_note: "یہ سب مریدوں کو دکھے گا جب وہ سوال پوچھیں گے۔",
+    profile_edit_note: "اپنا نام، موبائل یا پاس ورڈ بدلنے کے لیے یہاں بھریں۔ پاس ورڈ خالی چھوڑیں تو پرانا وہی رہے گا۔",
+    new_admin_note: "اس سے جو بھی موبائل-پاس ورڈ بناؤ گے، وہ بھی ایڈمن پینل تک رسائی حاصل کر سکے گا۔",
+    hijri_adjust_note: "اگر ہجری تاریخ گوگل کیلنڈر سے 1-2 دن مختلف نظر آئے، تو یہاں سے ملا لیں (چاند نظر آنے کی وجہ سے یہ جگہ جگہ مختلف ہوتی ہے)۔",
+    urdu_notes_label: "اردو نوٹس (پی ڈی ایف) اپلوڈ کریں:", write_question_label: "اپنا سوال لکھیں:",
+    answer_label: "جواب:", no_notes_uploaded_msg: "ابھی تک کوئی نوٹس اپلوڈ نہیں ہوئی۔",
+    uploaded_notes_label: "اپلوڈ کی ہوئی نوٹس:",
   }
 };
 let currentLang = localStorage.getItem('zahidiya_lang') || 'ur';
@@ -2295,7 +2345,7 @@ function showAlarmBanner(text) {
     bar.style.cssText = 'position:fixed; top:0; left:0; right:0; background:#ffd700; color:#0f3d2e; padding:14px; text-align:center; font-weight:bold; z-index:9999;';
     document.body.prepend(bar);
   }
-  bar.innerHTML = text + ' <button style="width:auto; margin-left:10px; padding:6px 14px;" onclick="silenceAlarm(currentAlarmKey)">Silence</button>';
+  bar.innerHTML = text + ' <button style="width:auto; margin-left:10px; padding:6px 14px;" onclick="silenceAlarm(currentAlarmKey)">' + t('silence_btn') + '</button>';
   bar.classList.remove('hidden');
 }
 
@@ -2644,9 +2694,9 @@ function openEventContent(id) {
   } else if (ev.content_type === 'audio' && ev.file_url) {
     inner += '<audio controls style="width:100%;" src="' + ev.file_url + '"></audio>';
   } else {
-    inner += '<p>Is event ke saath koi content nahi hai.</p>';
+    inner += '<p>' + t('no_event_content_msg') + '</p>';
   }
-  inner += '<button style="margin-top:16px;" onclick="document.getElementById(\'eventContentModal\').remove()">Band Karo</button>';
+  inner += '<button style="margin-top:16px;" onclick="document.getElementById(\'eventContentModal\').remove()">' + t('close_btn') + '</button>';
   inner += '</div>';
   modal.innerHTML = inner;
 }
@@ -2861,8 +2911,8 @@ async function loadQaNotes() {
   } catch (e) { window.qaNotesList = []; }
   const box = document.getElementById('qaNotesAdminList');
   if (!box) return;
-  if (!window.qaNotesList.length) { box.innerHTML = '<p style="font-size:12px; color:#cde;">Abhi koi notes upload nahi hui hai.</p>'; return; }
-  box.innerHTML = '<p style="font-size:12px; color:#ffd700;">Upload ki hui notes:</p>' + window.qaNotesList.map(n =>
+  if (!window.qaNotesList.length) { box.innerHTML = '<p style="font-size:12px; color:#cde;">' + t('no_notes_uploaded_msg') + '</p>'; return; }
+  box.innerHTML = '<p style="font-size:12px; color:#ffd700;">' + t('uploaded_notes_label') + '</p>' + window.qaNotesList.map(n =>
     `<div style="font-size:12px; display:flex; justify-content:space-between; align-items:center; border:1px solid #2a6b2a; border-radius:6px; padding:6px 8px; margin-top:6px;">
       <span>📄 ${n.title}</span>
       <button class="secondary" style="width:auto; padding:4px 10px;" onclick="deleteQaNote(${n.id})">🗑️</button>
