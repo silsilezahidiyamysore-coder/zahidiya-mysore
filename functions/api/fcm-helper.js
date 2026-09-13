@@ -47,7 +47,7 @@ async function getAccessToken(serviceAccountJson) {
   return data.access_token;
 }
 
-async function sendToToken(accessToken, projectId, token, title) {
+async function sendToToken(accessToken, projectId, token, title, category) {
   try {
     const res = await fetch(
       `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
@@ -60,7 +60,7 @@ async function sendToToken(accessToken, projectId, token, title) {
         body: JSON.stringify({
           message: {
             token,
-            data: { title },
+            data: { title, category: category || 'namaz' },
             android: { priority: 'high' },
           },
         }),
@@ -69,54 +69,6 @@ async function sendToToken(accessToken, projectId, token, title) {
     return res.ok;
   } catch (e) {
     return false;
-  }
-}
-
-// Namaz/Event/Custom-Alarm ka waqt hote hi seedha phone ko FCM push bhejta hai
-// (duration bhi saath mein), jisse app turant loud alarm bajati hai.
-async function sendRingToToken(accessToken, projectId, token, title, durationSeconds) {
-  try {
-    const res = await fetch(
-      `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: {
-            token,
-            data: { title, duration: String(durationSeconds || 60) },
-            android: { priority: 'high' },
-          },
-        }),
-      }
-    );
-    return res.ok;
-  } catch (e) {
-    return false;
-  }
-}
-
-export async function sendAlarmRingPush(env, title, durationSeconds, groupType) {
-  const serviceAccountJson = env.FIREBASE_SERVICE_ACCOUNT;
-  if (!serviceAccountJson) return;
-
-  let query = 'SELECT fcm_token FROM mureeds WHERE fcm_token IS NOT NULL AND is_blocked = 0';
-  const params = [];
-  if (groupType && groupType !== 'both') {
-    query += ' AND (group_type = ? OR group_type = ?)';
-    params.push(groupType, 'both');
-  }
-  const { results } = await env.DB.prepare(query).bind(...params).all();
-  if (!results || results.length === 0) return;
-
-  const accessToken = await getAccessToken(serviceAccountJson);
-  const sa = JSON.parse(serviceAccountJson);
-
-  for (const row of results) {
-    await sendRingToToken(accessToken, sa.project_id, row.fcm_token, title, durationSeconds);
   }
 }
 
@@ -137,7 +89,56 @@ export async function sendLiveAlarmPush(env, title, groupType) {
   const sa = JSON.parse(serviceAccountJson);
 
   for (const row of results) {
-    await sendToToken(accessToken, sa.project_id, row.fcm_token, title);
+    await sendToToken(accessToken, sa.project_id, row.fcm_token, title, 'live');
+  }
+}
+
+// Namaz/Event/Custom-Alarm ka waqt hote hi seedha phone ko FCM push bhejta hai
+// (duration bhi saath mein), jisse app turant loud alarm bajati hai.
+// "category" batata hai kaunsi tone bajani hai: 'namaz', 'custom', 'event', 'live'
+async function sendRingToToken(accessToken, projectId, token, title, durationSeconds, category) {
+  try {
+    const res = await fetch(
+      `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: {
+            token,
+            data: { title, duration: String(durationSeconds || 60), category: category || 'namaz' },
+            android: { priority: 'high' },
+          },
+        }),
+      }
+    );
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+export async function sendAlarmRingPush(env, title, durationSeconds, groupType, category) {
+  const serviceAccountJson = env.FIREBASE_SERVICE_ACCOUNT;
+  if (!serviceAccountJson) return;
+
+  let query = 'SELECT fcm_token FROM mureeds WHERE fcm_token IS NOT NULL AND is_blocked = 0';
+  const params = [];
+  if (groupType && groupType !== 'both') {
+    query += ' AND (group_type = ? OR group_type = ?)';
+    params.push(groupType, 'both');
+  }
+  const { results } = await env.DB.prepare(query).bind(...params).all();
+  if (!results || results.length === 0) return;
+
+  const accessToken = await getAccessToken(serviceAccountJson);
+  const sa = JSON.parse(serviceAccountJson);
+
+  for (const row of results) {
+    await sendRingToToken(accessToken, sa.project_id, row.fcm_token, title, durationSeconds, category);
   }
 }
 
