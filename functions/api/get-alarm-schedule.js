@@ -181,12 +181,22 @@ export async function onRequestGet(context) {
     if (toneUrl && toneUrl.startsWith('/')) {
       toneUrl = 'https://zahidiya-mysore.pages.dev' + toneUrl;
     }
+    let eventToneUrl = (alarmSettings && alarmSettings.event_tone_url) || '';
+    if (eventToneUrl && eventToneUrl.startsWith('/')) {
+      eventToneUrl = 'https://zahidiya-mysore.pages.dev' + eventToneUrl;
+    }
+    let liveToneUrl = (alarmSettings && alarmSettings.live_class_tone_url) || '';
+    if (liveToneUrl && liveToneUrl.startsWith('/')) {
+      liveToneUrl = 'https://zahidiya-mysore.pages.dev' + liveToneUrl;
+    }
 
     return Response.json({
       success: true,
       checked_at_ist: ist.toISOString(),
       schedule,
       tone_url: toneUrl,
+      event_tone_url: eventToneUrl,
+      live_class_tone_url: liveToneUrl,
       start_alarm_duration_seconds: (alarmSettings && alarmSettings.start_alarm_duration_seconds) || 60
     });
   } catch (err) {
