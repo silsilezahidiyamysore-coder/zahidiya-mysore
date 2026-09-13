@@ -176,15 +176,15 @@ a { color: #ffd700; }
     <div id="notesScreen" class="hidden">
       <div class="card">
         <div class="row" style="justify-content:space-between;">
-          <h3>📖 Notes se Sawal-Jawab</h3>
+          <h3 data-i18n="notes_qa_heading2">📖 Notes se Sawal-Jawab</h3>
           <button class="secondary" style="width:auto;" onclick="showScreen('home')" data-i18n="back_btn">← Back</button>
         </div>
       </div>
 
       <div class="card hidden" id="notesAdminUploadCard">
-        <h3 style="margin-top:0;">📄 Notes PDF Upload Karo (Urdu)</h3>
+        <h3 style="margin-top:0;" data-i18n="notes_pdf_upload_heading">📄 Notes PDF Upload Karo (Urdu)</h3>
         <p style="font-size:12px; color:#ffd700;" data-i18n="notes_visible_note">Yeh sab mureedon ko dikhega jab wo sawal poochenge.</p>
-        <input type="text" id="notesDocTitle" placeholder="Notes ka naam (jaise: Malfoozat Jild 1)">
+        <input type="text" id="notesDocTitle" data-i18n-placeholder="notes_name_ph" placeholder="Notes ka naam (jaise: Malfoozat Jild 1)">
         <input type="file" id="notesDocFile" accept="application/pdf">
         <button onclick="uploadNotesDoc()" id="notesUploadBtn" data-i18n="pdf_upload_karo_btn">PDF Upload Karo</button>
         <p id="notesUploadStatus" style="font-size:12px; color:#ffd700;"></p>
@@ -192,20 +192,20 @@ a { color: #ffd700; }
       </div>
 
       <div class="card">
-        <h3 style="margin-top:0;">❓ Sawal Poochho</h3>
-        <textarea id="qaQuestionInput" placeholder="Apna sawal yahan likho..." style="min-height:70px;"></textarea>
+        <h3 style="margin-top:0;" data-i18n="sawal_poochho_heading">❓ Sawal Poochho</h3>
+        <textarea id="qaQuestionInput" data-i18n-placeholder="question_ph2" placeholder="Apna sawal yahan likho..." style="min-height:70px;"></textarea>
         <button onclick="askNotesQuestion()" id="qaAskBtn" data-i18n="ask_btn">Poochho</button>
         <div id="qaAnswerBox" class="hidden" style="margin-top:12px; border:1px solid #2a6b2a; border-radius:8px; padding:12px;">
           <p id="qaAnswerText" style="white-space:pre-wrap;"></p>
-          <button class="secondary" style="width:auto; margin-top:8px;" onclick="speakAnswer()">🔊 Suno</button>
-          <button class="secondary" style="width:auto; margin-top:8px; margin-left:6px;" onclick="stopSpeaking()">⏹️ Roko</button>
+          <button class="secondary" style="width:auto; margin-top:8px;" onclick="speakAnswer()" data-i18n="listen_btn2">🔊 Suno</button>
+          <button class="secondary" style="width:auto; margin-top:8px; margin-left:6px;" onclick="stopSpeaking()" data-i18n="stop_btn2">⏹️ Roko</button>
         </div>
       </div>
 
       <div class="card">
         <div class="row" style="justify-content:space-between;">
-          <h3 style="margin:0;">📜 Mere Sawal-Jawab</h3>
-          <button class="secondary" style="width:auto;" onclick="downloadMyQaPdf()">⬇️ PDF Download</button>
+          <h3 style="margin:0;" data-i18n="my_qa_heading2">📜 Mere Sawal-Jawab</h3>
+          <button class="secondary" style="width:auto;" onclick="downloadMyQaPdf()" data-i18n="pdf_download_btn">⬇️ PDF Download</button>
         </div>
         <div id="myQaHistoryList" style="margin-top:10px;"></div>
       </div>
@@ -214,33 +214,33 @@ a { color: #ffd700; }
     <!-- ============ ADMIN PANEL ============ -->
    <div id="adminScreen" class="hidden">
       <div class="card">
-        <h3>📍 Khanqah Location Set Karo</h3>
-        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Yeh ek baar set karo. Google Maps kholo, Khanqah ki jagah dhoondo, "Share" → "Copy link" karke yahan paste karo.</p>
-        <input type="text" id="khanqahAddressInput" placeholder="Address (jaise: Silsila-e-Zahidiya, Mysore)">
-        <input type="text" id="khanqahMapLinkInput" placeholder="Google Maps link (https://maps.app.goo.gl/...)">
-        <button onclick="saveKhanqahLocation()">💾 Location Save Karo</button>
+        <h3 data-i18n="khanqah_set_heading">📍 Khanqah Location Set Karo</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="khanqah_set_note">Yeh ek baar set karo. Google Maps kholo, Khanqah ki jagah dhoondo, "Share" → "Copy link" karke yahan paste karo.</p>
+        <input type="text" id="khanqahAddressInput" data-i18n-placeholder="address_ph" placeholder="Address (jaise: Silsila-e-Zahidiya, Mysore)">
+        <input type="text" id="khanqahMapLinkInput" data-i18n-placeholder="gmaps_link_ph" placeholder="Google Maps link (https://maps.app.goo.gl/...)">
+        <button onclick="saveKhanqahLocation()" data-i18n="location_save_btn">💾 Location Save Karo</button>
       </div>
 
       <div class="card">
-        <h3>👤 Meri Profile (Admin)</h3>
+        <h3 data-i18n="my_profile_heading">👤 Meri Profile (Admin)</h3>
         <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="profile_edit_note">Apna naam, mobile ya password badalne ke liye yahan bharo. Password khaali chhodo to purana wahi rahega.</p>
-        <input type="text" id="myProfileName" placeholder="Full Name">
-        <input type="text" id="myProfileMobile" placeholder="Mobile Number">
-        <input type="text" id="myProfilePassword" placeholder="Naya Password (khaali chhodo agar badalna nahi)">
-        <button onclick="saveMyProfile()">💾 Meri Profile Save Karo</button>
+        <input type="text" id="myProfileName" data-i18n-placeholder="full_name_ph" placeholder="Full Name">
+        <input type="text" id="myProfileMobile" data-i18n-placeholder="mobile_ph" placeholder="Mobile Number">
+        <input type="text" id="myProfilePassword" data-i18n-placeholder="new_password_ph" placeholder="Naya Password (khaali chhodo agar badalna nahi)">
+        <button onclick="saveMyProfile()" data-i18n="my_profile_save_btn">💾 Meri Profile Save Karo</button>
       </div>
 
       <div class="card">
-        <h3>🛡️ Naya Admin Banao</h3>
+        <h3 data-i18n="new_admin_heading">🛡️ Naya Admin Banao</h3>
         <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="new_admin_note">Isse jo bhi mobile-password banaoge, wo bhi Admin Panel access kar sakega.</p>
-        <input type="text" id="newAdminName" placeholder="Full Name">
-        <input type="text" id="newAdminMobile" placeholder="Mobile Number">
-        <input type="text" id="newAdminPassword" placeholder="Password">
-        <button onclick="createNewAdmin()">➕ Admin Add Karo</button>
+        <input type="text" id="newAdminName" data-i18n-placeholder="full_name_ph" placeholder="Full Name">
+        <input type="text" id="newAdminMobile" data-i18n-placeholder="mobile_ph" placeholder="Mobile Number">
+        <input type="text" id="newAdminPassword" data-i18n-placeholder="password_ph" placeholder="Password">
+        <button onclick="createNewAdmin()" data-i18n="admin_add_karo_btn">➕ Admin Add Karo</button>
       </div>
 
       <div class="card">
-        <h3>📊 Mureed Stats (tap karke poori list dekhein)</h3>
+        <h3 data-i18n="mureed_stats_heading">📊 Mureed Stats (tap karke poori list dekhein)</h3>
         <div class="row">
           <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('total')"><div class="num" id="totalCount">0</div><div data-i18n="stat_total">Total</div></div>
           <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('mardana')"><div class="num" id="mardanaCount">0</div><div data-i18n="stat_mardana">Mardana</div></div>
@@ -254,22 +254,22 @@ a { color: #ffd700; }
       </div>
 
       <div class="card hidden" id="editMureedCard">
-        <h3>✏️ Mureed Edit Karo</h3>
+        <h3 data-i18n="mureed_edit_heading">✏️ Mureed Edit Karo</h3>
         <input type="hidden" id="editMureedId">
-        <input type="text" id="editMureedName" placeholder="Full Name">
-        <input type="text" id="editMureedMobile" placeholder="Mobile Number">
-        <input type="text" id="editMureedPassword" placeholder="Naya Password (khaali chhodo agar badalna nahi)">
+        <input type="text" id="editMureedName" data-i18n-placeholder="full_name_ph" placeholder="Full Name">
+        <input type="text" id="editMureedMobile" data-i18n-placeholder="mobile_ph" placeholder="Mobile Number">
+        <input type="text" id="editMureedPassword" data-i18n-placeholder="new_password_ph" placeholder="Naya Password (khaali chhodo agar badalna nahi)">
         <div class="row" style="margin-top:8px;">
-          <button style="width:auto;" onclick="saveMureedEdit()">💾 Save Karo</button>
+          <button style="width:auto;" onclick="saveMureedEdit()" data-i18n="save_karo_btn">💾 Save Karo</button>
           <button class="secondary" style="width:auto;" onclick="cancelMureedEdit()" data-i18n="cancel_btn">Cancel</button>
         </div>
       </div>
 
       <div class="card">
-        <h3>✅ Mureed Allow Karo (Register Khud Karega)</h3>
-        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Sirf naam aur mobile daalo — mureed khud Register screen se apna password set karega. Sirf yahan add kiya hua mobile number hi register ho payega.</p>
-        <input type="text" id="invName" placeholder="Full Name">
-        <input type="text" id="invMobile" placeholder="Mobile Number">
+        <h3 data-i18n="mureed_allow_heading">✅ Mureed Allow Karo (Register Khud Karega)</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="mureed_allow_note">Sirf naam aur mobile daalo — mureed khud Register screen se apna password set karega. Sirf yahan add kiya hua mobile number hi register ho payega.</p>
+        <input type="text" id="invName" data-i18n-placeholder="full_name_ph" placeholder="Full Name">
+        <input type="text" id="invMobile" data-i18n-placeholder="mobile_ph" placeholder="Mobile Number">
         <select id="invGroup">
           <option value="mardana" data-i18n="group_mardana">Mardana</option>
           <option value="zanana" data-i18n="group_zanana">Zanana</option>
@@ -278,10 +278,10 @@ a { color: #ffd700; }
       </div>
 
       <div class="card">
-        <h3>➕ Direct Add Mureed</h3>
-        <input type="text" id="daName" placeholder="Full Name">
-        <input type="text" id="daMobile" placeholder="Mobile Number">
-        <input type="password" id="daPassword" placeholder="Password">
+        <h3 data-i18n="direct_add_mureed_heading">➕ Direct Add Mureed</h3>
+        <input type="text" id="daName" data-i18n-placeholder="full_name_ph" placeholder="Full Name">
+        <input type="text" id="daMobile" data-i18n-placeholder="mobile_ph" placeholder="Mobile Number">
+        <input type="password" id="daPassword" data-i18n-placeholder="password_ph" placeholder="Password">
         <select id="daGroup">
           <option value="mardana" data-i18n="group_mardana">Mardana</option>
           <option value="zanana" data-i18n="group_zanana">Zanana</option>
@@ -290,29 +290,29 @@ a { color: #ffd700; }
       </div>
 
       <div class="card">
-        <h3>📥 Bulk Add Mureeds</h3>
-        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Har row mein ek mureed ki details bharo. Zaroorat ho to "+ Row Add Karo" se aur row badha sakte ho.</p>
+        <h3 data-i18n="bulk_add_mureeds_heading">📥 Bulk Add Mureeds</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="bulk_add_note">Har row mein ek mureed ki details bharo. Zaroorat ho to "+ Row Add Karo" se aur row badha sakte ho.</p>
         <div id="bulkRowsContainer"></div>
-        <button class="secondary" style="width:auto; margin-top:8px;" onclick="addBulkRow()">➕ Row Add Karo</button>
+        <button class="secondary" style="width:auto; margin-top:8px;" onclick="addBulkRow()" data-i18n="row_add_karo_btn">➕ Row Add Karo</button>
         <button style="margin-top:8px;" onclick="bulkAddMureeds()" data-i18n="bulk_add_btn">Bulk Add</button>
       </div>
 
       <div class="card">
-      <h3 id="uploadCardTitle">📤 Upload New Class</h3>
+      <h3 id="uploadCardTitle" data-i18n="upload_class_heading">📤 Upload New Class</h3>
         <input type="hidden" id="editingClassId" value="">
-        <input type="text" id="classTitle" placeholder="Class Title">
+        <input type="text" id="classTitle" data-i18n-placeholder="class_title_ph" placeholder="Class Title">
     <select id="classType" onchange="toggleClassUrlOrFile()">
           <option value="audio" data-i18n="opt_audio">Audio (MP3)</option>
           <option value="video" data-i18n="opt_video">Video</option>
           <option value="pdf" data-i18n="opt_pdf">PDF</option>
           <option value="link" data-i18n="opt_link">Link (WhatsApp/Website)</option>
         </select>
-<input type="text" id="classUrl" placeholder="File URL (link)" style="display:none;">
+<input type="text" id="classUrl" data-i18n-placeholder="file_url_ph" placeholder="File URL (link)" style="display:none;">
         <input type="file" id="classFile" onchange="autoFillTitle()">
-        <p id="editFileNote" style="font-size:11px; color:#ffd700; display:none;">Naya file sirf tab choose karo agar file badalni ho, warna purani file wahi rahegi.</p>
+        <p id="editFileNote" style="font-size:11px; color:#ffd700; display:none;" data-i18n="new_file_note">Naya file sirf tab choose karo agar file badalni ho, warna purani file wahi rahegi.</p>
         <div class="row" id="liveCheckRow" style="display:none; margin:6px 0;">
           <input type="checkbox" id="classIsLive" style="width:auto;">
-          <span style="font-size:13px;">🔴 Yeh abhi Live hai (YouTube/Zoom link)</span>
+          <span style="font-size:13px;" data-i18n="live_check_label">🔴 Yeh abhi Live hai (YouTube/Zoom link)</span>
         </div>
         <select id="classGroup">
           <option value="both" data-i18n="opt_both">Both</option>
@@ -323,52 +323,52 @@ a { color: #ffd700; }
         <button class="secondary" id="cancelEditBtn" style="display:none;" onclick="cancelEditClass()" data-i18n="cancel_edit_btn">Cancel Edit</button>
       </div>
       <div class="card">
-        <h3>🌙 Islamic Calendar Adjustment</h3>
+        <h3 data-i18n="hijri_heading">🌙 Islamic Calendar Adjustment</h3>
         <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="hijri_adjust_note">Agar Hijri tareekh Google Calendar se 1-2 din alag dikhe, to yahan se match kar lo (chaand dikhne ki wajah se yeh jagah-jagah alag hoti hai).</p>
-        <label style="font-size:13px;">Kitne din aage/peeche karna hai</label>
-        <input type="number" id="hijriAdjustmentInput" placeholder="jaise: 2 ya -1" min="-3" max="3">
+        <label style="font-size:13px;" data-i18n="hijri_days_label">Kitne din aage/peeche karna hai</label>
+        <input type="number" id="hijriAdjustmentInput" data-i18n-placeholder="hijri_days_ph" placeholder="jaise: 2 ya -1" min="-3" max="3">
         <button onclick="saveHijriAdjustment()" data-i18n="save_karo_btn">Save Karo</button>
       </div>
        <div class="card">
-        <h3>⏰ Alarm Settings</h3>
-        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Namaz shuru hone par alarm, aur khatam hone se pehle reminder — yahan control karein.</p>
+        <h3 data-i18n="alarm_settings_heading">⏰ Alarm Settings</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="alarm_settings_note">Namaz shuru hone par alarm, aur khatam hone se pehle reminder — yahan control karein.</p>
         <label style="font-size:13px;" data-i18n="label_start_alarm">Start Alarm (Namaz shuru hone par)</label>
         <div class="row">
           <input type="checkbox" id="startAlarmEnabled" style="width:auto;">
-          <span style="font-size:13px;">On/Off</span>
+          <span style="font-size:13px;" data-i18n="on_off_label">On/Off</span>
         </div>
        <label style="font-size:12px; color:#cde; margin-top:6px; display:block;" data-i18n="label_alarm_seconds">Kitne second tak alarm baje</label>
-<input type="number" id="startAlarmDuration" placeholder="e.g. 60">
+<input type="number" id="startAlarmDuration" data-i18n-placeholder="eg_60_ph" placeholder="e.g. 60">
         <label style="font-size:13px; margin-top:8px; display:block;" data-i18n="label_end_reminder">End Reminder (Namaz khatam hone se pehle)</label>
         <div class="row">
           <input type="checkbox" id="endReminderEnabled" style="width:auto;">
-          <span style="font-size:13px;">On/Off</span>
+          <span style="font-size:13px;" data-i18n="on_off_label">On/Off</span>
         </div>
        <label style="font-size:12px; color:#cde; margin-top:6px; display:block;" data-i18n="label_reminder_minutes">Kitne minute pehle reminder aaye</label>
-<input type="number" id="endReminderMinutesBefore" placeholder="e.g. 10">
+<input type="number" id="endReminderMinutesBefore" data-i18n-placeholder="eg_10_ph" placeholder="e.g. 10">
 <label style="font-size:12px; color:#cde; margin-top:6px; display:block;" data-i18n="label_beep_count">Kitni baar beep baje</label>
-<input type="number" id="endReminderRepeatCount" placeholder="e.g. 3">
+<input type="number" id="endReminderRepeatCount" data-i18n-placeholder="eg_3_ph" placeholder="e.g. 3">
 <label style="font-size:12px; color:#cde; margin-top:6px; display:block;" data-i18n="label_beep_seconds">Har baar kitne second beep</label>
-<input type="number" id="endReminderBeepSeconds" placeholder="e.g. 2">
+<input type="number" id="endReminderBeepSeconds" data-i18n-placeholder="eg_2_ph" placeholder="e.g. 2">
         <button onclick="saveAlarmSettings()" data-i18n="save_alarm_settings_btn">Save Alarm Settings</button>
 
-        <label style="font-size:13px; margin-top:12px; display:block;">🎵 Alarm Tone (Ringtone)</label>
-        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Koi audio file (mp3) upload karo — yehi tone alarm baja tega. Kuch upload nahi karoge to default "ding-dong" chalega.</p>
+        <label style="font-size:13px; margin-top:12px; display:block;" data-i18n="alarm_tone_label">🎵 Alarm Tone (Ringtone)</label>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="alarm_tone_note">Koi audio file (mp3) upload karo — yehi tone alarm baja tega. Kuch upload nahi karoge to default "ding-dong" chalega.</p>
         <div id="alarmToneCurrentName" style="font-size:12px; color:#cde; margin-bottom:6px;"></div>
         <input type="file" id="alarmToneFile" accept="audio/*">
-        <button onclick="uploadAlarmTone()">🎵 Tone Upload Karo</button>
-        <button class="secondary" id="testToneBtn" onclick="toggleTestTone('testToneBtn')">🔊 Is Tone Ko Suno</button>
-        <button class="secondary" style="background:#8b1a1a;" onclick="deleteAlarmTone()">🗑️ Tone Delete Karo (Default Beep par wapas)</button>
+        <button onclick="uploadAlarmTone()" data-i18n="tone_upload_btn">🎵 Tone Upload Karo</button>
+        <button class="secondary" id="testToneBtn" onclick="toggleTestTone('testToneBtn')" data-i18n="tone_listen_btn">🔊 Is Tone Ko Suno</button>
+        <button class="secondary" style="background:#8b1a1a;" onclick="deleteAlarmTone()" data-i18n="tone_delete_btn">🗑️ Tone Delete Karo (Default Beep par wapas)</button>
       </div>
 
       <div class="card">
-        <h3>🔔 Custom Alarm (Start Time / End Time)</h3>
-        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Koi khaas alarm/reminder banane ke liye — jaise kisi event ka time. Jab start-end ke beech ka waqt chalega, sabhi mureedon ke home screen par yeh dikhega.</p>
+        <h3 data-i18n="custom_alarm_heading">🔔 Custom Alarm (Start Time / End Time)</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="custom_alarm_note">Koi khaas alarm/reminder banane ke liye — jaise kisi event ka time. Jab start-end ke beech ka waqt chalega, sabhi mureedon ke home screen par yeh dikhega.</p>
         <div class="row">
           <input type="checkbox" id="customAlarmEnabled" style="width:auto;">
-          <span style="font-size:13px;">On/Off</span>
+          <span style="font-size:13px;" data-i18n="on_off_label">On/Off</span>
         </div>
-        <input type="text" id="customAlarmTitleInput" placeholder="Alarm ka naam (jaise: Ijtema Time)">
+        <input type="text" id="customAlarmTitleInput" data-i18n-placeholder="custom_alarm_title_ph" placeholder="Alarm ka naam (jaise: Ijtema Time)">
         <label style="font-size:13px;" data-i18n="label_start_time">Start Time</label>
         <div class="row" style="gap:6px;">
           <select id="customAlarmStartHour" style="margin:0;"></select>
@@ -382,14 +382,14 @@ a { color: #ffd700; }
           <select id="customAlarmEndAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
         </div>
         <button onclick="saveCustomAlarm()" data-i18n="save_custom_alarm_btn">Save Custom Alarm</button>
-        <button class="secondary" id="testToneBtn2" onclick="toggleTestTone('testToneBtn2')">🔊 Test Sound (abhi suno)</button>
+        <button class="secondary" id="testToneBtn2" onclick="toggleTestTone('testToneBtn2')" data-i18n="test_sound_btn">🔊 Test Sound (abhi suno)</button>
       </div>
 
       <div class="card">
-        <h3>📅 Event (Har Hafte / Har Mahine / Ek Baar)</h3>
-        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;">Jaise: Zanana ki class har Saturday, Mardana ki class har Sunday — content (text/image/PDF/audio) ke saath.</p>
+        <h3 data-i18n="event_heading">📅 Event (Har Hafte / Har Mahine / Ek Baar)</h3>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="event_note">Jaise: Zanana ki class har Saturday, Mardana ki class har Sunday — content (text/image/PDF/audio) ke saath.</p>
         <input type="hidden" id="editingEventId" value="">
-        <input type="text" id="eventTitle" placeholder="Event ka naam (jaise: Zanana Class)">
+        <input type="text" id="eventTitle" data-i18n-placeholder="event_title_ph" placeholder="Event ka naam (jaise: Zanana Class)">
 
         <select id="eventRepeatType" onchange="toggleEventScheduleFields()">
           <option value="weekly" data-i18n="opt_weekly">Har Hafte (Weekly)</option>
@@ -405,7 +405,7 @@ a { color: #ffd700; }
           <option value="5" data-i18n="day_fri">Friday</option>
           <option value="6" selected data-i18n="day_sat">Saturday</option>
         </select>
-        <input type="number" id="eventDayOfMonth" placeholder="Mahine ki tareekh (1 se 31)" min="1" max="31" style="display:none;">
+        <input type="number" id="eventDayOfMonth" data-i18n-placeholder="event_day_of_month_ph" placeholder="Mahine ki tareekh (1 se 31)" min="1" max="31" style="display:none;">
         <input type="date" id="eventDate" style="display:none;">
 
         <label style="font-size:13px; margin-top:8px;" data-i18n="label_start_time">Start Time</label>
@@ -435,12 +435,12 @@ a { color: #ffd700; }
           <option value="none" data-i18n="opt_no_reminder">Kuch nahi, sirf reminder</option>
         </select>
 
-        <textarea id="eventTextContent" placeholder="Yahan likho jo mureedon ko dikhna hai..." style="display:block; min-height:70px;"></textarea>
+        <textarea id="eventTextContent" data-i18n-placeholder="event_text_content_ph" placeholder="Yahan likho jo mureedon ko dikhna hai..." style="display:block; min-height:70px;"></textarea>
         <input type="file" id="eventFileInput" accept="image/*" style="display:none;">
         <div id="eventAudioBox" style="display:none;">
           <input type="file" id="eventAudioFileInput" accept="audio/*">
-          <p style="font-size:12px; text-align:center; margin:6px 0; color:#cde;">— ya seedha record karo —</p>
-          <button type="button" id="eventRecordBtn" class="secondary" onclick="startEventRecording()">🎙️ Record Karo</button>
+          <p style="font-size:12px; text-align:center; margin:6px 0; color:#cde;" data-i18n="or_record_note">— ya seedha record karo —</p>
+          <button type="button" id="eventRecordBtn" class="secondary" onclick="startEventRecording()" data-i18n="record_karo_btn">🎙️ Record Karo</button>
           <p id="eventRecordStatus" style="font-size:12px; color:#ffd700;"></p>
         </div>
 
@@ -461,7 +461,7 @@ a { color: #ffd700; }
 
     <div id="qaAdminUploadBox" class="hidden">
       <div style="border:1px solid #2a6b2a; border-radius:8px; padding:10px; margin-bottom:12px;">
-        <p style="font-size:13px; color:#ffd700; margin:0 0 6px;">🌐 Sab Mureedon ke liye Sawal-Jawab</p>
+        <p style="font-size:13px; color:#ffd700; margin:0 0 6px;" data-i18n="global_qa_label">🌐 Sab Mureedon ke liye Sawal-Jawab</p>
         <button class="secondary" id="globalQaToggleBtn" style="width:100%;" onclick="toggleGlobalQaAccess()" data-i18n="loading_text">Loading...</button>
         <p style="font-size:11px; color:#cde; margin-top:6px;" data-i18n="event_toggle_note">Ek hi button se sab mureedon ke liye tab dikhega ya gayab ho jaayega.</p>
       </div>
@@ -568,6 +568,44 @@ const TRANSLATIONS = {
     urdu_notes_label: "Upload Urdu Notes (PDF):", write_question_label: "Write your question:",
     answer_label: "Answer:", no_notes_uploaded_msg: "No notes uploaded yet.",
     uploaded_notes_label: "Uploaded notes:",
+    my_qa_heading2: "📜 My Q&A", pdf_download_btn: "⬇️ PDF Download",
+    khanqah_set_heading: "📍 Set Khanqah Location",
+    khanqah_set_note: "Set this once. Open Google Maps, find the Khanqah's location, tap \"Share\" → \"Copy link\" and paste here.",
+    address_ph: "Address (e.g: Silsila-e-Zahidiya, Mysore)", gmaps_link_ph: "Google Maps link (https://maps.app.goo.gl/...)",
+    location_save_btn: "💾 Save Location", my_profile_heading: "👤 My Profile (Admin)",
+    new_password_ph: "New Password (leave blank to keep unchanged)",
+    my_profile_save_btn: "💾 Save My Profile", new_admin_heading: "🛡️ Create New Admin",
+    admin_add_karo_btn: "➕ Add Admin", mureed_stats_heading: "📊 Member Stats (tap to see full list)",
+    mureed_edit_heading: "✏️ Edit Member", save_karo_btn2: "💾 Save",
+    mureed_allow_heading: "✅ Allow Member (They Register Themselves)",
+    mureed_allow_note: "Just enter the name and mobile — the member will set their own password from the Register screen. Only a mobile number added here can register.",
+    direct_add_mureed_heading: "➕ Direct Add Member", bulk_add_mureeds_heading: "📥 Bulk Add Members",
+    bulk_add_note: "Fill in one member's details per row. Use \"+ Add Row\" to add more rows if needed.",
+    row_add_karo_btn: "➕ Add Row", upload_class_heading: "📤 Upload New Class",
+    class_title_ph: "Class Title", file_url_ph: "File URL (link)",
+    new_file_note: "Only choose a new file if you want to change it, otherwise the old file stays.",
+    live_check_label: "🔴 This is Live right now (YouTube/Zoom link)",
+    hijri_heading: "🌙 Islamic Calendar Adjustment", hijri_days_label: "How many days forward/backward",
+    hijri_days_ph: "e.g: 2 or -1", alarm_settings_heading: "⏰ Alarm Settings",
+    alarm_settings_note: "Control the alarm when prayer begins, and reminder before it ends — here.",
+    eg_60_ph: "e.g. 60", eg_10_ph: "e.g. 10", eg_3_ph: "e.g. 3", eg_2_ph: "e.g. 2",
+    alarm_tone_label: "🎵 Alarm Tone (Ringtone)",
+    alarm_tone_note: "Upload an audio file (mp3) — this tone will play for the alarm. If nothing is uploaded, the default \"ding-dong\" will play.",
+    tone_upload_btn: "🎵 Upload Tone", tone_listen_btn: "🔊 Listen to This Tone",
+    tone_delete_btn: "🗑️ Delete Tone (back to Default Beep)",
+    custom_alarm_heading: "🔔 Custom Alarm (Start Time / End Time)",
+    custom_alarm_note: "For creating a special alarm/reminder — like an event's time. This will show on all members' home screen during the start-end window.",
+    custom_alarm_title_ph: "Alarm name (e.g: Ijtema Time)", test_sound_btn: "🔊 Test Sound (listen now)",
+    event_heading: "📅 Event (Weekly / Monthly / Once)",
+    event_note: "E.g: Zanana class every Saturday, Mardana class every Sunday — with content (text/image/PDF/audio).",
+    event_title_ph: "Event name (e.g: Zanana Class)", event_day_of_month_ph: "Day of month (1 to 31)",
+    event_text_content_ph: "Write here what members should see...",
+    or_record_note: "— or record directly —", record_karo_btn: "🎙️ Record",
+    global_qa_label: "🌐 Q&A for All Members", on_off_label: "On/Off",
+    edit_class_prefix: "✏️ Edit Class: ",
+    notes_qa_heading2: "📖 Notes Q&A", notes_pdf_upload_heading: "📄 Upload Notes PDF (Urdu)",
+    sawal_poochho_heading: "❓ Ask a Question", question_ph2: "Type your question here...",
+    listen_btn2: "🔊 Listen", stop_btn2: "⏹️ Stop", naam_ph: "Name", mobile_ph2: "Mobile",
   },
   ur: {
     login_title: "لاگ ان", new_user_register: "نئے صارف؟ یہاں رجسٹر کریں",
@@ -630,6 +668,44 @@ const TRANSLATIONS = {
     urdu_notes_label: "اردو نوٹس (پی ڈی ایف) اپلوڈ کریں:", write_question_label: "اپنا سوال لکھیں:",
     answer_label: "جواب:", no_notes_uploaded_msg: "ابھی تک کوئی نوٹس اپلوڈ نہیں ہوئی۔",
     uploaded_notes_label: "اپلوڈ کی ہوئی نوٹس:",
+    my_qa_heading2: "📜 میرے سوال و جواب", pdf_download_btn: "⬇️ پی ڈی ایف ڈاؤن لوڈ",
+    khanqah_set_heading: "📍 خانقاہ کا مقام سیٹ کریں",
+    khanqah_set_note: "یہ ایک بار سیٹ کریں۔ گوگل میپس کھولیں، خانقاہ کی جگہ ڈھونڈیں، \"Share\" → \"Copy link\" کر کے یہاں پیسٹ کریں۔",
+    address_ph: "پتہ (مثلاً: سلسلہ زاہدیہ، میسور)", gmaps_link_ph: "گوگل میپس لنک (https://maps.app.goo.gl/...)",
+    location_save_btn: "💾 مقام محفوظ کریں", my_profile_heading: "👤 میری پروفائل (ایڈمن)",
+    new_password_ph: "نیا پاس ورڈ (بدلنا نہ ہو تو خالی چھوڑیں)",
+    my_profile_save_btn: "💾 میری پروفائل محفوظ کریں", new_admin_heading: "🛡️ نیا ایڈمن بنائیں",
+    admin_add_karo_btn: "➕ ایڈمن شامل کریں", mureed_stats_heading: "📊 مرید کے اعداد و شمار (پوری فہرست کے لیے دبائیں)",
+    mureed_edit_heading: "✏️ مرید میں ترمیم کریں", save_karo_btn2: "💾 محفوظ کریں",
+    mureed_allow_heading: "✅ مرید کو اجازت دیں (خود رجسٹر کرے گا)",
+    mureed_allow_note: "صرف نام اور موبائل ڈالیں — مرید خود رجسٹر اسکرین سے اپنا پاس ورڈ سیٹ کرے گا۔ صرف یہاں شامل کیا ہوا موبائل نمبر ہی رجسٹر ہو سکے گا۔",
+    direct_add_mureed_heading: "➕ براہ راست مرید شامل کریں", bulk_add_mureeds_heading: "📥 بلک میں مرید شامل کریں",
+    bulk_add_note: "ہر قطار میں ایک مرید کی تفصیلات بھریں۔ ضرورت ہو تو \"+ قطار شامل کریں\" سے مزید قطاریں بڑھا سکتے ہیں۔",
+    row_add_karo_btn: "➕ قطار شامل کریں", upload_class_heading: "📤 نئی کلاس اپلوڈ کریں",
+    class_title_ph: "کلاس کا عنوان", file_url_ph: "فائل کا یو آر ایل (لنک)",
+    new_file_note: "نئی فائل صرف تب منتخب کریں اگر فائل بدلنی ہو، ورنہ پرانی فائل وہی رہے گی۔",
+    live_check_label: "🔴 یہ ابھی لائیو ہے (یوٹیوب/زوم لنک)",
+    hijri_heading: "🌙 اسلامی کیلنڈر ایڈجسٹمنٹ", hijri_days_label: "کتنے دن آگے/پیچھے کرنا ہے",
+    hijri_days_ph: "مثلاً: 2 یا -1", alarm_settings_heading: "⏰ الارم سیٹنگز",
+    alarm_settings_note: "نماز شروع ہونے پر الارم، اور ختم ہونے سے پہلے یاد دہانی — یہاں کنٹرول کریں۔",
+    eg_60_ph: "مثلاً 60", eg_10_ph: "مثلاً 10", eg_3_ph: "مثلاً 3", eg_2_ph: "مثلاً 2",
+    alarm_tone_label: "🎵 الارم ٹون (رنگ ٹون)",
+    alarm_tone_note: "کوئی آڈیو فائل (ایم پی 3) اپلوڈ کریں — یہی ٹون الارم بجائے گی۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ \"ڈنگ ڈونگ\" چلے گا۔",
+    tone_upload_btn: "🎵 ٹون اپلوڈ کریں", tone_listen_btn: "🔊 یہ ٹون سنیں",
+    tone_delete_btn: "🗑️ ٹون حذف کریں (ڈیفالٹ بیپ پر واپس)",
+    custom_alarm_heading: "🔔 کسٹم الارم (شروع کا وقت / ختم کا وقت)",
+    custom_alarm_note: "کوئی خاص الارم/یاد دہانی بنانے کے لیے — جیسے کسی ایونٹ کا وقت۔ جب شروع اور ختم کے درمیان کا وقت چلے گا، سب مریدوں کی ہوم اسکرین پر یہ دکھے گا۔",
+    custom_alarm_title_ph: "الارم کا نام (مثلاً: اجتماع کا وقت)", test_sound_btn: "🔊 ٹیسٹ ساؤنڈ (ابھی سنیں)",
+    event_heading: "📅 ایونٹ (ہر ہفتے / ہر مہینے / ایک بار)",
+    event_note: "مثلاً: زنانہ کلاس ہر ہفتہ، مردانہ کلاس ہر اتوار — مواد (تحریر/تصویر/پی ڈی ایف/آڈیو) کے ساتھ۔",
+    event_title_ph: "ایونٹ کا نام (مثلاً: زنانہ کلاس)", event_day_of_month_ph: "مہینے کی تاریخ (1 سے 31)",
+    event_text_content_ph: "یہاں لکھیں جو مریدوں کو دکھنا ہے...",
+    or_record_note: "— یا براہ راست ریکارڈ کریں —", record_karo_btn: "🎙️ ریکارڈ کریں",
+    global_qa_label: "🌐 سب مریدوں کے لیے سوال و جواب", on_off_label: "آن/آف",
+    edit_class_prefix: "✏️ کلاس میں ترمیم: ",
+    notes_qa_heading2: "📖 نوٹس سوال و جواب", notes_pdf_upload_heading: "📄 نوٹس پی ڈی ایف اپلوڈ کریں (اردو)",
+    sawal_poochho_heading: "❓ سوال پوچھیں", question_ph2: "اپنا سوال یہاں لکھیں...",
+    listen_btn2: "🔊 سنیں", stop_btn2: "⏹️ روکیں", naam_ph: "نام", mobile_ph2: "موبائل",
   }
 };
 let currentLang = localStorage.getItem('zahidiya_lang') || 'ur';
@@ -951,7 +1027,7 @@ function editClass(id) {
   const c = findClassById(id);
   if (!c) return;
   document.getElementById('editingClassId').value = id;
-  document.getElementById('uploadCardTitle').innerText = '✏️ Edit Class: ' + c.title;
+  document.getElementById('uploadCardTitle').innerText = t('edit_class_prefix') + c.title;
   document.getElementById('classTitle').value = c.title;
   document.getElementById('classType').value = c.type;
   document.getElementById('classGroup').value = c.group_type;
@@ -971,7 +1047,7 @@ function editClass(id) {
 
 function cancelEditClass() {
   document.getElementById('editingClassId').value = '';
-  document.getElementById('uploadCardTitle').innerText = '📤 Upload New Class';
+  document.getElementById('uploadCardTitle').innerText = t('upload_class_heading');
   document.getElementById('classTitle').value = '';
   document.getElementById('classUrl').value = '';
   document.getElementById('classFile').value = '';
@@ -1488,9 +1564,9 @@ function addBulkRow() {
   div.id = rowId;
   div.style = 'display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap; align-items:center;';
   div.innerHTML = `
-    <input type="text" placeholder="Naam" class="bulkName" style="flex:1; min-width:100px; margin:0;">
-    <input type="text" placeholder="Mobile" class="bulkMobile" style="flex:1; min-width:100px; margin:0;">
-    <input type="text" placeholder="Password" class="bulkPassword" style="flex:1; min-width:100px; margin:0;">
+    <input type="text" placeholder="Naam" class="bulkName" data-i18n-placeholder="naam_ph" style="flex:1; min-width:100px; margin:0;">
+    <input type="text" placeholder="Mobile" class="bulkMobile" data-i18n-placeholder="mobile_ph2" style="flex:1; min-width:100px; margin:0;">
+    <input type="text" placeholder="Password" class="bulkPassword" data-i18n-placeholder="password_ph" style="flex:1; min-width:100px; margin:0;">
     <select class="bulkGroup" style="flex:1; min-width:100px; margin:0;">
       <option value="mardana" data-i18n="group_mardana">Mardana</option>
       <option value="zanana" data-i18n="group_zanana">Zanana</option>
@@ -1498,6 +1574,7 @@ function addBulkRow() {
     <button class="secondary" style="width:auto; margin:0; padding:8px 12px;" onclick="document.getElementById('${rowId}').remove()">✖</button>
   `;
   container.appendChild(div);
+  applyLang(); // naya row bhi turant current language mein dikhe
 }
 addBulkRow(); // shuru mein ek row dikhe
 
