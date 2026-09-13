@@ -321,6 +321,14 @@ a { color: #ffd700; }
         </select>
         <button id="uploadClassBtn" onclick="uploadClass()" data-i18n="upload_class_btn">Upload Class</button>
         <button class="secondary" id="cancelEditBtn" style="display:none;" onclick="cancelEditClass()" data-i18n="cancel_edit_btn">Cancel Edit</button>
+
+        <label style="font-size:13px; margin-top:12px; display:block;" data-i18n="live_tone_label">🔴 Live Class Alarm Tone</label>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="live_tone_note">Jab koi class Live shuru hoti hai to yeh tone bajegi. Kuch upload nahi karoge to default Alarm Tone use hoga.</p>
+        <div id="liveToneCurrentName" style="font-size:12px; color:#cde; margin-bottom:6px;"></div>
+        <input type="file" id="liveToneFile" accept="audio/*">
+        <button onclick="uploadLiveTone()" data-i18n="tone_upload_btn">🎵 Tone Upload Karo</button>
+        <button class="secondary" id="testLiveToneBtn" onclick="testLiveTone()" data-i18n="tone_listen_btn">🔊 Is Tone Ko Suno</button>
+        <button class="secondary" style="background:#8b1a1a;" onclick="deleteLiveTone()" data-i18n="tone_delete_btn">🗑️ Tone Delete Karo (Default Beep par wapas)</button>
       </div>
       <div class="card">
         <h3 data-i18n="hijri_heading">🌙 Islamic Calendar Adjustment</h3>
@@ -446,6 +454,14 @@ a { color: #ffd700; }
 
         <button onclick="saveEvent()" id="saveEventBtn" data-i18n="save_event_btn">Event Save Karo</button>
         <button class="secondary" id="cancelEditEventBtn" style="display:none;" onclick="cancelEditEvent()" data-i18n="cancel_edit_btn">Cancel Edit</button>
+
+        <label style="font-size:13px; margin-top:12px; display:block;" data-i18n="event_tone_label">📅 Event Alarm Tone</label>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="event_tone_note">Jab koi event ka waqt aata hai to yeh tone bajegi. Kuch upload nahi karoge to default Alarm Tone use hoga.</p>
+        <div id="eventToneCurrentName" style="font-size:12px; color:#cde; margin-bottom:6px;"></div>
+        <input type="file" id="eventToneFile" accept="audio/*">
+        <button onclick="uploadEventTone()" data-i18n="tone_upload_btn">🎵 Tone Upload Karo</button>
+        <button class="secondary" id="testEventToneBtn" onclick="testEventTone()" data-i18n="tone_listen_btn">🔊 Is Tone Ko Suno</button>
+        <button class="secondary" style="background:#8b1a1a;" onclick="deleteEventTone()" data-i18n="tone_delete_btn">🗑️ Tone Delete Karo (Default Beep par wapas)</button>
 
         <div id="eventsAdminList" style="margin-top:14px;"></div>
       </div>
@@ -606,6 +622,11 @@ const TRANSLATIONS = {
     notes_qa_heading2: "📖 Notes Q&A", notes_pdf_upload_heading: "📄 Upload Notes PDF (Urdu)",
     sawal_poochho_heading: "❓ Ask a Question", question_ph2: "Type your question here...",
     listen_btn2: "🔊 Listen", stop_btn2: "⏹️ Stop", naam_ph: "Name", mobile_ph2: "Mobile",
+    live_tone_label: "🔴 Live Class Alarm Tone",
+    live_tone_note: "This tone will play when a class goes Live. If nothing is uploaded, the default Alarm Tone will be used.",
+    event_tone_label: "📅 Event Alarm Tone",
+    event_tone_note: "This tone will play when an event's time arrives. If nothing is uploaded, the default Alarm Tone will be used.",
+    tone_in_use_msg: "✅ An uploaded tone is being used", tone_default_msg: "Default \"ding-dong\" tone is being used",
   },
   ur: {
     login_title: "لاگ ان", new_user_register: "نئے صارف؟ یہاں رجسٹر کریں",
@@ -706,6 +727,11 @@ const TRANSLATIONS = {
     notes_qa_heading2: "📖 نوٹس سوال و جواب", notes_pdf_upload_heading: "📄 نوٹس پی ڈی ایف اپلوڈ کریں (اردو)",
     sawal_poochho_heading: "❓ سوال پوچھیں", question_ph2: "اپنا سوال یہاں لکھیں...",
     listen_btn2: "🔊 سنیں", stop_btn2: "⏹️ روکیں", naam_ph: "نام", mobile_ph2: "موبائل",
+    live_tone_label: "🔴 لائیو کلاس الارم ٹون",
+    live_tone_note: "جب کوئی کلاس لائیو ہوتی ہے تو یہ ٹون بجے گی۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
+    event_tone_label: "📅 ایونٹ الارم ٹون",
+    event_tone_note: "جب کسی ایونٹ کا وقت آتا ہے تو یہ ٹون بجے گی۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
+    tone_in_use_msg: "✅ اپلوڈ کی ہوئی ٹون استعمال ہو رہی ہے", tone_default_msg: "ڈیفالٹ \"ڈنگ ڈونگ\" ٹون استعمال ہو رہی ہے",
   }
 };
 let currentLang = localStorage.getItem('zahidiya_lang') || 'ur';
@@ -1766,6 +1792,14 @@ async function loadAlarmSettings() {
           ? '✅ Ab tak upload ki hui tone use ho rahi hai'
           : 'Abhi default "ding-dong" tone use ho rahi hai';
       }
+      const eventToneBox = document.getElementById('eventToneCurrentName');
+      if (eventToneBox) {
+        eventToneBox.innerText = alarmSettings.event_tone_url ? t('tone_in_use_msg') : t('tone_default_msg');
+      }
+      const liveToneBox = document.getElementById('liveToneCurrentName');
+      if (liveToneBox) {
+        liveToneBox.innerText = alarmSettings.live_class_tone_url ? t('tone_in_use_msg') : t('tone_default_msg');
+      }
 
       checkCustomAlarm();
 
@@ -2343,6 +2377,67 @@ async function deleteAlarmTone() {
     loadAlarmSettings();
   } catch (e) { console.error(e); alert('Kuch galat ho gaya'); }
 }
+
+// ---------- Event Tone aur Live Class Tone (alag-alag ringtone) ----------
+async function uploadToneGeneric(fieldName, fileInputId) {
+  const fileInput = document.getElementById(fileInputId);
+  const file = fileInput.files[0];
+  if (!file) { alert('Pehle koi audio file choose karo'); return; }
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const uploadRes = await fetch(API + '/api/upload', { method: 'POST', body: formData });
+    const uploadData = await uploadRes.json();
+    if (!uploadData.url) { alert('Upload fail ho gaya'); return; }
+    const body = {}; body[fieldName] = uploadData.url;
+    await fetch(API + '/api/alarm-settings', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    alert('🎵 Tone upload ho gayi!');
+    loadAlarmSettings();
+  } catch (e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+
+async function deleteToneGeneric(fieldName) {
+  if (!confirm('Tone delete karke default Alarm Tone par wapas jaana hai?')) return;
+  try {
+    const body = {}; body[fieldName] = '';
+    await fetch(API + '/api/alarm-settings', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    alert('✅ Tone delete ho gayi.');
+    loadAlarmSettings();
+  } catch (e) { console.error(e); alert('Kuch galat ho gaya'); }
+}
+
+function toggleTestToneGeneric(btnId, toneUrl) {
+  const btn = document.getElementById(btnId);
+  if (btn && btn.dataset.playing === '1') { stopAlarmSound(); return; }
+  stopAlarmSound();
+  if (btn) {
+    btn.dataset.label = btn.innerText;
+    btn.dataset.playing = '1';
+    btn.innerText = '⏹ Roko (bajna band karo)';
+  }
+  if (toneUrl) {
+    try {
+      const audio = new Audio(toneUrl);
+      audio.loop = true;
+      window.currentAlarmAudio = audio;
+      audio.play().catch(() => { startLoopingBeep(); });
+    } catch (e) { startLoopingBeep(); }
+  } else {
+    startLoopingBeep();
+  }
+}
+
+function uploadEventTone() { uploadToneGeneric('event_tone_url', 'eventToneFile'); }
+function deleteEventTone() { deleteToneGeneric('event_tone_url'); }
+function testEventTone() { toggleTestToneGeneric('testEventToneBtn', alarmSettings && alarmSettings.event_tone_url); }
+
+function uploadLiveTone() { uploadToneGeneric('live_class_tone_url', 'liveToneFile'); }
+function deleteLiveTone() { deleteToneGeneric('live_class_tone_url'); }
+function testLiveTone() { toggleTestToneGeneric('testLiveToneBtn', alarmSettings && alarmSettings.live_class_tone_url); }
 
 let alarmSilenced = {};
 
