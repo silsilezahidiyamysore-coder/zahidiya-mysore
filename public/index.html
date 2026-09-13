@@ -737,6 +737,10 @@ function toggleLang() {
   if (typeof loadNotifications === 'function' && currentUser) loadNotifications();
   if (typeof loadQaHistory === 'function' && currentUser) loadQaHistory();
   if (typeof renderEventsAdminList === 'function' && window.eventsList) renderEventsAdminList();
+  if (typeof currentUser !== 'undefined' && currentUser && currentUser.name) {
+    const wu = document.getElementById('welcomeUser');
+    if (wu) wu.innerText = t('welcome_prefix') + currentUser.name;
+  }
 }
 
 document.addEventListener('DOMContentLoaded', applyLang);
