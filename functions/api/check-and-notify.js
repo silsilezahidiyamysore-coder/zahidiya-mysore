@@ -134,7 +134,7 @@ async function handle(context) {
                 title: '🕌 ' + name + ' ki namaz ka waqt ho gaya hai',
                 body: 'Silsila-e-Zahidiya Mysore', tag: 'namaz-' + name
               });
-              await sendAlarmRingPush(context.env, name + ' ki namaz ka waqt ho gaya hai', alarmSettings.start_alarm_duration_seconds || 60, 'both');
+              await sendAlarmRingPush(context.env, name + ' ki namaz ka waqt ho gaya hai', alarmSettings.start_alarm_duration_seconds || 60, 'both', 'namaz');
               sentCount++;
             }
           }
@@ -160,7 +160,7 @@ async function handle(context) {
                 title: '⏳ ' + names[i] + ' ki namaz khatam hone wali hai (' + alarmSettings.end_reminder_minutes_before + ' min)',
                 body: 'Silsila-e-Zahidiya Mysore', tag: 'end-reminder-' + names[i]
               });
-              await sendAlarmRingPush(context.env, names[i] + ' ki namaz khatam hone wali hai', alarmSettings.end_reminder_beep_seconds || 20, 'both');
+              await sendAlarmRingPush(context.env, names[i] + ' ki namaz khatam hone wali hai', alarmSettings.end_reminder_beep_seconds || 20, 'both', 'namaz');
               sentCount++;
             }
           }
@@ -177,7 +177,7 @@ async function handle(context) {
             title: '🔔 ' + (alarmSettings.custom_alarm_title || 'Alarm'),
             body: 'Silsila-e-Zahidiya Mysore', tag: 'custom-alarm'
           });
-          await sendAlarmRingPush(context.env, alarmSettings.custom_alarm_title || 'Alarm', alarmSettings.start_alarm_duration_seconds || 60, 'both');
+          await sendAlarmRingPush(context.env, alarmSettings.custom_alarm_title || 'Alarm', alarmSettings.start_alarm_duration_seconds || 60, 'both', 'custom');
           sentCount++;
         }
       }
@@ -208,7 +208,7 @@ async function handle(context) {
         title: '📅 ' + ev.title,
         body: 'Silsila-e-Zahidiya Mysore', tag: 'event-' + ev.id
       });
-      await sendAlarmRingPush(context.env, ev.title, alarmSettings ? (alarmSettings.start_alarm_duration_seconds || 60) : 60, ev.group_type);
+      await sendAlarmRingPush(context.env, ev.title, alarmSettings ? (alarmSettings.start_alarm_duration_seconds || 60) : 60, ev.group_type, 'event');
       sentCount++;
     }
 
