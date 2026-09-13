@@ -53,6 +53,7 @@ a { color: #ffd700; }
   <!-- ============ LOGIN SCREEN ============ -->
   <div id="loginScreen">
     <h1 data-i18n="site_name">🕌 Silsila-e-Zahidiya Mysore</h1>
+    <button class="secondary" style="width:auto; margin:0 auto 10px; display:block;" id="langToggleBtnLogin" onclick="toggleLang()">🌐 English</button>
     <div class="card">
       <h3 id="loginTitle" data-i18n="login_title">Login</h3>
       <div id="loginFields">
@@ -241,13 +242,13 @@ a { color: #ffd700; }
       <div class="card">
         <h3>📊 Mureed Stats (tap karke poori list dekhein)</h3>
         <div class="row">
-          <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('total')"><div class="num" id="totalCount">0</div><div>Total</div></div>
-          <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('mardana')"><div class="num" id="mardanaCount">0</div><div>Mardana</div></div>
-          <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('zanana')"><div class="num" id="zananaCount">0</div><div>Zanana</div></div>
+          <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('total')"><div class="num" id="totalCount">0</div><div data-i18n="stat_total">Total</div></div>
+          <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('mardana')"><div class="num" id="mardanaCount">0</div><div data-i18n="stat_mardana">Mardana</div></div>
+          <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('zanana')"><div class="num" id="zananaCount">0</div><div data-i18n="stat_zanana">Zanana</div></div>
         </div>
         <div class="row" style="margin-top:8px;">
-          <div class="stat-box" style="background:#1f4d1f; cursor:pointer;" onclick="showMureedList('online')"><div class="num" id="onlineCount" style="color:#4ade80;">0</div><div>🟢 Online Abhi</div></div>
-          <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('offline')"><div class="num" id="offlineCount">0</div><div>⚪ Offline</div></div>
+          <div class="stat-box" style="background:#1f4d1f; cursor:pointer;" onclick="showMureedList('online')"><div class="num" id="onlineCount" style="color:#4ade80;">0</div><div data-i18n="stat_online">🟢 Online Abhi</div></div>
+          <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('offline')"><div class="num" id="offlineCount">0</div><div data-i18n="stat_offline">⚪ Offline</div></div>
         </div>
      <div id="mureedListArea" style="margin-top:12px;"></div>
       </div>
@@ -509,6 +510,7 @@ const TRANSLATIONS = {
   en: {
     login_title: "Login", new_user_register: "New user? Register here",
     mobile_ph: "Mobile Number", password_ph: "Password", full_name_ph: "Full Name",
+    welcome_prefix: "Welcome, ",
     group_mardana: "Mardana", group_zanana: "Zanana",
     logout_btn: "Logout", khanqah_location_heading: "📍 Khanqah Location",
     open_gmaps_btn: "🗺️ Open in Google Maps", share_btn: "🔗 Share",
@@ -530,10 +532,22 @@ const TRANSLATIONS = {
     loc_current: " 📍 (Your current location)", loc_default: " 📍 (Mysore - default)",
     offline_saved: " 📡 (Offline — previously saved time)",
     no_internet_data: "Could not connect to internet and no saved time available — please open once with internet on.",
+    no_classes_msg: "No classes available yet.", live_count_suffix: " Live",
+    live_now_prefix: "🔴 LIVE NOW — ", open_pdf_btn: "📄 Open PDF", open_link_btn: "🔗 Open Link",
+    download_btn: "⬇️ Download", live_band_karo_btn: "⏹ Stop Live", live_shuru_karo_btn: "🔴 Start Live",
+    edit_btn: "✏️ Edit", delete_btn: "🗑️ Delete", no_notif_msg: "No notifications yet.",
+    clear_btn: "🗑️ Clear",
+    stat_total: "Total", stat_mardana: "Mardana", stat_zanana: "Zanana",
+    stat_online: "🟢 Online Now", stat_offline: "⚪ Offline", qa_history_label: "Your past Q&A:",
+    view_btn: "👀 View", silence_btn: "Silence", no_events_msg: "No events yet.",
+    weekly_suffix: " (weekly)", monthly_suffix: " (monthly)", once_suffix: " (one-time)",
+    day_sun: "Sunday", day_mon: "Monday", day_tue: "Tuesday", day_wed: "Wednesday",
+    day_thu: "Thursday", day_fri: "Friday", day_sat: "Saturday",
   },
   ur: {
     login_title: "لاگ ان", new_user_register: "نئے صارف؟ یہاں رجسٹر کریں",
     mobile_ph: "موبائل نمبر", password_ph: "پاس ورڈ", full_name_ph: "پورا نام",
+    welcome_prefix: "خوش آمدید، ",
     group_mardana: "مردانہ", group_zanana: "زنانہ",
     logout_btn: "لاگ آؤٹ", khanqah_location_heading: "📍 خانقاہ کا پتہ",
     open_gmaps_btn: "🗺️ گوگل میپس میں کھولیں", share_btn: "🔗 شیئر کریں",
@@ -555,6 +569,17 @@ const TRANSLATIONS = {
     loc_current: " 📍 (آپ کا موجودہ مقام)", loc_default: " 📍 (میسور - ڈیفالٹ)",
     offline_saved: " 📡 (آف لائن — پہلے سے محفوظ وقت)",
     no_internet_data: "انٹرنیٹ نہیں ملا اور کوئی محفوظ وقت بھی موجود نہیں — ایک بار انٹرنیٹ آن کر کے کھولیں۔",
+    no_classes_msg: "ابھی تک کوئی کلاس موجود نہیں۔", live_count_suffix: " لائیو",
+    live_now_prefix: "🔴 ابھی لائیو — ", open_pdf_btn: "📄 پی ڈی ایف کھولیں", open_link_btn: "🔗 لنک کھولیں",
+    download_btn: "⬇️ ڈاؤن لوڈ کریں", live_band_karo_btn: "⏹ لائیو بند کریں", live_shuru_karo_btn: "🔴 لائیو شروع کریں",
+    edit_btn: "✏️ ترمیم کریں", delete_btn: "🗑️ حذف کریں", no_notif_msg: "ابھی تک کوئی اطلاع نہیں۔",
+    clear_btn: "🗑️ صاف کریں",
+    stat_total: "کل تعداد", stat_mardana: "مردانہ", stat_zanana: "زنانہ",
+    stat_online: "🟢 ابھی آن لائن", stat_offline: "⚪ آف لائن", qa_history_label: "آپ کے پرانے سوال و جواب:",
+    view_btn: "👀 دیکھو", silence_btn: "خاموش کریں", no_events_msg: "ابھی کوئی ایونٹ نہیں ہے۔",
+    weekly_suffix: " (ہر ہفتے)", monthly_suffix: " (ہر مہینے)", once_suffix: " (ایک بار)",
+    day_sun: "اتوار", day_mon: "پیر", day_tue: "منگل", day_wed: "بدھ",
+    day_thu: "جمعرات", day_fri: "جمعہ", day_sat: "ہفتہ",
   }
 };
 let currentLang = localStorage.getItem('zahidiya_lang') || 'ur';
@@ -567,6 +592,8 @@ function applyLang() {
   document.documentElement.setAttribute('lang', currentLang);
   const btn = document.getElementById('langToggleBtn');
   if (btn) btn.textContent = currentLang === 'ur' ? '🌐 English' : '🌐 اردو';
+  const btnLogin = document.getElementById('langToggleBtnLogin');
+  if (btnLogin) btnLogin.textContent = currentLang === 'ur' ? '🌐 English' : '🌐 اردو';
   // login/register buttons ka text register-mode ke hisaab se dobara set karo
   if (typeof isRegisterMode !== 'undefined') {
     document.getElementById('loginActionBtn').textContent = isRegisterMode ? t('register_btn_alt') || (currentLang==='ur' ? 'رجسٹر کریں' : 'Register') : t('login_title');
@@ -580,6 +607,10 @@ function toggleLang() {
   localStorage.setItem('zahidiya_lang', currentLang);
   applyLang();
   if (typeof loadPrayerTimes === 'function' && window.namazTimesToday) loadPrayerTimes();
+  if (typeof allClasses !== 'undefined' && allClasses.length) renderClasses(allClasses);
+  if (typeof loadNotifications === 'function' && currentUser) loadNotifications();
+  if (typeof loadQaHistory === 'function' && currentUser) loadQaHistory();
+  if (typeof renderEventsAdminList === 'function' && window.eventsList) renderEventsAdminList();
 }
 
 document.addEventListener('DOMContentLoaded', applyLang);
@@ -703,7 +734,7 @@ async function handleLoginOrRegister() {
 }
 
 function loginSuccess() {
-  document.getElementById('welcomeUser').innerText = 'Welcome, ' + currentUser.name;
+  document.getElementById('welcomeUser').innerText = t('welcome_prefix') + currentUser.name;
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('mainApp').classList.remove('hidden');
   document.getElementById('tabBar').classList.remove('hidden');
@@ -815,27 +846,27 @@ function renderClasses(list) {
   const el = document.getElementById('classList');
   document.getElementById('classCount').innerText = list.length;
   const liveCount = list.filter(c => c.is_live).length;
-  document.getElementById('liveIndicator').innerText = liveCount > 0 ? `🔴 ${liveCount} Live` : '';
-  if (!list.length) { el.innerHTML = '<p style="font-size:13px;">No classes available yet.</p>'; return; }
+  document.getElementById('liveIndicator').innerText = liveCount > 0 ? `🔴 ${liveCount}${t('live_count_suffix')}` : '';
+  if (!list.length) { el.innerHTML = `<p style="font-size:13px;">${t('no_classes_msg')}</p>`; return; }
   el.innerHTML = list.map(c => {
     const safeTitle = escapeHtml(c.title);
     const safeUrl = escapeHtml(c.file_url);
     return `
     <div class="list-item" id="class-${c.id}" style="${c.is_live ? 'border:2px solid #ff3333;' : ''}">
       <div class="row" style="justify-content:space-between;">
-        <strong>${c.is_live ? '🔴 LIVE NOW — ' : ''}${safeTitle}</strong>
+        <strong>${c.is_live ? t('live_now_prefix') : ''}${safeTitle}</strong>
         <span class="badge">${c.type.toUpperCase()}</span>
       </div>
       <div style="font-size:11px; color:#ccc; margin-top:2px;">${formatDate(c.uploaded_at)}</div>
       <div style="margin-top:8px;">
         ${c.type === 'audio' ? `<audio controls style="width:100%;" src="${safeUrl}"></audio>` : ''}
         ${c.type === 'video' ? `<video controls style="width:100%;" src="${safeUrl}"></video>` : ''}
-        ${c.type === 'pdf' ? `<a href="${safeUrl}" target="_blank">📄 Open PDF</a> <button style="width:auto; margin-left:8px;" onclick="speakPdf('${safeUrl}')">🔊 Listen</button>` : ''}
-        ${c.type === 'link' ? `<a href="${safeUrl}" target="_blank" style="display:inline-block; background:#ffcc00; color:#1a3a1a; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">🔗 Open Link</a>` : ''}
-        ${['audio','video','pdf'].includes(c.type) ? `<a href="${safeUrl}&download=1" style="display:inline-block; margin-left:8px; margin-top:8px; background:#2a6b2a; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">⬇️ Download</a>` : ''}
-        ${currentUser.role === 'admin' && c.type === 'link' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px;" onclick="toggleLive(${c.id}, ${c.is_live ? 0 : 1})">${c.is_live ? '⏹ Live Band Karo' : '🔴 Live Shuru Karo'}</button>` : ''}
-        ${currentUser.role === 'admin' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px;" onclick="editClass(${c.id})">✏️ Edit</button>` : ''}
-        ${currentUser.role === 'admin' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px; background:#8b1a1a;" onclick="deleteClass(${c.id})">🗑️ Delete</button>` : ''}
+        ${c.type === 'pdf' ? `<a href="${safeUrl}" target="_blank">${t('open_pdf_btn')}</a> <button style="width:auto; margin-left:8px;" onclick="speakPdf('${safeUrl}')">${t('listen_btn')}</button>` : ''}
+        ${c.type === 'link' ? `<a href="${safeUrl}" target="_blank" style="display:inline-block; background:#ffcc00; color:#1a3a1a; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">${t('open_link_btn')}</a>` : ''}
+        ${['audio','video','pdf'].includes(c.type) ? `<a href="${safeUrl}&download=1" style="display:inline-block; margin-left:8px; margin-top:8px; background:#2a6b2a; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">${t('download_btn')}</a>` : ''}
+        ${currentUser.role === 'admin' && c.type === 'link' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px;" onclick="toggleLive(${c.id}, ${c.is_live ? 0 : 1})">${c.is_live ? t('live_band_karo_btn') : t('live_shuru_karo_btn')}</button>` : ''}
+        ${currentUser.role === 'admin' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px;" onclick="editClass(${c.id})">${t('edit_btn')}</button>` : ''}
+        ${currentUser.role === 'admin' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px; background:#8b1a1a;" onclick="deleteClass(${c.id})">${t('delete_btn')}</button>` : ''}
       </div>
     </div>
   `;
@@ -957,6 +988,21 @@ function speakPdf(url) {
   window.open(url, '_blank');
 }
 
+// Backend se aane wale notification messages fixed pattern mein hote hain
+// (jaise 'Nayi class upload hui: "Title"'). Urdu mode mein yahin translate karte hain.
+function translateNotifMsg(msg) {
+  if (currentLang !== 'ur') return msg;
+  let m = msg.match(/^Nayi class upload hui: "(.+)"$/);
+  if (m) return `نئی کلاس اپلوڈ ہوئی: "${m[1]}"`;
+  m = msg.match(/^🔴 LIVE shuru hui: "(.+)"$/);
+  if (m) return `🔴 لائیو شروع ہوئی: "${m[1]}"`;
+  m = msg.match(/^Class update hui: "(.+)"$/);
+  if (m) return `کلاس اپڈیٹ ہوئی: "${m[1]}"`;
+  if (msg === '🎉 Aapko access mil gaya! Ab aap saari classes dekh sakte hain.')
+    return '🎉 آپ کو رسائی مل گئی! اب آپ ساری کلاسیں دیکھ سکتے ہیں۔';
+  return msg; // custom/unknown message, waise hi rehne do
+}
+
 // ---------- NOTIFICATIONS ----------
 async function loadNotifications() {
   try {
@@ -970,11 +1016,11 @@ async function loadNotifications() {
  document.getElementById('notifList').innerHTML = list.length ?
       list.map(n => `<div class="list-item">
         <div class="row" style="justify-content:space-between; align-items:flex-start;">
-          <div ${n.related_class_id ? `style="cursor:pointer; text-decoration:underline; text-decoration-style:dotted;" onclick="openClassFromNotification(${n.related_class_id})"` : ''}>${n.message}<div style="font-size:11px; color:#ccc; margin-top:4px;">${formatDate(n.created_at)}</div></div>
-          <button class="secondary" style="width:auto; font-size:12px; padding:4px 10px; flex-shrink:0; margin-left:8px;" onclick="event.stopPropagation(); deleteNotification(${n.id})">🗑️ Clear</button>
+          <div ${n.related_class_id ? `style="cursor:pointer; text-decoration:underline; text-decoration-style:dotted;" onclick="openClassFromNotification(${n.related_class_id})"` : ''}>${translateNotifMsg(n.message)}<div style="font-size:11px; color:#ccc; margin-top:4px;">${formatDate(n.created_at)}</div></div>
+          <button class="secondary" style="width:auto; font-size:12px; padding:4px 10px; flex-shrink:0; margin-left:8px;" onclick="event.stopPropagation(); deleteNotification(${n.id})">${t('clear_btn')}</button>
         </div>
       </div>`).join('')
-    : '<p style="font-size:13px;">No notifications yet.</p>';
+    : `<p style="font-size:13px;">${t('no_notif_msg')}</p>`;
   } catch(e) { console.error(e); }
 }
 
@@ -1206,7 +1252,7 @@ async function saveMyProfile() {
     localStorage.setItem('zahidiya_mobile', mobile);
     if (password) localStorage.setItem('zahidiya_password', password);
     document.getElementById('myProfilePassword').value = '';
-    document.getElementById('welcomeUser').innerText = 'Welcome, ' + name;
+    document.getElementById('welcomeUser').innerText = t('welcome_prefix') + name;
   } catch(e) { console.error(e); alert('Kuch galat ho gaya'); }
 }
 
@@ -2461,17 +2507,17 @@ async function loadEvents() {
 function renderEventsAdminList() {
   const box = document.getElementById('eventsAdminList');
   if (!box || !currentUser || currentUser.role !== 'admin') return;
-  if (!window.eventsList.length) { box.innerHTML = '<p style="font-size:12px; color:#cde;">Abhi koi event nahi hai.</p>'; return; }
-  const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  if (!window.eventsList.length) { box.innerHTML = `<p style="font-size:12px; color:#cde;">${t('no_events_msg')}</p>`; return; }
+  const dayKeys = ['day_sun','day_mon','day_tue','day_wed','day_thu','day_fri','day_sat'];
   box.innerHTML = window.eventsList.map(ev => {
-    let schedule = ev.repeat_type === 'weekly' ? (dayNames[ev.day_of_week] + ' (har hafte)')
-      : ev.repeat_type === 'monthly' ? (ev.day_of_month + ' tareekh (har mahine)')
-      : (ev.event_date + ' (ek baar)');
+    let schedule = ev.repeat_type === 'weekly' ? (t(dayKeys[ev.day_of_week]) + t('weekly_suffix'))
+      : ev.repeat_type === 'monthly' ? (ev.day_of_month + t('monthly_suffix'))
+      : (ev.event_date + t('once_suffix'));
     return `<div style="border:1px solid #2a6b2a; border-radius:8px; padding:10px; margin-top:8px;">
       <b style="color:#ffd700;">${ev.title}</b><br>
       <span style="font-size:12px; color:#cde;">${schedule} • ${to12Hour(ev.start_time)} - ${to12Hour(ev.end_time)} • ${ev.group_type} • ${ev.content_type}</span><br>
-      <button class="secondary" style="width:auto; margin-top:6px; padding:6px 12px;" onclick="editEvent(${ev.id})">✏️ Edit</button>
-      <button class="secondary" style="width:auto; margin-top:6px; margin-left:6px; padding:6px 12px; background:#8b1a1a;" onclick="deleteEvent(${ev.id})">🗑️ Delete</button>
+      <button class="secondary" style="width:auto; margin-top:6px; padding:6px 12px;" onclick="editEvent(${ev.id})">${t('edit_btn')}</button>
+      <button class="secondary" style="width:auto; margin-top:6px; margin-left:6px; padding:6px 12px; background:#8b1a1a;" onclick="deleteEvent(${ev.id})">${t('delete_btn')}</button>
     </div>`;
   }).join('');
 }
@@ -2561,8 +2607,8 @@ function showEventBanner(ev) {
     document.body.prepend(bar);
   }
   bar.innerHTML = '📅 ' + ev.title +
-    ' <button style="width:auto; margin-left:10px; padding:6px 14px;" onclick="openEventContent(' + ev.id + ')">Dekho</button>' +
-    ' <button style="width:auto; margin-left:6px; padding:6px 14px;" onclick="silenceAlarm(currentAlarmKey)">Silence</button>';
+    ' <button style="width:auto; margin-left:10px; padding:6px 14px;" onclick="openEventContent(' + ev.id + ')">' + t('view_btn') + '</button>' +
+    ' <button style="width:auto; margin-left:6px; padding:6px 14px;" onclick="silenceAlarm(currentAlarmKey)">' + t('silence_btn') + '</button>';
   bar.classList.remove('hidden');
 }
 
@@ -2878,7 +2924,7 @@ async function loadQaHistory() {
   const box = document.getElementById('qaHistoryList');
   if (!box) return;
   if (!window.qaHistoryList.length) { box.innerHTML = ''; return; }
-  box.innerHTML = '<p style="font-size:12px; color:#ffd700;">Aapke purane sawal-jawab:</p>' + window.qaHistoryList.map(qa =>
+  box.innerHTML = `<p style="font-size:12px; color:#ffd700;">${t('qa_history_label')}</p>` + window.qaHistoryList.map(qa =>
     `<div style="font-size:12px; border:1px solid #2a6b2a; border-radius:6px; padding:8px; margin-top:6px;">
       <b>Q:</b> ${qa.question}<br><b>A:</b> ${qa.answer}
     </div>`
