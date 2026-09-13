@@ -25,6 +25,21 @@ function toMinutes(hhmm) {
   return h * 60 + m;
 }
 
+// cron-job.org (free plan) hamesha EXACT minute par hit nahi karta — kabhi 1-2 min
+// late ho jaata hai ya ek baar ka "tick" miss ho jaata hai. Pehle code sirf
+// "abhi ka minute == namaz ka minute" (===) check karta tha, jisse agar cron
+// thodi der se chala to us din ka alarm hamesha ke liye miss ho jaata tha
+// (dubara try hi nahi hota tha). Ab hum ek chhota "pakड़ने" wala window
+// (0 se WINDOW_MIN minute tak der se) allow karte hain — agar cron thodi der
+// se chale to bhi alarm baj jaayega, aur shouldSend() ki wajah se dubara
+// (duplicate) nahi bajega.
+const CATCHUP_WINDOW_MIN = 4;
+function isDueNow(targetMin, nowMin) {
+  if (targetMin === null) return false;
+  const diff = nowMin - targetMin;
+  return diff >= 0 && diff <= CATCHUP_WINDOW_MIN;
+}
+
 async function shouldSend(db, key) {
   try {
     const res = await db.prepare(`INSERT OR IGNORE INTO push_sent_log (alarm_key, sent_at) VALUES (?, ?)`)
@@ -112,7 +127,7 @@ async function handle(context) {
         ];
         for (const [name, time] of prayers) {
           const tMin = toMinutes(time);
-          if (tMin !== null && tMin === nowMin) {
+          if (isDueNow(tMin, nowMin)) {
             const key = 'namaz-' + name + '-' + todayISO;
             if (await shouldSend(db, key)) {
               await sendToSubscriptions(context.env, db, allSubs, {
@@ -138,7 +153,7 @@ async function handle(context) {
           const nextTMin = (i + 1 < names.length) ? toMinutes(times[i + 1]) : (tMin + 45);
           if (nextTMin === null) continue;
           const reminderMin = nextTMin - (alarmSettings.end_reminder_minutes_before || 0);
-          if (reminderMin === nowMin) {
+          if (isDueNow(reminderMin, nowMin)) {
             const key = 'endreminder-' + names[i] + '-' + todayISO;
             if (await shouldSend(db, key)) {
               await sendToSubscriptions(context.env, db, allSubs, {
@@ -155,7 +170,7 @@ async function handle(context) {
     // ---------- 2) CUSTOM ALARM ----------
     if (alarmSettings && Number(alarmSettings.custom_alarm_enabled) !== 0 && alarmSettings.custom_alarm_start) {
       const sMin = toMinutes(alarmSettings.custom_alarm_start);
-      if (sMin !== null && sMin === nowMin) {
+      if (isDueNow(sMin, nowMin)) {
         const key = 'customalarm-' + todayISO + '-' + alarmSettings.custom_alarm_start;
         if (await shouldSend(db, key)) {
           await sendToSubscriptions(context.env, db, allSubs, {
@@ -178,7 +193,7 @@ async function handle(context) {
       if (!matchesToday) continue;
 
       const sMin = toMinutes(ev.start_time);
-      if (sMin === null || sMin !== nowMin) continue;
+      if (!isDueNow(sMin, nowMin)) continue;
 
       const key = 'event-' + ev.id + '-' + todayISO;
       if (!(await shouldSend(db, key))) continue;
