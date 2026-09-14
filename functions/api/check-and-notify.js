@@ -212,6 +212,35 @@ async function handle(context) {
       sentCount++;
     }
 
+    // ---------- 3.5) EVENT END TIME (khatam hone par alarm) ----------
+    for (const ev of events) {
+      let matchesToday = false;
+      if (ev.repeat_type === 'weekly' && Number(ev.day_of_week) === todayDow) matchesToday = true;
+      else if (ev.repeat_type === 'monthly' && Number(ev.day_of_month) === todayDate) matchesToday = true;
+      else if (ev.repeat_type === 'once' && ev.event_date === todayISO) matchesToday = true;
+      if (!matchesToday) continue;
+      if (!ev.end_time) continue;
+
+      const eMin = toMinutes(ev.end_time);
+      if (!isDueNow(eMin, nowMin)) continue;
+
+      const key = 'event-end-' + ev.id + '-' + todayISO;
+      if (!(await shouldSend(db, key))) continue;
+
+      const targetSubs = allSubs.filter(sub => {
+        const m = mureedByMobile[sub.mobile];
+        if (!m) return false;
+        if (m.role === 'admin') return true;
+        return ev.group_type === 'both' || ev.group_type === m.group_type;
+      });
+      await sendToSubscriptions(context.env, db, targetSubs, {
+        title: '⏳ ' + ev.title + ' khatam ho gaya',
+        body: 'Silsila-e-Zahidiya Mysore', tag: 'event-end-' + ev.id
+      });
+      await sendAlarmRingPush(context.env, ev.title, alarmSettings ? (alarmSettings.end_reminder_beep_seconds || 20) : 20, ev.group_type, 'event');
+      sentCount++;
+    }
+
     // ---------- 4) NAYI/EDIT CLASSES (existing "notifications" table use karte hain) ----------
     const recentNotifs = (await db.prepare(
       `SELECT * FROM notifications ORDER BY id DESC LIMIT 30`
