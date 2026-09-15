@@ -735,6 +735,11 @@ function toggleLang() {
   }
 }
 
+if ('speechSynthesis' in window) {
+  speechSynthesis.getVoices(); // kuch browsers mein pehli baar khaali aata hai, isliye jaldi call kar ke "warm up" kar dete hain
+  speechSynthesis.onvoiceschanged = () => { speechSynthesis.getVoices(); };
+}
+
 document.addEventListener('DOMContentLoaded', applyLang);
 
 // ---------- PUSH NOTIFICATIONS (screen lock mein bhi kaam karta hai, WhatsApp jaisa) ----------
@@ -3105,12 +3110,51 @@ async function askQaQuestion() {
   btn.innerText = 'Sawal Poocho';
 }
 
+// Jawab mein agar kabhi bullet (•, -, *), numbering (1. 2.) ya ** jaisa
+// formatting symbol reh jaaye, to awaaz (text-to-speech) usko ajeeb tarah se
+// bol deta hai (jaise "dot dot dot"). Bolne se pehle yeh sab clean kar dete hain.
+function cleanTextForSpeech(text) {
+  if (!text) return '';
+  return text
+    .replace(/\*\*/g, '')
+    .replace(/[*•●▪◦]/g, '')
+    .replace(/^\s*[-–—]\s+/gm, '')
+    .replace(/^\s*\d+[.)]\s+/gm, '')
+    .replace(/#{1,6}\s*/g, '')
+    .replace(/\n{2,}/g, '۔ ')
+    .replace(/\n/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+// Phone mein jo bhi awazein (voices) installed hain unme se sabse behtar
+// Urdu/Hindi wali dhoondta hai. Bahut se phones mein "Urdu" voice nahi hoti
+// (isliye robotic/ajeeb awaaz aati thi) lekin "Hindi" voice achhi hoti hai —
+// aur Hindi bolne wala Urdu ke jumle bhi saaf samajh mein aa jaate hain.
+function pickBestUrduHindiVoice() {
+  const voices = speechSynthesis.getVoices() || [];
+  if (!voices.length) return null;
+  let v = voices.find(x => x.lang && x.lang.toLowerCase().startsWith('ur'));
+  if (v) return v;
+  v = voices.find(x => x.lang && x.lang.toLowerCase().startsWith('hi'));
+  if (v) return v;
+  v = voices.find(x => /hindi|urdu/i.test(x.name || ''));
+  return v || null;
+}
+
 function speakQaAnswer() {
   if (!window.qaLastAnswer) return;
   if (!('speechSynthesis' in window)) { alert('Is browser mein awaaz (text-to-speech) support nahi hai'); return; }
   speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(window.qaLastAnswer);
-  utter.lang = 'ur-PK';
+  const utter = new SpeechSynthesisUtterance(cleanTextForSpeech(window.qaLastAnswer));
+  const bestVoice = pickBestUrduHindiVoice();
+  if (bestVoice) {
+    utter.voice = bestVoice;
+    utter.lang = bestVoice.lang;
+  } else {
+    utter.lang = 'hi-IN';
+  }
+  utter.rate = 0.9;
   speechSynthesis.speak(utter);
 }
 function stopQaSpeak() {
