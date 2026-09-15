@@ -3142,11 +3142,39 @@ function pickBestUrduHindiVoice() {
   return v || null;
 }
 
-function speakQaAnswer() {
+async function speakQaAnswer() {
   if (!window.qaLastAnswer) return;
+  const cleanText = cleanTextForSpeech(window.qaLastAnswer);
+  const btn = document.querySelector('button[onclick="speakAnswer()"], button[onclick="speakQaAnswer()"]');
+  if (btn) { btn.dataset.origText = btn.dataset.origText || btn.innerText; btn.innerText = '⏳...'; }
+  try {
+    const res = await fetch(API + '/api/tts', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: cleanText })
+    });
+    const data = await res.json();
+    if (data.success && data.audio_base64) {
+      if (window.currentQaAudio) { window.currentQaAudio.pause(); }
+      const audio = new Audio('data:audio/mp3;base64,' + data.audio_base64);
+      window.currentQaAudio = audio;
+      audio.play();
+    } else {
+      speakQaAnswerBrowserFallback(cleanText);
+    }
+  } catch (e) {
+    speakQaAnswerBrowserFallback(cleanText);
+  } finally {
+    if (btn) btn.innerText = btn.dataset.origText;
+  }
+}
+
+// Agar Google TTS kabhi fail ho jaaye (internet issue ya key na ho), to
+// purani free browser awaaz par wapas chala jaata hai — taaki button hamesha
+// kuch na kuch bole, bilkul chup na rahe.
+function speakQaAnswerBrowserFallback(cleanText) {
   if (!('speechSynthesis' in window)) { alert('Is browser mein awaaz (text-to-speech) support nahi hai'); return; }
   speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(cleanTextForSpeech(window.qaLastAnswer));
+  const utter = new SpeechSynthesisUtterance(cleanText);
   const bestVoice = pickBestUrduHindiVoice();
   if (bestVoice) {
     utter.voice = bestVoice;
@@ -3159,6 +3187,7 @@ function speakQaAnswer() {
 }
 function stopQaSpeak() {
   if ('speechSynthesis' in window) speechSynthesis.cancel();
+  if (window.currentQaAudio) { window.currentQaAudio.pause(); window.currentQaAudio.currentTime = 0; }
 }
 
 async function loadQaHistory() {
