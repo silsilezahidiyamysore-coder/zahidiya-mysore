@@ -173,43 +173,9 @@ a { color: #ffd700; }
     </div>
 
     <!-- ============ NOTES SAWAL-JAWAB (Admin + Mureed dono) ============ -->
-    <div id="notesScreen" class="hidden">
-      <div class="card">
-        <div class="row" style="justify-content:space-between;">
-          <h3 data-i18n="notes_qa_heading2">📖 Notes se Sawal-Jawab</h3>
-          <button class="secondary" style="width:auto;" onclick="showScreen('home')" data-i18n="back_btn">← Back</button>
-        </div>
-      </div>
-
-      <div class="card hidden" id="notesAdminUploadCard">
-        <h3 style="margin-top:0;" data-i18n="notes_pdf_upload_heading">📄 Notes PDF Upload Karo (Urdu)</h3>
-        <p style="font-size:12px; color:#ffd700;" data-i18n="notes_visible_note">Yeh sab mureedon ko dikhega jab wo sawal poochenge.</p>
-        <input type="text" id="notesDocTitle" data-i18n-placeholder="notes_name_ph" placeholder="Notes ka naam (jaise: Malfoozat Jild 1)">
-        <input type="file" id="notesDocFile" accept="application/pdf">
-        <button onclick="uploadNotesDoc()" id="notesUploadBtn" data-i18n="pdf_upload_karo_btn">PDF Upload Karo</button>
-        <p id="notesUploadStatus" style="font-size:12px; color:#ffd700;"></p>
-        <div id="notesDocsList" style="margin-top:10px;"></div>
-      </div>
-
-      <div class="card">
-        <h3 style="margin-top:0;" data-i18n="sawal_poochho_heading">❓ Sawal Poochho</h3>
-        <textarea id="qaQuestionInput" data-i18n-placeholder="question_ph2" placeholder="Apna sawal yahan likho..." style="min-height:70px;"></textarea>
-        <button onclick="askNotesQuestion()" id="qaAskBtn" data-i18n="ask_btn">Poochho</button>
-        <div id="qaAnswerBox" class="hidden" style="margin-top:12px; border:1px solid #2a6b2a; border-radius:8px; padding:12px;">
-          <p id="qaAnswerText" style="white-space:pre-wrap;"></p>
-          <button class="secondary" style="width:auto; margin-top:8px;" onclick="speakAnswer()" data-i18n="listen_btn2">🔊 Suno</button>
-          <button class="secondary" style="width:auto; margin-top:8px; margin-left:6px;" onclick="stopSpeaking()" data-i18n="stop_btn2">⏹️ Roko</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="row" style="justify-content:space-between;">
-          <h3 style="margin:0;" data-i18n="my_qa_heading2">📜 Mere Sawal-Jawab</h3>
-          <button class="secondary" style="width:auto;" onclick="downloadMyQaPdf()" data-i18n="pdf_download_btn">⬇️ PDF Download</button>
-        </div>
-        <div id="myQaHistoryList" style="margin-top:10px;"></div>
-      </div>
-    </div>
+    <!-- purani duplicate "notesScreen" yahan se hata di gayi (dead code thi, kabhi navigate nahi hoti thi,
+         lekin uske duplicate IDs (qaQuestionInput, qaAskBtn, qaAnswerBox, qaAnswerText) asli Q&A screen
+         (qaScreen) ke sawal-jawab ko todh rahe the) -->
 
     <!-- ============ ADMIN PANEL ============ -->
    <div id="adminScreen" class="hidden">
