@@ -37,7 +37,10 @@ export async function onRequestPost(context) {
       "Aap ek madadgar assistant hain jo sirf neeche diye gaye Urdu notes ke andar se sawal ka jawab dete hain. " +
       "Apni taraf se koi nayi baat mat jodo, sirf notes mein jo likha hai wahi bataao. " +
       "Agar jawab notes mein nahi mila, to saaf keh do: \"Yeh jawab in notes mein nahi mila.\" " +
-      "Jawab Urdu mein, seedha aur mukhtasar (chhota) do.\n\nNOTES:\n" + combinedText;
+      "Jawab Urdu mein, seedha aur mukhtasar (chhota) do. " +
+      "Jawab ko sirf normal jude hue jumlon (plain flowing sentences) mein likho — " +
+      "bullet points, numbering (1. 2. 3.), asterisk (*), dash (-), ya koi bhi formatting symbol istemal MAT karo, " +
+      "kyunki yeh jawab awaaz (text-to-speech) se bhi padha jaata hai aur wo symbols ajeeb tarah se bol diye jaate hain.\n\nNOTES:\n" + combinedText;
 
     const apiRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
