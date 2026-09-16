@@ -352,7 +352,14 @@ a { color: #ffd700; }
           <select id="customAlarmEndAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
         </div>
         <button onclick="saveCustomAlarm()" data-i18n="save_custom_alarm_btn">Save Custom Alarm</button>
-        <button class="secondary" id="testToneBtn2" onclick="toggleTestTone('testToneBtn2')" data-i18n="test_sound_btn">🔊 Test Sound (abhi suno)</button>
+
+        <label style="font-size:13px; margin-top:12px; display:block;" data-i18n="custom_tone_label">🔔 Custom Alarm Tone</label>
+        <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="custom_tone_note">Is custom alarm ke liye alag ringtone. Kuch upload nahi karoge to default Alarm Tone use hoga.</p>
+        <div id="customToneCurrentName" style="font-size:12px; color:#cde; margin-bottom:6px;"></div>
+        <input type="file" id="customToneFile" accept="audio/*">
+        <button onclick="uploadCustomTone()" data-i18n="tone_upload_btn">🎵 Tone Upload Karo</button>
+        <button class="secondary" id="testCustomToneBtn" onclick="testCustomTone()" data-i18n="tone_listen_btn">🔊 Is Tone Ko Suno</button>
+        <button class="secondary" style="background:#8b1a1a;" onclick="deleteCustomTone()" data-i18n="tone_delete_btn">🗑️ Tone Delete Karo (Default Beep par wapas)</button>
       </div>
 
       <div class="card">
@@ -588,6 +595,8 @@ const TRANSLATIONS = {
     live_tone_note: "This tone will play when a class goes Live. If nothing is uploaded, the default Alarm Tone will be used.",
     event_tone_label: "📅 Event Alarm Tone",
     event_tone_note: "This tone will play when an event's time arrives. If nothing is uploaded, the default Alarm Tone will be used.",
+    custom_tone_label: "🔔 Custom Alarm Tone",
+    custom_tone_note: "A separate ringtone for this custom alarm. If nothing is uploaded, the default Alarm Tone will be used.",
     tone_in_use_msg: "✅ An uploaded tone is being used", tone_default_msg: "Default \"ding-dong\" tone is being used",
   },
   ur: {
@@ -693,6 +702,8 @@ const TRANSLATIONS = {
     live_tone_note: "جب کوئی کلاس لائیو ہوتی ہے تو یہ ٹون بجے گی۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
     event_tone_label: "📅 ایونٹ الارم ٹون",
     event_tone_note: "جب کسی ایونٹ کا وقت آتا ہے تو یہ ٹون بجے گی۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
+    custom_tone_label: "🔔 کسٹم الارم ٹون",
+    custom_tone_note: "اس کسٹم الارم کے لیے الگ ٹون۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
     tone_in_use_msg: "✅ اپلوڈ کی ہوئی ٹون استعمال ہو رہی ہے", tone_default_msg: "ڈیفالٹ \"ڈنگ ڈونگ\" ٹون استعمال ہو رہی ہے",
   }
 };
@@ -1740,6 +1751,10 @@ async function loadAlarmSettings() {
       if (liveToneBox) {
         liveToneBox.innerText = alarmSettings.live_class_tone_url ? t('tone_in_use_msg') : t('tone_default_msg');
       }
+      const customToneBox = document.getElementById('customToneCurrentName');
+      if (customToneBox) {
+        customToneBox.innerText = alarmSettings.custom_alarm_tone_url ? t('tone_in_use_msg') : t('tone_default_msg');
+      }
 
       checkCustomAlarm();
 
@@ -2379,6 +2394,10 @@ function uploadLiveTone() { uploadToneGeneric('live_class_tone_url', 'liveToneFi
 function deleteLiveTone() { deleteToneGeneric('live_class_tone_url'); }
 function testLiveTone() { toggleTestToneGeneric('testLiveToneBtn', alarmSettings && alarmSettings.live_class_tone_url); }
 
+function uploadCustomTone() { uploadToneGeneric('custom_alarm_tone_url', 'customToneFile'); }
+function deleteCustomTone() { deleteToneGeneric('custom_alarm_tone_url'); }
+function testCustomTone() { toggleTestToneGeneric('testCustomToneBtn', alarmSettings && alarmSettings.custom_alarm_tone_url); }
+
 let alarmSilenced = {};
 
 // ---------- ADMIN PANEL ACCORDION (ek box khulega, baaki sab band ho jaayenge) ----------
@@ -2458,10 +2477,16 @@ function showAlarmBanner(text) {
   if (!bar) {
     bar = document.createElement('div');
     bar.id = 'alarmBanner';
-    bar.style.cssText = 'position:fixed; top:0; left:0; right:0; background:#ffd700; color:#0f3d2e; padding:14px; text-align:center; font-weight:bold; z-index:9999;';
+    // Ab yeh sirf chhota upar wala patti nahi, balki poori screen cover
+    // karne wala alarm hai — bilkul waisa hi jaisa app band hone par
+    // (full-screen notification/alarm) aata hai.
+    bar.style.cssText = 'position:fixed; inset:0; background:#0f3d2e; color:#ffd700; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; z-index:99999; padding:24px;';
     document.body.prepend(bar);
   }
-  bar.innerHTML = text + ' <button style="width:auto; margin-left:10px; padding:6px 14px;" onclick="silenceAlarm(currentAlarmKey)">' + t('silence_btn') + '</button>';
+  bar.innerHTML =
+    '<div style="font-size:52px; margin-bottom:20px;">🔔</div>' +
+    '<div style="font-size:24px; font-weight:bold; line-height:1.5; max-width:90%;">' + text + '</div>' +
+    '<button style="width:auto; margin-top:32px; padding:16px 40px; font-size:18px; background:#ffd700; color:#0f3d2e; border-radius:10px; font-weight:bold;" onclick="silenceAlarm(currentAlarmKey)">' + t('silence_btn') + '</button>';
   bar.classList.remove('hidden');
 }
 
@@ -2780,12 +2805,16 @@ function showEventBanner(ev) {
   if (!bar) {
     bar = document.createElement('div');
     bar.id = 'alarmBanner';
-    bar.style.cssText = 'position:fixed; top:0; left:0; right:0; background:#ffd700; color:#0f3d2e; padding:14px; text-align:center; font-weight:bold; z-index:9999;';
+    bar.style.cssText = 'position:fixed; inset:0; background:#0f3d2e; color:#ffd700; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; z-index:99999; padding:24px;';
     document.body.prepend(bar);
   }
-  bar.innerHTML = '📅 ' + bilingualTitle(ev.title) +
-    ' <button style="width:auto; margin-left:10px; padding:6px 14px;" onclick="openEventContent(' + ev.id + ')">' + t('view_btn') + '</button>' +
-    ' <button style="width:auto; margin-left:6px; padding:6px 14px;" onclick="silenceAlarm(currentAlarmKey)">' + t('silence_btn') + '</button>';
+  bar.innerHTML =
+    '<div style="font-size:52px; margin-bottom:20px;">📅</div>' +
+    '<div style="font-size:24px; font-weight:bold; line-height:1.5; max-width:90%;">' + bilingualTitle(ev.title) + '</div>' +
+    '<div style="margin-top:32px;">' +
+    '<button style="width:auto; padding:16px 32px; font-size:16px; background:#ffd700; color:#0f3d2e; border-radius:10px; font-weight:bold;" onclick="openEventContent(' + ev.id + ')">' + t('view_btn') + '</button>' +
+    ' <button style="width:auto; padding:16px 32px; font-size:16px; background:transparent; border:2px solid #ffd700; color:#ffd700; border-radius:10px; font-weight:bold; margin-left:10px;" onclick="silenceAlarm(currentAlarmKey)">' + t('silence_btn') + '</button>' +
+    '</div>';
   bar.classList.remove('hidden');
 }
 
