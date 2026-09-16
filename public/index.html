@@ -212,10 +212,6 @@ a { color: #ffd700; }
           <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('mardana')"><div class="num" id="mardanaCount">0</div><div data-i18n="stat_mardana">Mardana</div></div>
           <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('zanana')"><div class="num" id="zananaCount">0</div><div data-i18n="stat_zanana">Zanana</div></div>
         </div>
-        <div class="row" style="margin-top:8px;">
-          <div class="stat-box" style="background:#1f4d1f; cursor:pointer;" onclick="showMureedList('online')"><div class="num" id="onlineCount" style="color:#4ade80;">0</div><div data-i18n="stat_online">🟢 Online Abhi</div></div>
-          <div class="stat-box" style="cursor:pointer;" onclick="showMureedList('offline')"><div class="num" id="offlineCount">0</div><div data-i18n="stat_offline">⚪ Offline</div></div>
-        </div>
      <div id="mureedListArea" style="margin-top:12px;"></div>
       </div>
 
@@ -520,7 +516,7 @@ const TRANSLATIONS = {
     edit_btn: "✏️ Edit", delete_btn: "🗑️ Delete", no_notif_msg: "No notifications yet.",
     clear_btn: "🗑️ Clear",
     stat_total: "Total", stat_mardana: "Mardana", stat_zanana: "Zanana",
-    stat_online: "🟢 Online Now", stat_offline: "⚪ Offline", qa_history_label: "Your past Q&A:",
+    qa_history_label: "Your past Q&A:",
     view_btn: "👀 View", silence_btn: "Silence", no_events_msg: "No events yet.",
     weekly_suffix: " (weekly)", monthly_suffix: " (monthly)", once_suffix: " (one-time)",
     day_sun: "Sunday", day_mon: "Monday", day_tue: "Tuesday", day_wed: "Wednesday",
@@ -625,7 +621,7 @@ const TRANSLATIONS = {
     edit_btn: "✏️ ترمیم کریں", delete_btn: "🗑️ حذف کریں", no_notif_msg: "ابھی تک کوئی اطلاع نہیں۔",
     clear_btn: "🗑️ صاف کریں",
     stat_total: "کل تعداد", stat_mardana: "مردانہ", stat_zanana: "زنانہ",
-    stat_online: "🟢 ابھی آن لائن", stat_offline: "⚪ آف لائن", qa_history_label: "آپ کے پرانے سوال و جواب:",
+    qa_history_label: "آپ کے پرانے سوال و جواب:",
     view_btn: "👀 دیکھو", silence_btn: "خاموش کریں", no_events_msg: "ابھی کوئی ایونٹ نہیں ہے۔",
     weekly_suffix: " (ہر ہفتے)", monthly_suffix: " (ہر مہینے)", once_suffix: " (ایک بار)",
     day_sun: "اتوار", day_mon: "پیر", day_tue: "منگل", day_wed: "بدھ",
@@ -882,12 +878,10 @@ function loginSuccess() {
   loadQaHistory();
   showIslamicDate();
   startAutoRefresh();
-  sendHeartbeat();
   setupPushNotifications();
 }
 
 function logout() {
-  sendHeartbeat(true); // turant "offline" mark ho jaaye, wait na karna pade
   currentUser = null;
   localStorage.removeItem('zahidiya_mobile');
   localStorage.removeItem('zahidiya_password');
@@ -1073,25 +1067,8 @@ function formatDate(dt) {
   if (isNaN(d)) return dt;
   return d.toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
 }
-function isMureedOnline(lastActive) {
-  if (!lastActive) return false;
-  const last = new Date(lastActive.replace(' ', 'T') + 'Z');
-  if (isNaN(last)) return false;
-  return (Date.now() - last.getTime()) / 1000 < 15;
-}
-function getOnlineStatusLabel(lastActive) {
-  if (!lastActive) return '⚪ Kabhi login nahi kiya';
-  const last = new Date(lastActive.replace(' ', 'T') + 'Z');
-  if (isNaN(last)) return '';
-  const diffSec = (Date.now() - last.getTime()) / 1000;
-  if (diffSec < 15) return '🟢 Online abhi';
-  const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return `⚪ ${diffMin} minute pehle active tha`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `⚪ ${diffHr} ghante pehle active tha`;
-  const diffDay = Math.floor(diffHr / 24);
-  return `⚪ ${diffDay} din pehle active tha`;
-}
+// Online/Offline (Mureed Stats) feature hata diya gaya hai (user ki request par) —
+// browser lock hone par yeh anyway sahi se kaam nahi karta tha.
 function filterClasses() {
   const q = document.getElementById('searchBox').value.toLowerCase();
   renderClasses(allClasses.filter(c => c.title.toLowerCase().includes(q)));
@@ -1314,11 +1291,6 @@ async function loadAdminData() {
     allMureedsData = data.all || [];
     if (currentMureedListType) showMureedList(currentMureedListType);
 
-    let onlineN = 0;
-    allMureedsData.forEach(m => { if (isMureedOnline(m.last_active)) onlineN++; });
-    document.getElementById('onlineCount').innerText = onlineN;
-    document.getElementById('offlineCount').innerText = Math.max(allMureedsData.length - onlineN, 0);
-
     const pn = document.getElementById('myProfileName');
     const pm = document.getElementById('myProfileMobile');
     if (pn && !pn.value) pn.value = currentUser.name;
@@ -1421,8 +1393,6 @@ function showMureedList(type) {
   let title = 'Sabhi Mureed';
   if (type === 'mardana') { list = allMureedsData.filter(m => m.group_type === 'mardana'); title = 'Mardana Mureed'; }
   if (type === 'zanana') { list = allMureedsData.filter(m => m.group_type === 'zanana'); title = 'Zanana Mureed'; }
-  if (type === 'online') { list = allMureedsData.filter(m => isMureedOnline(m.last_active)); title = '🟢 Online Mureed'; }
-  if (type === 'offline') { list = allMureedsData.filter(m => !isMureedOnline(m.last_active)); title = '⚪ Offline Mureed'; }
   if (!list.length) { area.innerHTML = `<p style="font-size:13px;">Koi ${title} nahi mila.</p>`; return; }
   area.innerHTML = `<h3 style="font-size:14px; margin-bottom:8px;">${title} (${list.length})</h3>` +
     list.map(m => `
@@ -1432,7 +1402,6 @@ function showMureedList(type) {
           <span class="badge">${m.has_registered ? (m.is_blocked ? 'blocked' : (m.status === 'approved' ? 'Active' : m.status)) : 'Invite Kiya (Register Nahi Kiya)'}</span>
         </div>
         <div style="font-size:13px; margin-top:4px;">📱 ${escapeHtml(m.mobile)} — ${m.group_type}</div>
-        <div style="font-size:12px; margin-top:4px;">${getOnlineStatusLabel(m.last_active)}</div>
         <div class="row" style="margin-top:6px;">
           <button class="secondary" style="width:auto;" onclick="editMureed(${m.id})">✏️ Edit</button>
           <button class="secondary" style="width:auto;" onclick="toggleBlockMureed(${m.id}, ${m.is_blocked ? 1 : 0})">${m.is_blocked ? '✅ Unblock' : '🚫 Block'}</button>
@@ -2950,11 +2919,8 @@ function startAutoRefresh() {
 
   // Online/Offline status turant (fast) update ho, isliye alag chhota timer
   fastRefreshTimer = setInterval(() => {
-    if (currentUser) {
-      sendHeartbeat();
-      if (currentUser.role === 'admin') { loadAdminData(); }
-    }
-  }, 5000); // har 5 second
+    if (currentUser && currentUser.role === 'admin') { loadAdminData(); }
+  }, 5000); // har 5 second (admin data refresh)
 
   autoRefreshTimer = setInterval(() => {
     if (currentUser) {
@@ -2970,13 +2936,6 @@ function startAutoRefresh() {
   slowRefreshTimer = setInterval(() => {
     if (currentUser) { loadPrayerTimes(); loadEvents(); }
   }, 300000);
-}
-function sendHeartbeat(goingOffline) {
-  if (!currentUser) return;
-  fetch(API + '/api/heartbeat', {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ mobile: currentUser.mobile, offline: !!goingOffline })
-  }).catch(() => {});
 }
 function stopAutoRefresh() {
   if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
