@@ -37,6 +37,7 @@ export async function onRequestPost(context) {
     const alarm_tone_url = body.alarm_tone_url !== undefined ? body.alarm_tone_url : (existing.alarm_tone_url || '');
     const event_tone_url = body.event_tone_url !== undefined ? body.event_tone_url : (existing.event_tone_url || '');
     const live_class_tone_url = body.live_class_tone_url !== undefined ? body.live_class_tone_url : (existing.live_class_tone_url || '');
+    const custom_alarm_tone_url = body.custom_alarm_tone_url !== undefined ? body.custom_alarm_tone_url : (existing.custom_alarm_tone_url || '');
 
     await db
       .prepare(`
@@ -56,6 +57,7 @@ export async function onRequestPost(context) {
           alarm_tone_url = ?,
           event_tone_url = ?,
           live_class_tone_url = ?,
+          custom_alarm_tone_url = ?,
           updated_at = datetime('now')
         WHERE id = 1
       `)
@@ -74,7 +76,8 @@ export async function onRequestPost(context) {
         khanqah_map_link,
         alarm_tone_url,
         event_tone_url,
-        live_class_tone_url
+        live_class_tone_url,
+        custom_alarm_tone_url
       )
       .run();
 
