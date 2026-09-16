@@ -189,6 +189,10 @@ export async function onRequestGet(context) {
     if (liveToneUrl && liveToneUrl.startsWith('/')) {
       liveToneUrl = 'https://zahidiya-mysore.pages.dev' + liveToneUrl;
     }
+    let customToneUrl = (alarmSettings && alarmSettings.custom_alarm_tone_url) || '';
+    if (customToneUrl && customToneUrl.startsWith('/')) {
+      customToneUrl = 'https://zahidiya-mysore.pages.dev' + customToneUrl;
+    }
 
     return Response.json({
       success: true,
@@ -197,6 +201,7 @@ export async function onRequestGet(context) {
       tone_url: toneUrl,
       event_tone_url: eventToneUrl,
       live_class_tone_url: liveToneUrl,
+      custom_alarm_tone_url: customToneUrl,
       start_alarm_duration_seconds: (alarmSettings && alarmSettings.start_alarm_duration_seconds) || 60
     });
   } catch (err) {
