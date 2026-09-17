@@ -112,21 +112,25 @@ export async function onRequestGet(context) {
           if (tMin === null) continue;
 
           let dt;
+          // NOTE: yahan "asli" end time bhejte hain (jab agli namaz shuru
+          // hoti hai), reminder-se-pehle-wala waqt nahi — warna app ki list
+          // mein "End" ghalat (10 min jaldi) dikhta tha. Reminder push kab
+          // bhejna hai, wo check-and-notify.js mein alag se (end_reminder_
+          // minutes_before ke hisaab se) decide hota hai; yeh data sirf
+          // app mein "End" time SAHI dikhane ke liye hai.
           if (i + 1 < names.length) {
             const nextTMin = toMinutes(times[i + 1]);
             if (nextTMin === null) continue;
-            const reminderMin = nextTMin - (alarmSettings.end_reminder_minutes_before || 0);
-            const hh = String(Math.floor(reminderMin / 60)).padStart(2, '0');
-            const mm = String(((reminderMin % 60) + 60) % 60).padStart(2, '0');
+            const hh = String(Math.floor(nextTMin / 60)).padStart(2, '0');
+            const mm = String(((nextTMin % 60) + 60) % 60).padStart(2, '0');
             dt = buildISTDateTime(todayISO, hh + ':' + mm);
           } else {
-            // Isha — agle din ke asli Fajr time se reminder nikalo
+            // Isha — agle din ke asli Fajr time se
             if (!tomorrowPrayerTimes) continue;
             const nextFajrMin = toMinutes(tomorrowPrayerTimes.fajr);
             if (nextFajrMin === null) continue;
-            const reminderMin = ((nextFajrMin - (alarmSettings.end_reminder_minutes_before || 0)) % 1440 + 1440) % 1440;
-            const hh = String(Math.floor(reminderMin / 60)).padStart(2, '0');
-            const mm = String(reminderMin % 60).padStart(2, '0');
+            const hh = String(Math.floor(nextFajrMin / 60)).padStart(2, '0');
+            const mm = String(nextFajrMin % 60).padStart(2, '0');
             dt = buildISTDateTime(tomorrowISO, hh + ':' + mm);
           }
 
