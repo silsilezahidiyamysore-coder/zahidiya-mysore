@@ -1106,7 +1106,8 @@ function speakPdf(url) {
 // Backend se aane wale notification messages fixed pattern mein hote hain
 // (jaise 'Nayi class upload hui: "Title"'). Urdu mode mein yahin translate karte hain.
 // Custom Event/Alarm title agar "English | اردو" format mein likha ho,
-// to sahi language wala hissa dikhao.
+// to jo bhi language abhi select hai (button dabaya hai), usi ke hisaab
+// se sahi hissa dikhao.
 function bilingualTitle(raw) {
   if (!raw) return raw;
   const parts = raw.split('|');
