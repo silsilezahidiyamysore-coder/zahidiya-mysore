@@ -12,7 +12,7 @@ export async function onRequestGet(context) {
 
     const { results } = await db
       .prepare(
-        `SELECT id, title, type, file_url, group_type, uploaded_at, is_live
+        `SELECT id, title, type, file_url, group_type, uploaded_at, is_live, translated_text
          FROM classes
          WHERE group_type = ? OR group_type = 'both'
          ORDER BY is_live DESC, uploaded_at DESC`
@@ -36,6 +36,7 @@ export async function onRequestPost(context) {
     const file_url = (body.file_url || '').trim();
     const group_type = body.group_type || 'both';
     const is_live = body.is_live ? 1 : 0;
+    const translated_text = (body.translated_text || '').trim();
 
     if (!title) {
       return Response.json({ error: 'Title zaroori hai' }, { status: 400 });
@@ -49,10 +50,10 @@ export async function onRequestPost(context) {
 
     const insertResult = await db
       .prepare(
-        `INSERT INTO classes (title, type, file_url, group_type, is_live)
-         VALUES (?, ?, ?, ?, ?)`
+        `INSERT INTO classes (title, type, file_url, group_type, is_live, translated_text)
+         VALUES (?, ?, ?, ?, ?, ?)`
       )
-      .bind(title, type, file_url, group_type, is_live)
+      .bind(title, type, file_url, group_type, is_live, translated_text)
       .run();
 
     const newClassId = insertResult.meta.last_row_id;
