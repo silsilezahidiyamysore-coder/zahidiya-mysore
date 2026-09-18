@@ -340,6 +340,7 @@ a { color: #ffd700; }
         </div>
         <input type="text" id="customAlarmTitleInput" data-i18n-placeholder="custom_alarm_title_ph" placeholder="Alarm ka naam (jaise: Ijtema Time)">
         <input type="text" id="customAlarmTitleInputUr" data-i18n-placeholder="custom_alarm_title_ur_ph" placeholder="اردو نام (اختیاری)" dir="rtl" style="font-family:'Noto Nastaliq Urdu','Segoe UI',sans-serif;">
+        <button type="button" class="secondary" style="width:auto; margin:6px 0;" onclick="autoTranslateField('customAlarmTitleInput','customAlarmTitleInputUr', this)" data-i18n="auto_urdu_btn">🌐 Auto Urdu Banao</button>
         <p style="font-size:11px; color:#cde; margin:0 0 8px;" data-i18n="bilingual_name_note">Dono bhar do to English/Urdu dono mein sahi naam dikhega. Sirf ek bhi chalega.</p>
         <label style="font-size:13px;" data-i18n="label_start_time">Start Time</label>
         <div class="row" style="gap:6px;">
@@ -370,6 +371,7 @@ a { color: #ffd700; }
         <input type="hidden" id="editingEventId" value="">
         <input type="text" id="eventTitle" data-i18n-placeholder="event_title_ph" placeholder="Event ka naam (jaise: Zanana Class)">
         <input type="text" id="eventTitleUr" data-i18n-placeholder="event_title_ur_ph" placeholder="اردو نام (اختیاری)" dir="rtl" style="font-family:'Noto Nastaliq Urdu','Segoe UI',sans-serif;">
+        <button type="button" class="secondary" style="width:auto; margin:6px 0;" onclick="autoTranslateField('eventTitle','eventTitleUr', this)" data-i18n="auto_urdu_btn">🌐 Auto Urdu Banao</button>
         <p style="font-size:11px; color:#cde; margin:0 0 8px;" data-i18n="bilingual_name_note">Dono bhar do to English/Urdu dono mein sahi naam dikhega. Sirf ek bhi chalega.</p>
 
         <select id="eventRepeatType" onchange="toggleEventScheduleFields()">
@@ -603,6 +605,8 @@ const TRANSLATIONS = {
     custom_tone_note: "A separate ringtone for this custom alarm. If nothing is uploaded, the default Alarm Tone will be used.",
     custom_alarm_title_ur_ph: "Urdu name (optional)", event_title_ur_ph: "Urdu name (optional)",
     bilingual_name_note: "Fill both to show the correct name in English and Urdu. Just one also works.",
+    auto_translate_btn: "🔄 Auto-Translate to Urdu", auto_urdu_btn: "🌐 Auto Make Urdu",
+    urdu_suno_btn: "🌐 Listen in Urdu",
     tone_in_use_msg: "✅ An uploaded tone is being used", tone_default_msg: "Default \"ding-dong\" tone is being used",
   },
   ur: {
@@ -712,6 +716,8 @@ const TRANSLATIONS = {
     custom_tone_note: "اس کسٹم الارم کے لیے الگ ٹون۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
     custom_alarm_title_ur_ph: "اردو نام (اختیاری)", event_title_ur_ph: "اردو نام (اختیاری)",
     bilingual_name_note: "دونوں بھر دیں تو انگریزی/اردو دونوں میں صحیح نام دکھے گا۔ صرف ایک بھی چلے گا۔",
+    auto_translate_btn: "🔄 اردو میں خودکار ترجمہ کریں", auto_urdu_btn: "🌐 اردو خودکار بنائیں",
+    urdu_suno_btn: "🌐 اردو میں سنیں",
     tone_in_use_msg: "✅ اپلوڈ کی ہوئی ٹون استعمال ہو رہی ہے", tone_default_msg: "ڈیفالٹ \"ڈنگ ڈونگ\" ٹون استعمال ہو رہی ہے",
   }
 };
@@ -744,6 +750,7 @@ function toggleLang() {
   if (typeof loadNotifications === 'function' && currentUser) loadNotifications();
   if (typeof loadQaHistory === 'function' && currentUser) loadQaHistory();
   if (typeof renderEventsAdminList === 'function' && window.eventsList) renderEventsAdminList();
+  if (typeof loadAlarmSettings === 'function' && currentUser && currentUser.role === 'admin') loadAlarmSettings();
   if (typeof currentUser !== 'undefined' && currentUser && currentUser.name) {
     const wu = document.getElementById('welcomeUser');
     if (wu) wu.innerText = t('welcome_prefix') + currentUser.name;
@@ -1002,6 +1009,7 @@ function renderClasses(list) {
         ${c.type === 'audio' ? `<audio controls style="width:100%;" src="${safeUrl}"></audio>` : ''}
         ${c.type === 'video' ? `<video controls style="width:100%;" src="${safeUrl}"></video>` : ''}
         ${c.type === 'pdf' ? `<a href="${safeUrl}" target="_blank">${t('open_pdf_btn')}</a> <button style="width:auto; margin-left:8px;" onclick="speakPdf('${safeUrl}')">${t('listen_btn')}</button>` : ''}
+        ${c.type === 'pdf' && c.translated_text ? `<button style="width:auto; margin-left:8px; margin-top:8px; background:#2a6b2a; color:#fff;" onclick="speakTranslatedPdf(${c.id})">${t('urdu_suno_btn')}</button>` : ''}
         ${c.type === 'link' ? `<a href="${safeUrl}" target="_blank" style="display:inline-block; background:#ffcc00; color:#1a3a1a; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">${t('open_link_btn')}</a>` : ''}
         ${['audio','video','pdf'].includes(c.type) ? `<a href="${safeUrl}&download=1" style="display:inline-block; margin-left:8px; margin-top:8px; background:#2a6b2a; color:#fff; padding:8px 14px; border-radius:6px; font-weight:bold; text-decoration:none;">${t('download_btn')}</a>` : ''}
         ${currentUser.role === 'admin' && c.type === 'link' ? `<button class="secondary" style="width:auto; margin-left:8px; margin-top:8px;" onclick="toggleLive(${c.id}, ${c.is_live ? 0 : 1})">${c.is_live ? t('live_band_karo_btn') : t('live_shuru_karo_btn')}</button>` : ''}
@@ -1109,6 +1117,30 @@ function speakPdf(url) {
   const utter = new SpeechSynthesisUtterance("Opening PDF for reading. Please wait while it loads.");
   speechSynthesis.speak(utter);
   window.open(url, '_blank');
+}
+
+// PDF class ka jo Urdu tarjuma (auto-translate se) bana hua hai, usse Google
+// TTS (achhi, saaf awaaz) se sunata hai — Sawal-Jawab wale "Suno" jaisa hi.
+async function speakTranslatedPdf(classId) {
+  const c = findClassById(classId);
+  if (!c || !c.translated_text) { alert('Is class ka Urdu tarjuma abhi maujood nahi hai'); return; }
+  try {
+    const res = await fetch(API + '/api/tts', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: c.translated_text.slice(0, 4500) })
+    });
+    const data = await res.json();
+    if (data.success && data.audio_base64) {
+      if (window.currentQaAudio) window.currentQaAudio.pause();
+      const audio = new Audio('data:audio/mp3;base64,' + data.audio_base64);
+      window.currentQaAudio = audio;
+      audio.play();
+    } else {
+      alert('Awaaz banane mein dikkat hui, dobara try karo');
+    }
+  } catch (e) {
+    alert('Internet check karo aur dobara try karo');
+  }
 }
 
 // Backend se aane wale notification messages fixed pattern mein hote hain
@@ -1624,6 +1656,7 @@ async function uploadClass() {
   let file_url = document.getElementById('classUrl').value.trim();
   const fileInput = document.getElementById('classFile');
   const is_live = type === 'link' && document.getElementById('classIsLive').checked;
+  let translated_text; // sirf PDF ke liye set hoga
 
   if (!title) { alert("Title bharo"); return; }
 
@@ -1638,6 +1671,29 @@ async function uploadClass() {
       const uploadData = await uploadRes.json();
       if (!uploadData.url) { alert(uploadData.error || "File upload fail ho gaya"); return; }
       file_url = uploadData.url;
+
+      // PDF hai to uska text nikal ke Urdu mein auto-translate kar dete hain,
+      // taaki mureeds "🌐 Urdu mein Suno" se sun sakein — chahe original PDF
+      // kisi bhi language mein ho.
+      if (type === 'pdf') {
+        try {
+          const uploadBtn = document.getElementById('uploadClassBtn');
+          if (uploadBtn) { uploadBtn.dataset.origText = uploadBtn.innerText; uploadBtn.innerText = '⏳ PDF translate ho rahi hai...'; }
+          const pdfText = await extractPdfText(file);
+          if (pdfText && pdfText.trim()) {
+            const tRes = await fetch(API + '/api/translate-text', {
+              method: 'POST', headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({ text: pdfText })
+            });
+            const tData = await tRes.json();
+            if (tData.success && tData.translated) translated_text = tData.translated;
+          }
+          if (uploadBtn) uploadBtn.innerText = uploadBtn.dataset.origText;
+        } catch (e) {
+          console.error('PDF auto-translate fail:', e);
+          // fail ho jaaye to bhi class upload rukni nahi chahiye, translated_text bas khaali rahega
+        }
+      }
     } else if (editingId) {
       const existing = findClassById(Number(editingId));
       file_url = existing ? existing.file_url : '';
@@ -1649,8 +1705,8 @@ async function uploadClass() {
 
   const endpoint = editingId ? '/api/update-class' : '/api/classes';
   const payload = editingId
-    ? { id: Number(editingId), title, type, file_url, group_type, is_live }
-    : { title, type, file_url, group_type, is_live };
+    ? { id: Number(editingId), title, type, file_url, group_type, is_live, ...(translated_text !== undefined ? {translated_text} : {}) }
+    : { title, type, file_url, group_type, is_live, ...(translated_text !== undefined ? {translated_text} : {}) };
 
   const res = await fetch(API + endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
   const data = await res.json();
@@ -1842,6 +1898,30 @@ async function saveHijriAdjustment() {
       alert(data.message || 'Kuch galat ho gaya');
     }
   } catch (e) { alert('Kuch galat ho gaya'); }
+}
+
+// English box ka text uthake AI se Urdu tarjuma karwata hai aur doosre box mein bhar deta hai.
+async function autoTranslateField(enFieldId, urFieldId, btn) {
+  const enVal = document.getElementById(enFieldId).value.trim();
+  if (!enVal) { alert('Pehle English naam likho'); return; }
+  const origText = btn ? btn.innerText : '';
+  if (btn) { btn.disabled = true; btn.innerText = '⏳...'; }
+  try {
+    const res = await fetch(API + '/api/translate-text', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ text: enVal })
+    });
+    const data = await res.json();
+    if (data.success && data.translated) {
+      document.getElementById(urFieldId).value = data.translated;
+    } else {
+      alert('Tarjuma nahi ho paya: ' + (data.message || 'kuch galat ho gaya'));
+    }
+  } catch (e) {
+    alert('Tarjuma nahi ho paya, internet check karo');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerText = origText; }
+  }
 }
 
 // English aur Urdu wale alag box ka content jodkar "English | Urdu" format
