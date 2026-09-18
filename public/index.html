@@ -339,6 +339,8 @@ a { color: #ffd700; }
           <span style="font-size:13px;" data-i18n="on_off_label">On/Off</span>
         </div>
         <input type="text" id="customAlarmTitleInput" data-i18n-placeholder="custom_alarm_title_ph" placeholder="Alarm ka naam (jaise: Ijtema Time)">
+        <input type="text" id="customAlarmTitleInputUr" data-i18n-placeholder="custom_alarm_title_ur_ph" placeholder="اردو نام (اختیاری)" dir="rtl" style="font-family:'Noto Nastaliq Urdu','Segoe UI',sans-serif;">
+        <p style="font-size:11px; color:#cde; margin:0 0 8px;" data-i18n="bilingual_name_note">Dono bhar do to English/Urdu dono mein sahi naam dikhega. Sirf ek bhi chalega.</p>
         <label style="font-size:13px;" data-i18n="label_start_time">Start Time</label>
         <div class="row" style="gap:6px;">
           <select id="customAlarmStartHour" style="margin:0;"></select>
@@ -367,6 +369,8 @@ a { color: #ffd700; }
         <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="event_note">Jaise: Zanana ki class har Saturday, Mardana ki class har Sunday — content (text/image/PDF/audio) ke saath.</p>
         <input type="hidden" id="editingEventId" value="">
         <input type="text" id="eventTitle" data-i18n-placeholder="event_title_ph" placeholder="Event ka naam (jaise: Zanana Class)">
+        <input type="text" id="eventTitleUr" data-i18n-placeholder="event_title_ur_ph" placeholder="اردو نام (اختیاری)" dir="rtl" style="font-family:'Noto Nastaliq Urdu','Segoe UI',sans-serif;">
+        <p style="font-size:11px; color:#cde; margin:0 0 8px;" data-i18n="bilingual_name_note">Dono bhar do to English/Urdu dono mein sahi naam dikhega. Sirf ek bhi chalega.</p>
 
         <select id="eventRepeatType" onchange="toggleEventScheduleFields()">
           <option value="weekly" data-i18n="opt_weekly">Har Hafte (Weekly)</option>
@@ -597,6 +601,8 @@ const TRANSLATIONS = {
     event_tone_note: "This tone will play when an event's time arrives. If nothing is uploaded, the default Alarm Tone will be used.",
     custom_tone_label: "🔔 Custom Alarm Tone",
     custom_tone_note: "A separate ringtone for this custom alarm. If nothing is uploaded, the default Alarm Tone will be used.",
+    custom_alarm_title_ur_ph: "Urdu name (optional)", event_title_ur_ph: "Urdu name (optional)",
+    bilingual_name_note: "Fill both to show the correct name in English and Urdu. Just one also works.",
     tone_in_use_msg: "✅ An uploaded tone is being used", tone_default_msg: "Default \"ding-dong\" tone is being used",
   },
   ur: {
@@ -704,6 +710,8 @@ const TRANSLATIONS = {
     event_tone_note: "جب کسی ایونٹ کا وقت آتا ہے تو یہ ٹون بجے گی۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
     custom_tone_label: "🔔 کسٹم الارم ٹون",
     custom_tone_note: "اس کسٹم الارم کے لیے الگ ٹون۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
+    custom_alarm_title_ur_ph: "اردو نام (اختیاری)", event_title_ur_ph: "اردو نام (اختیاری)",
+    bilingual_name_note: "دونوں بھر دیں تو انگریزی/اردو دونوں میں صحیح نام دکھے گا۔ صرف ایک بھی چلے گا۔",
     tone_in_use_msg: "✅ اپلوڈ کی ہوئی ٹون استعمال ہو رہی ہے", tone_default_msg: "ڈیفالٹ \"ڈنگ ڈونگ\" ٹون استعمال ہو رہی ہے",
   }
 };
@@ -1106,13 +1114,13 @@ function speakPdf(url) {
 // Backend se aane wale notification messages fixed pattern mein hote hain
 // (jaise 'Nayi class upload hui: "Title"'). Urdu mode mein yahin translate karte hain.
 // Custom Event/Alarm title agar "English | اردو" format mein likha ho,
-// to jo bhi language abhi select hai (button dabaya hai), usi ke hisaab
-// se sahi hissa dikhao.
+// to dono hisse hamesha SAATH dikhao (simple, kisi language-toggle par
+// depend nahi karta, isliye hamesha reliably kaam karega).
 function bilingualTitle(raw) {
   if (!raw) return raw;
   const parts = raw.split('|');
   if (parts.length >= 2) {
-    return currentLang === 'ur' ? parts[1].trim() : parts[0].trim();
+    return parts[0].trim() + ' / ' + parts[1].trim();
   }
   return raw.trim();
 }
@@ -1726,8 +1734,11 @@ async function loadAlarmSettings() {
 
       const ce = document.getElementById('customAlarmEnabled');
       const ct = document.getElementById('customAlarmTitleInput');
+      const ctUr = document.getElementById('customAlarmTitleInputUr');
       if (ce) ce.checked = !!alarmSettings.custom_alarm_enabled;
-      if (ct) ct.value = alarmSettings.custom_alarm_title || '';
+      const ctSplit = splitBilingualName(alarmSettings.custom_alarm_title || '');
+      if (ct) ct.value = ctSplit.en;
+      if (ctUr) ctUr.value = ctSplit.ur;
       set12HourFields('customAlarmStart', alarmSettings.custom_alarm_start || '09:00');
       set12HourFields('customAlarmEnd', alarmSettings.custom_alarm_end || '10:00');
 
@@ -1833,10 +1844,29 @@ async function saveHijriAdjustment() {
   } catch (e) { alert('Kuch galat ho gaya'); }
 }
 
+// English aur Urdu wale alag box ka content jodkar "English | Urdu" format
+// bana deta hai (taaki admin ko khud '|' likhne ki zaroorat na pade).
+function combineBilingualName(enVal, urVal) {
+  enVal = (enVal || '').trim();
+  urVal = (urVal || '').trim();
+  if (enVal && urVal) return enVal + ' | ' + urVal;
+  return enVal || urVal;
+}
+// "English | Urdu" format wapas dono alag box mein bhar deta hai (edit karte waqt).
+function splitBilingualName(raw) {
+  if (!raw) return { en: '', ur: '' };
+  const parts = raw.split('|');
+  if (parts.length >= 2) return { en: parts[0].trim(), ur: parts[1].trim() };
+  return { en: raw.trim(), ur: '' };
+}
+
 async function saveCustomAlarm() {
   const body = {
     custom_alarm_enabled: document.getElementById('customAlarmEnabled').checked,
-    custom_alarm_title: document.getElementById('customAlarmTitleInput').value.trim(),
+    custom_alarm_title: combineBilingualName(
+      document.getElementById('customAlarmTitleInput').value,
+      document.getElementById('customAlarmTitleInputUr').value
+    ),
     custom_alarm_start: get24HourFromFields('customAlarmStart'),
     custom_alarm_end: get24HourFromFields('customAlarmEnd')
   };
@@ -1848,7 +1878,7 @@ async function saveCustomAlarm() {
     const data = await res.json();
     alert(data.message || 'Custom alarm saved');
     loadAlarmSettings();
-  } catch (e) { alert('Error saving custom alarm'); }
+  } catch (e) { alert('Custom alarm save karne mein error aayi'); }
 }
 
 function checkCustomAlarm() {
@@ -2168,7 +2198,7 @@ async function saveAlarmSettings() {
     const data = await res.json();
     alert(data.message || 'Settings saved');
     loadAlarmSettings();
-  } catch (e) { alert('Error saving settings'); }
+  } catch (e) { alert('Settings save karne mein error aayi'); }
 }
 
 let sharedAudioCtx = null;
@@ -2629,7 +2659,10 @@ async function uploadFileGetUrl(file) {
 
 async function saveEvent() {
   const editingId = document.getElementById('editingEventId').value;
-  const title = document.getElementById('eventTitle').value.trim();
+  const title = combineBilingualName(
+    document.getElementById('eventTitle').value,
+    document.getElementById('eventTitleUr').value
+  );
   const repeat_type = document.getElementById('eventRepeatType').value;
   const group_type = document.getElementById('eventGroup').value;
   const content_type = document.getElementById('eventContentType').value;
@@ -2689,7 +2722,7 @@ async function saveEvent() {
     } else {
       alert(data.message || 'Kuch gadbad ho gayi');
     }
-  } catch (e) { alert('Error saving event'); }
+  } catch (e) { alert('Event save karne mein error aayi'); }
 }
 
 async function loadEvents() {
@@ -2729,7 +2762,9 @@ function editEvent(id) {
   const ev = window.eventsList.find(e => e.id == id);
   if (!ev) return;
   document.getElementById('editingEventId').value = ev.id;
-  document.getElementById('eventTitle').value = ev.title;
+  const evSplit = splitBilingualName(ev.title || '');
+  document.getElementById('eventTitle').value = evSplit.en;
+  document.getElementById('eventTitleUr').value = evSplit.ur;
   document.getElementById('eventRepeatType').value = ev.repeat_type;
   toggleEventScheduleFields();
   if (ev.repeat_type === 'weekly') document.getElementById('eventDayOfWeek').value = ev.day_of_week;
@@ -2749,6 +2784,7 @@ function editEvent(id) {
 function cancelEditEvent() {
   document.getElementById('editingEventId').value = '';
   document.getElementById('eventTitle').value = '';
+  document.getElementById('eventTitleUr').value = '';
   document.getElementById('eventTextContent').value = '';
   document.getElementById('eventFileInput').value = '';
   document.getElementById('eventAudioFileInput').value = '';
@@ -2764,7 +2800,7 @@ function deleteEvent(id) {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id })
   }).then(r => r.json()).then(data => {
     if (data.success) loadEvents(); else alert(data.message || 'Delete fail ho gaya');
-  }).catch(() => alert('Error deleting event'));
+  }).catch(() => alert('Event delete karne mein error aayi'));
 }
 
 function checkEvents() {
@@ -3062,7 +3098,7 @@ function deleteQaNote(id) {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id })
   }).then(r => r.json()).then(data => {
     if (data.success) loadQaNotes(); else alert(data.message || 'Delete fail ho gaya');
-  }).catch(() => alert('Error deleting notes'));
+  }).catch(() => alert('Notes delete karne mein error aayi'));
 }
 
 async function askQaQuestion() {
