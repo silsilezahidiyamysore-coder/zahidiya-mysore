@@ -14,6 +14,7 @@ export async function onRequestPost(context) {
     const type = body.type;
     const file_url = (body.file_url || '').trim();
     const is_live = body.is_live ? 1 : 0;
+    const translated_text = body.translated_text !== undefined ? body.translated_text.trim() : undefined;
     if (!id || !title) {
       return Response.json({ error: 'id aur title zaroori hai' }, { status: 400 });
     }
@@ -26,10 +27,17 @@ export async function onRequestPost(context) {
     if (!file_url) {
       return Response.json({ error: 'File URL zaroori hai' }, { status: 400 });
     }
-    await db
-      .prepare('UPDATE classes SET title = ?, type = ?, file_url = ?, group_type = ?, is_live = ? WHERE id = ?')
-      .bind(title, type, file_url, group_type, is_live, id)
-      .run();
+    if (translated_text !== undefined) {
+      await db
+        .prepare('UPDATE classes SET title = ?, type = ?, file_url = ?, group_type = ?, is_live = ?, translated_text = ? WHERE id = ?')
+        .bind(title, type, file_url, group_type, is_live, translated_text, id)
+        .run();
+    } else {
+      await db
+        .prepare('UPDATE classes SET title = ?, type = ?, file_url = ?, group_type = ?, is_live = ? WHERE id = ?')
+        .bind(title, type, file_url, group_type, is_live, id)
+        .run();
+    }
     // Notification bhi banayen taake sab approved mureeds ko pata chale class update hui hai
     const notifText = is_live
       ? `🔴 LIVE shuru hui: "${title}"`
