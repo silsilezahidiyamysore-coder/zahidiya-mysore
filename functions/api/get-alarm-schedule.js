@@ -172,11 +172,22 @@ export async function onRequestGet(context) {
     if (alarmSettings && Number(alarmSettings.custom_alarm_enabled) !== 0 && alarmSettings.custom_alarm_start) {
       const dt = buildISTDateTime(todayISO, alarmSettings.custom_alarm_start);
       if (dt) {
+        // Custom alarm ka text/file bhi bhejte hain, taaki alarm app ke andar hi khul jaaye
+        let caFileUrl = alarmSettings.custom_alarm_file_url || '';
+        if (caFileUrl.startsWith('/')) {
+          caFileUrl = 'https://zahidiya-mysore.pages.dev' + caFileUrl;
+        }
+        const caEnd = alarmSettings.custom_alarm_end ? buildISTDateTime(todayISO, alarmSettings.custom_alarm_end) : null;
         schedule.push({
           id: 'customalarm-' + todayISO,
           type: 'custom_alarm',
           title: alarmSettings.custom_alarm_title || 'Alarm',
-          dateTime: dt
+          dateTime: dt,
+          // End time tak app ki list mein rahe (file dekhne ke liye)
+          ...(caEnd && caEnd > dt ? { realEndDateTime: caEnd } : {}),
+          contentType: alarmSettings.custom_alarm_content_type || 'none',
+          contentText: alarmSettings.custom_alarm_content_text || '',
+          fileUrl: caFileUrl
         });
       }
     }
@@ -194,11 +205,22 @@ export async function onRequestGet(context) {
 
       const dt = buildISTDateTime(todayISO, ev.start_time);
       if (dt) {
+        // Event ka text/file bhi bhejte hain, taaki alarm app ke andar hi khul jaaye
+        let evFileUrl = ev.file_url || '';
+        if (evFileUrl.startsWith('/')) {
+          evFileUrl = 'https://zahidiya-mysore.pages.dev' + evFileUrl;
+        }
+        const evEnd = ev.end_time ? buildISTDateTime(todayISO, ev.end_time) : null;
         schedule.push({
           id: 'event-' + ev.id + '-' + todayISO,
           type: 'event',
           title: ev.title,
-          dateTime: dt
+          dateTime: dt,
+          // Event khatam hone tak app ki list mein rahe (file dekhne ke liye)
+          ...(evEnd && evEnd > dt ? { realEndDateTime: evEnd } : {}),
+          contentType: ev.content_type || 'none',
+          contentText: ev.content_text || '',
+          fileUrl: evFileUrl
         });
       }
     }
