@@ -14,6 +14,29 @@ export async function onRequestGet(context) {
   }
 }
 
+// Custom alarm ke content (text/image/audio/PDF) ke liye 3 naye column chahiye.
+// Agar database mein nahi hain to yahin apne aap ban jaate hain (kuch manually
+// karne ki zaroorat nahi). Fail ho to false deta hai, baaki save phir bhi chalta hai.
+async function ensureCustomContentColumns(db) {
+  try {
+    const info = await db.prepare('PRAGMA table_info(alarm_settings)').all();
+    const have = new Set((info.results || []).map(r => r.name));
+    const cols = [
+      ['custom_alarm_content_type', "TEXT DEFAULT 'none'"],
+      ['custom_alarm_content_text', "TEXT DEFAULT ''"],
+      ['custom_alarm_file_url', "TEXT DEFAULT ''"]
+    ];
+    for (const [name, def] of cols) {
+      if (!have.has(name)) {
+        await db.prepare('ALTER TABLE alarm_settings ADD COLUMN ' + name + ' ' + def).run();
+      }
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 export async function onRequestPost(context) {
   const db = context.env.DB;
   try {
@@ -80,6 +103,22 @@ export async function onRequestPost(context) {
         custom_alarm_tone_url
       )
       .run();
+
+    // Custom alarm ka content (alag se save — taaki upar wala purana save kabhi na bigde)
+    if (body.custom_alarm_content_type !== undefined && await ensureCustomContentColumns(db)) {
+      await db
+        .prepare(`UPDATE alarm_settings SET
+          custom_alarm_content_type = ?,
+          custom_alarm_content_text = ?,
+          custom_alarm_file_url = ?
+          WHERE id = 1`)
+        .bind(
+          body.custom_alarm_content_type || 'none',
+          body.custom_alarm_content_text || '',
+          body.custom_alarm_file_url || ''
+        )
+        .run();
+    }
 
     // Sabhi mureedon ki app ko turant naya tone/duration fetch karne ka signal bhejo
     context.waitUntil(sendRefreshSettingsPush(context.env).catch(() => {}));
