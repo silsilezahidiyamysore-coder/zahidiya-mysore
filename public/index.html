@@ -151,6 +151,7 @@ a { color: #ffd700; }
     <!-- Custom Alarm banner area (agar admin ne on kiya hai aur abhi time chal raha hai) -->
     <div class="card hidden" id="customAlarmCard">
       <h3 id="customAlarmTitle">🔔 Alarm</h3>
+      <button id="customAlarmViewBtn" style="display:none; width:auto; padding:8px 18px;" onclick="openCustomAlarmContent()" data-i18n="view_btn">👁️ View</button>
     </div>
 
 <!-- Classes List -->
@@ -354,6 +355,29 @@ a { color: #ffd700; }
           <select id="customAlarmEndMin" style="margin:0;"></select>
           <select id="customAlarmEndAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
         </div>
+        <label style="font-size:13px; margin-top:12px; display:block;" data-i18n="custom_content_label">📎 Is alarm ke saath dikhane wala content (optional)</label>
+        <select id="customAlarmContentType" onchange="window.customContentDirty = true; toggleCustomContentFields()">
+          <option value="none" data-i18n="opt_no_reminder">Kuch nahi, sirf reminder</option>
+          <option value="text" data-i18n="opt_content_text">Text (khud likh kar)</option>
+          <option value="image" data-i18n="opt_image">Image</option>
+          <option value="pdf" data-i18n="opt_pdf">PDF</option>
+          <option value="audio" data-i18n="opt_content_audio">Audio (record ya upload)</option>
+        </select>
+        <textarea id="customAlarmTextContent" oninput="window.customContentDirty = true" data-i18n-placeholder="event_text_content_ph" placeholder="Yahan likho jo mureedon ko dikhna hai..." style="display:none; min-height:70px;"></textarea>
+        <div id="customAlarmTextUrWrap" style="display:none;">
+          <textarea id="customAlarmTextContentUr" oninput="window.customContentDirty = true" placeholder="اردو متن (اختیاری)" dir="rtl" style="display:block; min-height:70px; font-family:'Noto Nastaliq Urdu','Segoe UI',sans-serif;"></textarea>
+          <button type="button" class="secondary" style="width:auto; margin:6px 0;" onclick="autoTranslateField('customAlarmTextContent','customAlarmTextContentUr', this)" data-i18n="auto_urdu_btn">🌐 Auto Urdu Banao</button>
+        </div>
+        <input type="file" id="customAlarmFileInput" accept="image/*" style="display:none;" onchange="onCustomFileChosen(this)">
+        <div id="customAlarmFilePreview" style="display:none;"></div>
+        <div id="customAlarmAudioBox" style="display:none;">
+          <input type="file" id="customAlarmAudioFileInput" accept="audio/*" onchange="onCustomAudioFileChosen(this)">
+          <p style="font-size:12px; text-align:center; margin:6px 0; color:#cde;" data-i18n="or_record_note">— ya seedha record karo —</p>
+          <button type="button" id="customAlarmRecordBtn" class="secondary" onclick="startCustomRecording()" data-i18n="record_karo_btn">🎙️ Record Karo</button>
+          <p id="customAlarmRecordStatus" style="font-size:12px; color:#ffd700;"></p>
+          <audio id="customAlarmAudioPreview" controls style="display:none; width:100%; margin:6px 0;"></audio>
+        </div>
+
         <button onclick="saveCustomAlarm()" data-i18n="save_custom_alarm_btn">Save Custom Alarm</button>
 
         <label style="font-size:13px; margin-top:12px; display:block;" data-i18n="custom_tone_label">🔔 Custom Alarm Tone</label>
@@ -423,12 +447,14 @@ a { color: #ffd700; }
           <textarea id="eventTextContentUr" placeholder="اردو متن (اختیاری)" dir="rtl" style="display:block; min-height:70px; font-family:'Noto Nastaliq Urdu','Segoe UI',sans-serif;"></textarea>
           <button type="button" class="secondary" style="width:auto; margin:6px 0;" onclick="autoTranslateField('eventTextContent','eventTextContentUr', this)" data-i18n="auto_urdu_btn">🌐 Auto Urdu Banao</button>
         </div>
-        <input type="file" id="eventFileInput" accept="image/*" style="display:none;">
+        <input type="file" id="eventFileInput" accept="image/*" style="display:none;" onchange="onEventFileChosen(this)">
+        <div id="eventFilePreview" style="display:none;"></div>
         <div id="eventAudioBox" style="display:none;">
-          <input type="file" id="eventAudioFileInput" accept="audio/*">
+          <input type="file" id="eventAudioFileInput" accept="audio/*" onchange="onEventAudioFileChosen(this)">
           <p style="font-size:12px; text-align:center; margin:6px 0; color:#cde;" data-i18n="or_record_note">— ya seedha record karo —</p>
           <button type="button" id="eventRecordBtn" class="secondary" onclick="startEventRecording()" data-i18n="record_karo_btn">🎙️ Record Karo</button>
           <p id="eventRecordStatus" style="font-size:12px; color:#ffd700;"></p>
+          <audio id="eventAudioPreview" controls style="display:none; width:100%; margin:6px 0;"></audio>
         </div>
 
         <button onclick="saveEvent()" id="saveEventBtn" data-i18n="save_event_btn">Event Save Karo</button>
@@ -607,7 +633,7 @@ const TRANSLATIONS = {
     event_tone_note: "This tone will play when an event's time arrives. If nothing is uploaded, the default Alarm Tone will be used.",
     custom_tone_label: "🔔 Custom Alarm Tone",
     custom_tone_note: "A separate ringtone for this custom alarm. If nothing is uploaded, the default Alarm Tone will be used.",
-    custom_alarm_title_ur_ph: "Urdu name (optional)", event_title_ur_ph: "Urdu name (optional)",
+    custom_alarm_title_ur_ph: "Urdu name (optional)", event_title_ur_ph: "Urdu name (optional)", custom_content_label: "📎 Content to show with this alarm (optional)",
     bilingual_name_note: "Fill both to show the correct name in English and Urdu. Just one also works.",
     auto_translate_btn: "🔄 Auto-Translate to Urdu", auto_urdu_btn: "🌐 Auto Make Urdu",
     urdu_suno_btn: "🌐 Listen in Urdu",
@@ -718,7 +744,7 @@ const TRANSLATIONS = {
     event_tone_note: "جب کسی ایونٹ کا وقت آتا ہے تو یہ ٹون بجے گی۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
     custom_tone_label: "🔔 کسٹم الارم ٹون",
     custom_tone_note: "اس کسٹم الارم کے لیے الگ ٹون۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
-    custom_alarm_title_ur_ph: "اردو نام (اختیاری)", event_title_ur_ph: "اردو نام (اختیاری)",
+    custom_alarm_title_ur_ph: "اردو نام (اختیاری)", event_title_ur_ph: "اردو نام (اختیاری)", custom_content_label: "📎 اس الارم کے ساتھ دکھانے کا مواد (اختیاری)",
     bilingual_name_note: "دونوں بھر دیں تو انگریزی/اردو دونوں میں صحیح نام دکھے گا۔ صرف ایک بھی چلے گا۔",
     auto_translate_btn: "🔄 اردو میں خودکار ترجمہ کریں", auto_urdu_btn: "🌐 اردو خودکار بنائیں",
     urdu_suno_btn: "🌐 اردو میں سنیں",
@@ -1831,6 +1857,18 @@ async function loadAlarmSettings() {
         customToneBox.innerText = alarmSettings.custom_alarm_tone_url ? t('tone_in_use_msg') : t('tone_default_msg');
       }
 
+      if (!window.customContentDirty && document.getElementById('customAlarmContentType')) {
+        const cType = alarmSettings.custom_alarm_content_type || 'none';
+        const cUrl = alarmSettings.custom_alarm_file_url || '';
+        document.getElementById('customAlarmContentType').value = cType;
+        toggleCustomContentFields();
+        const cSplit = splitBilingualText(alarmSettings.custom_alarm_content_text || '');
+        document.getElementById('customAlarmTextContent').value = cSplit.en;
+        document.getElementById('customAlarmTextContentUr').value = cSplit.ur;
+        setEventAudioPreview(cType === 'audio' && cUrl ? cUrl : '', 'customAlarmAudioPreview');
+        setEventFilePreview((cType === 'image' || cType === 'pdf') && cUrl ? cUrl : '', cType, 'customAlarmFilePreview');
+      }
+
       checkCustomAlarm();
 
       // Hijri calendar adjustment apply karo aur admin input box bhi bhar do
@@ -1976,7 +2014,36 @@ function splitBilingualName(raw) {
 }
 
 async function saveCustomAlarm() {
+  // Alarm ke saath dikhane wala content (text / image / audio / PDF)
+  const cType = document.getElementById('customAlarmContentType').value;
+  let cText = '';
+  let cUrl = '';
+  const sameTypeOld = (alarmSettings.custom_alarm_content_type === cType) ? (alarmSettings.custom_alarm_file_url || '') : '';
+  try {
+    if (cType === 'text') {
+      cText = combineBilingualText(
+        document.getElementById('customAlarmTextContent').value,
+        document.getElementById('customAlarmTextContentUr').value
+      );
+      if (!cText) { alert('Text likho'); return; }
+    } else if (cType === 'image' || cType === 'pdf') {
+      const f = document.getElementById('customAlarmFileInput').files[0];
+      if (f) { cUrl = await uploadFileGetUrl(f); }
+      else if (sameTypeOld) { cUrl = sameTypeOld; }
+      else { alert('File choose karo'); return; }
+    } else if (cType === 'audio') {
+      const f = document.getElementById('customAlarmAudioFileInput').files[0];
+      if (f) { cUrl = await uploadFileGetUrl(f); }
+      else if (window.customAlarmRecordedBlob) { cUrl = await uploadFileGetUrl(new File([window.customAlarmRecordedBlob], 'recording.webm', { type: 'audio/webm' })); }
+      else if (sameTypeOld) { cUrl = sameTypeOld; }
+      else { alert('Audio file choose karo ya record karo'); return; }
+    }
+  } catch (e) { alert(e.message || 'Upload fail ho gaya'); return; }
+
   const body = {
+    custom_alarm_content_type: cType,
+    custom_alarm_content_text: cText,
+    custom_alarm_file_url: cUrl,
     custom_alarm_enabled: document.getElementById('customAlarmEnabled').checked,
     custom_alarm_title: combineBilingualName(
       document.getElementById('customAlarmTitleInput').value,
@@ -1992,8 +2059,96 @@ async function saveCustomAlarm() {
     });
     const data = await res.json();
     alert(data.message || 'Custom alarm saved');
+    window.customContentDirty = false;
+    window.customAlarmRecordedBlob = null;
+    document.getElementById('customAlarmFileInput').value = '';
+    document.getElementById('customAlarmAudioFileInput').value = '';
+    document.getElementById('customAlarmRecordStatus').innerText = '';
     loadAlarmSettings();
   } catch (e) { alert('Custom alarm save karne mein error aayi'); }
+}
+
+// ---------- CUSTOM ALARM KE SAATH CONTENT (text / image / audio / PDF) ----------
+window.customContentDirty = false;
+window.customAlarmRecordedBlob = null;
+let customAlarmMediaRecorder = null;
+let customAlarmRecordedChunks = [];
+
+function toggleCustomContentFields() {
+  const type = document.getElementById('customAlarmContentType').value;
+  document.getElementById('customAlarmTextContent').style.display = type === 'text' ? 'block' : 'none';
+  document.getElementById('customAlarmTextUrWrap').style.display = type === 'text' ? 'block' : 'none';
+  const fi = document.getElementById('customAlarmFileInput');
+  fi.style.display = (type === 'image' || type === 'pdf') ? 'block' : 'none';
+  fi.accept = type === 'pdf' ? 'application/pdf' : 'image/*';
+  document.getElementById('customAlarmAudioBox').style.display = type === 'audio' ? 'block' : 'none';
+  setEventFilePreview('', '', 'customAlarmFilePreview');
+}
+
+function onCustomFileChosen(input) {
+  window.customContentDirty = true;
+  const f = input.files && input.files[0];
+  if (!f) { setEventFilePreview('', '', 'customAlarmFilePreview'); return; }
+  const type = document.getElementById('customAlarmContentType').value === 'pdf' ? 'pdf' : 'image';
+  setEventFilePreview(URL.createObjectURL(f), type, 'customAlarmFilePreview');
+}
+
+function onCustomAudioFileChosen(input) {
+  window.customContentDirty = true;
+  const f = input.files && input.files[0];
+  if (f) {
+    window.customAlarmRecordedBlob = null; // chuni hui file hi save hogi
+    document.getElementById('customAlarmRecordStatus').innerText = '';
+    setEventAudioPreview(URL.createObjectURL(f), 'customAlarmAudioPreview');
+  } else {
+    setEventAudioPreview('', 'customAlarmAudioPreview');
+  }
+}
+
+async function startCustomRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    customAlarmRecordedChunks = [];
+    customAlarmMediaRecorder = new MediaRecorder(stream);
+    customAlarmMediaRecorder.ondataavailable = e => { if (e.data.size > 0) customAlarmRecordedChunks.push(e.data); };
+    customAlarmMediaRecorder.onstop = () => {
+      stream.getTracks().forEach(t => t.stop());
+      window.customAlarmRecordedBlob = new Blob(customAlarmRecordedChunks, { type: 'audio/webm' });
+      window.customContentDirty = true;
+      document.getElementById('customAlarmRecordStatus').innerText = '✅ Recording taiyar hai (' + Math.round(window.customAlarmRecordedBlob.size / 1024) + ' KB) — neeche play karke suno, theek ho to "Save Custom Alarm" dabao';
+      document.getElementById('customAlarmAudioFileInput').value = ''; // ab yahi recording save hogi
+      setEventAudioPreview(URL.createObjectURL(window.customAlarmRecordedBlob), 'customAlarmAudioPreview');
+      const btn = document.getElementById('customAlarmRecordBtn');
+      btn.innerText = '🎙️ Dobara Record Karo';
+      btn.onclick = startCustomRecording;
+    };
+    customAlarmMediaRecorder.start();
+    document.getElementById('customAlarmRecordStatus').innerText = '🔴 Recording ho rahi hai...';
+    const btn = document.getElementById('customAlarmRecordBtn');
+    btn.innerText = '⏹️ Roko (Stop)';
+    btn.onclick = stopCustomRecording;
+  } catch (e) {
+    alert('Mic ki permission nahi mili. Browser settings mein mic allow karo.');
+  }
+}
+function stopCustomRecording() {
+  if (customAlarmMediaRecorder && customAlarmMediaRecorder.state !== 'inactive') customAlarmMediaRecorder.stop();
+}
+
+function customAlarmHasContent() {
+  const type = alarmSettings.custom_alarm_content_type || 'none';
+  if (type === 'text') return !!(alarmSettings.custom_alarm_content_text || '').trim();
+  if (type === 'image' || type === 'pdf' || type === 'audio') return !!alarmSettings.custom_alarm_file_url;
+  return false;
+}
+
+function openCustomAlarmContent() {
+  showContentModal(
+    alarmSettings.custom_alarm_title || 'Alarm',
+    alarmSettings.custom_alarm_content_type,
+    alarmSettings.custom_alarm_content_text,
+    alarmSettings.custom_alarm_file_url
+  );
 }
 
 function checkCustomAlarm() {
@@ -2017,12 +2172,14 @@ function checkCustomAlarm() {
     const titleText = '🔔 ' + bilingualTitle(alarmSettings.custom_alarm_title || 'Alarm') + ' — abhi chal raha hai';
     titleEl.innerText = titleText;
     card.classList.remove('hidden');
+    const viewBtn = document.getElementById('customAlarmViewBtn');
+    if (viewBtn) viewBtn.style.display = customAlarmHasContent() ? 'inline-block' : 'none';
 
     // Sound bhi bajayenge - din mein ek baar (jab tak silence na kiya ho)
     const key = 'custom-' + alarmSettings.custom_alarm_start + '-' + now.toDateString();
     if (!alarmSilenced[key]) {
       raiseAlarmKey(key);
-      showAlarmBanner(titleText);
+      showAlarmBanner(titleText, customAlarmHasContent());
       playAlarmSound((alarmSettings.start_alarm_duration_seconds || 3) * 1000);
     }
   } else {
@@ -2622,7 +2779,7 @@ function silenceAlarm(key) {
   if (bar) bar.classList.add('hidden');
 }
 
-function showAlarmBanner(text) {
+function showAlarmBanner(text, withView) {
   let bar = document.getElementById('alarmBanner');
   if (!bar) {
     bar = document.createElement('div');
@@ -2636,7 +2793,12 @@ function showAlarmBanner(text) {
   bar.innerHTML =
     '<div style="font-size:52px; margin-bottom:20px;">🔔</div>' +
     '<div style="font-size:24px; font-weight:bold; line-height:1.5; max-width:90%; overflow-wrap:anywhere; word-break:break-word;">' + text + '</div>' +
-    '<button style="width:auto; margin-top:32px; padding:16px 40px; font-size:18px; background:#ffd700; color:#0f3d2e; border-radius:10px; font-weight:bold;" onclick="silenceAlarm(currentAlarmKey)">' + t('silence_btn') + '</button>';
+    (withView
+      ? '<div style="margin-top:32px;">' +
+        '<button style="width:auto; padding:16px 32px; font-size:16px; background:#ffd700; color:#0f3d2e; border-radius:10px; font-weight:bold;" onclick="openCustomAlarmContent()">' + t('view_btn') + '</button>' +
+        ' <button style="width:auto; padding:16px 32px; font-size:16px; background:transparent; border:2px solid #ffd700; color:#ffd700; border-radius:10px; font-weight:bold; margin-left:10px;" onclick="silenceAlarm(currentAlarmKey)">' + t('silence_btn') + '</button>' +
+        '</div>'
+      : '<button style="width:auto; margin-top:32px; padding:16px 40px; font-size:18px; background:#ffd700; color:#0f3d2e; border-radius:10px; font-weight:bold;" onclick="silenceAlarm(currentAlarmKey)">' + t('silence_btn') + '</button>');
   bar.classList.remove('hidden');
 }
 
@@ -2744,6 +2906,57 @@ function toggleEventContentFields() {
   fileInput.style.display = (type === 'image' || type === 'pdf') ? 'block' : 'none';
   fileInput.accept = type === 'pdf' ? 'application/pdf' : 'image/*';
   document.getElementById('eventAudioBox').style.display = type === 'audio' ? 'block' : 'none';
+  setEventFilePreview('', ''); // type badalne par purana preview hata do
+}
+
+// Image / PDF save karne se pehle dekhkar check karne ke liye preview
+function setEventFilePreview(url, type, boxId) {
+  const box = document.getElementById(boxId || 'eventFilePreview');
+  if (!box) return;
+  if (!url) {
+    box.style.display = 'none';
+    box.innerHTML = '';
+    return;
+  }
+  box.style.display = 'block';
+  if (type === 'image') {
+    box.innerHTML = '<img src="' + url + '" style="max-width:100%; max-height:300px; border-radius:8px; display:block; margin:6px 0;">';
+  } else {
+    box.innerHTML = '<iframe src="' + url + '" style="width:100%; height:300px; border:1px solid #2a6b2a; border-radius:8px; background:#fff;"></iframe>' +
+      '<a href="' + url + '" target="_blank" style="color:#ffd700; font-weight:bold; display:block; margin:6px 0;">📄 PDF alag se kholo</a>';
+  }
+}
+function onEventFileChosen(input) {
+  const f = input.files && input.files[0];
+  if (!f) { setEventFilePreview('', ''); return; }
+  const type = document.getElementById('eventContentType').value === 'pdf' ? 'pdf' : 'image';
+  setEventFilePreview(URL.createObjectURL(f), type);
+}
+
+// Audio (record ki hui, chuni hui ya purani) save karne se pehle sunkar check karne ke liye
+function setEventAudioPreview(src, audioId) {
+  const a = document.getElementById(audioId || 'eventAudioPreview');
+  if (!a) return;
+  if (src) {
+    a.src = src;
+    a.style.display = 'block';
+    a.load();
+  } else {
+    a.pause();
+    a.removeAttribute('src');
+    a.load();
+    a.style.display = 'none';
+  }
+}
+function onEventAudioFileChosen(input) {
+  const f = input.files && input.files[0];
+  if (f) {
+    window.eventRecordedBlob = null; // chuni hui file hi save hogi
+    document.getElementById('eventRecordStatus').innerText = '';
+    setEventAudioPreview(URL.createObjectURL(f));
+  } else {
+    setEventAudioPreview('');
+  }
 }
 
 async function startEventRecording() {
@@ -2755,7 +2968,9 @@ async function startEventRecording() {
     eventMediaRecorder.onstop = () => {
       stream.getTracks().forEach(t => t.stop());
       window.eventRecordedBlob = new Blob(eventRecordedChunks, { type: 'audio/webm' });
-      document.getElementById('eventRecordStatus').innerText = '✅ Recording taiyar hai (' + Math.round(window.eventRecordedBlob.size / 1024) + ' KB) — ab "Event Save Karo" dabao';
+      document.getElementById('eventRecordStatus').innerText = '✅ Recording taiyar hai (' + Math.round(window.eventRecordedBlob.size / 1024) + ' KB) — neeche play karke suno, theek ho to "Event Save Karo" dabao';
+      document.getElementById('eventAudioFileInput').value = ''; // ab yahi recording save hogi
+      setEventAudioPreview(URL.createObjectURL(window.eventRecordedBlob));
       const btn = document.getElementById('eventRecordBtn');
       btn.innerText = '🎙️ Dobara Record Karo';
       btn.onclick = startEventRecording;
@@ -2903,6 +3118,8 @@ function editEvent(id) {
   document.getElementById('eventGroup').value = ev.group_type;
   document.getElementById('eventContentType').value = ev.content_type || 'text';
   toggleEventContentFields();
+  setEventAudioPreview(ev.content_type === 'audio' && ev.file_url ? ev.file_url : '');
+  setEventFilePreview((ev.content_type === 'image' || ev.content_type === 'pdf') && ev.file_url ? ev.file_url : '', ev.content_type);
   const txtSplit = splitBilingualText(ev.content_text || '');
   document.getElementById('eventTextContent').value = txtSplit.en;
   document.getElementById('eventTextContentUr').value = txtSplit.ur;
@@ -2921,6 +3138,8 @@ function cancelEditEvent() {
   document.getElementById('eventAudioFileInput').value = '';
   window.eventRecordedBlob = null;
   document.getElementById('eventRecordStatus').innerText = '';
+  setEventAudioPreview('');
+  setEventFilePreview('', '');
   document.getElementById('cancelEditEventBtn').style.display = 'none';
   document.getElementById('saveEventBtn').innerText = 'Event Save Karo';
 }
@@ -2989,6 +3208,11 @@ function showEventBanner(ev) {
 function openEventContent(id) {
   const ev = (window.eventsList || []).find(e => e.id == id);
   if (!ev) return;
+  showContentModal(ev.title, ev.content_type, ev.content_text, ev.file_url);
+}
+
+// Event ya Custom Alarm ka content (text / image / PDF / audio) popup mein dikhata hai
+function showContentModal(title, contentType, contentText, fileUrl) {
   let modal = document.getElementById('eventContentModal');
   if (!modal) {
     modal = document.createElement('div');
@@ -2997,15 +3221,15 @@ function openEventContent(id) {
     document.body.appendChild(modal);
   }
   let inner = '<div style="background:#0f2a0f; border-radius:12px; padding:20px; max-width:500px; width:100%; max-height:80vh; overflow:auto; overflow-wrap:anywhere; border:1px solid #2a6b2a;">';
-  inner += '<h3 style="color:#ffd700; margin-top:0;">' + bilingualTitle(ev.title) + '</h3>';
-  if (ev.content_type === 'text') {
-    inner += '<p style="white-space:pre-wrap;">' + (bilingualText(ev.content_text) || 'Koi text nahi hai.') + '</p>';
-  } else if (ev.content_type === 'image' && ev.file_url) {
-    inner += '<img src="' + ev.file_url + '" style="max-width:100%; border-radius:8px;">';
-  } else if (ev.content_type === 'pdf' && ev.file_url) {
-    inner += '<a href="' + ev.file_url + '" target="_blank" style="color:#ffd700; font-weight:bold;">📄 PDF Kholo / Download Karo</a>';
-  } else if (ev.content_type === 'audio' && ev.file_url) {
-    inner += '<audio controls style="width:100%;" src="' + ev.file_url + '"></audio>';
+  inner += '<h3 style="color:#ffd700; margin-top:0;">' + bilingualTitle(title) + '</h3>';
+  if (contentType === 'text') {
+    inner += '<p style="white-space:pre-wrap;">' + (bilingualText(contentText) || 'Koi text nahi hai.') + '</p>';
+  } else if (contentType === 'image' && fileUrl) {
+    inner += '<img src="' + fileUrl + '" style="max-width:100%; border-radius:8px;">';
+  } else if (contentType === 'pdf' && fileUrl) {
+    inner += '<a href="' + fileUrl + '" target="_blank" style="color:#ffd700; font-weight:bold;">📄 PDF Kholo / Download Karo</a>';
+  } else if (contentType === 'audio' && fileUrl) {
+    inner += '<audio controls style="width:100%;" src="' + fileUrl + '"></audio>';
   } else {
     inner += '<p>' + t('no_event_content_msg') + '</p>';
   }
