@@ -64,6 +64,21 @@ async function getTodayPrayerTimes(db, dateStr) {
   } catch (e) { return null; }
 }
 
+// Fajr ka asli "khatam" waqt Sunrise hota hai (website aur app ki list bhi
+// yahi dikhati hain). Sunrise DB mein save nahi hota, isliye yahin se lete
+// hain. Na mile to purana tareeka (agli namaz ka waqt) chalega.
+let _sunriseCache = { date: '', value: null };
+async function getSunriseHHMM(dateStr) {
+  if (_sunriseCache.date === dateStr && _sunriseCache.value) return _sunriseCache.value;
+  try {
+    const res = await fetch('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
+    const data = await res.json();
+    const v = String(data.data.timings.Sunrise || '').split(' ')[0];
+    if (v) { _sunriseCache = { date: dateStr, value: v }; return v; }
+  } catch (e) {}
+  return null;
+}
+
 async function sendPushToSubscription(env, sub, payload) {
   const request = await buildPushHTTPRequest({
     privateJWK: env.VAPID_PRIVATE_KEY_JWK,
@@ -150,8 +165,13 @@ async function handle(context) {
         for (let i = 0; i < names.length; i++) {
           const tMin = toMinutes(times[i]);
           if (tMin === null) continue;
-          const nextTMin = (i + 1 < names.length) ? toMinutes(times[i + 1]) : (tMin + 45);
+          let nextTMin = (i + 1 < names.length) ? toMinutes(times[i + 1]) : (tMin + 45);
           if (nextTMin === null) continue;
+          // Fajr ka "End" = Sunrise (Dhuhr nahi) — admin panel/app jaisa
+          if (i === 0) {
+            const sr = toMinutes(await getSunriseHHMM(todayISO));
+            if (sr !== null && sr > tMin) nextTMin = sr;
+          }
           const reminderMin = nextTMin - (alarmSettings.end_reminder_minutes_before || 0);
           if (isDueNow(reminderMin, nowMin)) {
             const key = 'endreminder-' + names[i] + '-' + todayISO;
