@@ -2021,7 +2021,7 @@ function checkCustomAlarm() {
     // Sound bhi bajayenge - din mein ek baar (jab tak silence na kiya ho)
     const key = 'custom-' + alarmSettings.custom_alarm_start + '-' + now.toDateString();
     if (!alarmSilenced[key]) {
-      currentAlarmKey = key;
+      raiseAlarmKey(key);
       showAlarmBanner(titleText);
       playAlarmSound((alarmSettings.start_alarm_duration_seconds || 3) * 1000);
     }
@@ -2613,6 +2613,10 @@ function openAdminAccordionCard(cardId) {
 
 function silenceAlarm(key) {
   alarmSilenced[key] = true;
+  // Ek saath kai alarm (event + custom alarm + namaz) chal rahe hon to sabko
+  // chup karo, warna ek band karte hi doosra turant dobara aa jaata tha.
+  activeAlarmKeys.forEach(k => { alarmSilenced[k] = true; });
+  activeAlarmKeys.clear();
   stopAlarmSound(); // sound turant band — banner hide karne se pehle hi
   const bar = document.getElementById('alarmBanner');
   if (bar) bar.classList.add('hidden');
@@ -2631,12 +2635,17 @@ function showAlarmBanner(text) {
   }
   bar.innerHTML =
     '<div style="font-size:52px; margin-bottom:20px;">🔔</div>' +
-    '<div style="font-size:24px; font-weight:bold; line-height:1.5; max-width:90%;">' + text + '</div>' +
+    '<div style="font-size:24px; font-weight:bold; line-height:1.5; max-width:90%; overflow-wrap:anywhere; word-break:break-word;">' + text + '</div>' +
     '<button style="width:auto; margin-top:32px; padding:16px 40px; font-size:18px; background:#ffd700; color:#0f3d2e; border-radius:10px; font-weight:bold;" onclick="silenceAlarm(currentAlarmKey)">' + t('silence_btn') + '</button>';
   bar.classList.remove('hidden');
 }
 
 let currentAlarmKey = '';
+const activeAlarmKeys = new Set();
+function raiseAlarmKey(key) {
+  currentAlarmKey = key;
+  activeAlarmKeys.add(key);
+}
 let lastCheckedMinute = -1;
 
 // "HH:MM" ko minute-number mein badalte hain, taaki string-match ki gadbad (space/format) na ho
@@ -2677,7 +2686,7 @@ function checkNamazAlarms() {
     if (isAlarmOn(alarmSettings.start_alarm_enabled) && tMin === nowMin) {
       const key = 'start-' + name + '-' + now.toDateString();
       if (!alarmSilenced[key]) {
-        currentAlarmKey = key;
+        raiseAlarmKey(key);
         showAlarmBanner('🕌 ' + name + ' ki namaz ka waqt ho gaya hai');
         playAlarmSound(Math.min((alarmSettings.start_alarm_duration_seconds || 60) * 1000, 5000));
       }
@@ -2690,7 +2699,7 @@ const nextTMin = nextName ? toMinutes(window.namazTimesToday[nextName]) : (tMin 
       if (reminderMin === nowMin) {
         const key = 'end-' + name + '-' + now.toDateString();
         if (!alarmSilenced[key]) {
-          currentAlarmKey = key;
+          raiseAlarmKey(key);
           showAlarmBanner('⏳ ' + name + ' ki namaz khatam hone wali hai (' + alarmSettings.end_reminder_minutes_before + ' min)');
           let count = 0;
           window.repeatBeepInterval = setInterval(() => {
@@ -2951,7 +2960,7 @@ function checkEvents() {
 
     const key = 'event-' + ev.id + '-' + now.toDateString();
     if (!alarmSilenced[key]) {
-      currentAlarmKey = key;
+      raiseAlarmKey(key);
       showEventBanner(ev);
       playAlarmSound(3000);
     }
@@ -2969,7 +2978,7 @@ function showEventBanner(ev) {
   }
   bar.innerHTML =
     '<div style="font-size:52px; margin-bottom:20px;">📅</div>' +
-    '<div style="font-size:24px; font-weight:bold; line-height:1.5; max-width:90%;">' + bilingualTitle(ev.title) + '</div>' +
+    '<div style="font-size:24px; font-weight:bold; line-height:1.5; max-width:90%; overflow-wrap:anywhere; word-break:break-word;">' + bilingualTitle(ev.title) + '</div>' +
     '<div style="margin-top:32px;">' +
     '<button style="width:auto; padding:16px 32px; font-size:16px; background:#ffd700; color:#0f3d2e; border-radius:10px; font-weight:bold;" onclick="openEventContent(' + ev.id + ')">' + t('view_btn') + '</button>' +
     ' <button style="width:auto; padding:16px 32px; font-size:16px; background:transparent; border:2px solid #ffd700; color:#ffd700; border-radius:10px; font-weight:bold; margin-left:10px;" onclick="silenceAlarm(currentAlarmKey)">' + t('silence_btn') + '</button>' +
@@ -2984,10 +2993,10 @@ function openEventContent(id) {
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'eventContentModal';
-    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px;';
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:100000; display:flex; align-items:center; justify-content:center; padding:20px;';
     document.body.appendChild(modal);
   }
-  let inner = '<div style="background:#0f2a0f; border-radius:12px; padding:20px; max-width:500px; width:100%; max-height:80vh; overflow:auto; border:1px solid #2a6b2a;">';
+  let inner = '<div style="background:#0f2a0f; border-radius:12px; padding:20px; max-width:500px; width:100%; max-height:80vh; overflow:auto; overflow-wrap:anywhere; border:1px solid #2a6b2a;">';
   inner += '<h3 style="color:#ffd700; margin-top:0;">' + bilingualTitle(ev.title) + '</h3>';
   if (ev.content_type === 'text') {
     inner += '<p style="white-space:pre-wrap;">' + (bilingualText(ev.content_text) || 'Koi text nahi hai.') + '</p>';
