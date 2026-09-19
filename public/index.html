@@ -419,6 +419,10 @@ a { color: #ffd700; }
         </select>
 
         <textarea id="eventTextContent" data-i18n-placeholder="event_text_content_ph" placeholder="Yahan likho jo mureedon ko dikhna hai..." style="display:block; min-height:70px;"></textarea>
+        <div id="eventTextContentUrWrap" style="display:block;">
+          <textarea id="eventTextContentUr" placeholder="اردو متن (اختیاری)" dir="rtl" style="display:block; min-height:70px; font-family:'Noto Nastaliq Urdu','Segoe UI',sans-serif;"></textarea>
+          <button type="button" class="secondary" style="width:auto; margin:6px 0;" onclick="autoTranslateField('eventTextContent','eventTextContentUr', this)" data-i18n="auto_urdu_btn">🌐 Auto Urdu Banao</button>
+        </div>
         <input type="file" id="eventFileInput" accept="image/*" style="display:none;">
         <div id="eventAudioBox" style="display:none;">
           <input type="file" id="eventAudioFileInput" accept="audio/*">
@@ -1146,13 +1150,16 @@ async function speakTranslatedPdf(classId) {
 // Backend se aane wale notification messages fixed pattern mein hote hain
 // (jaise 'Nayi class upload hui: "Title"'). Urdu mode mein yahin translate karte hain.
 // Custom Event/Alarm title agar "English | اردو" format mein likha ho,
-// to dono hisse hamesha SAATH dikhao (simple, kisi language-toggle par
-// depend nahi karta, isliye hamesha reliably kaam karega).
+// to sirf usi language ka hissa dikhao jo abhi chuni hui hai
+// (English mode mein English, Urdu mode mein Urdu) — dono mix nahi hote.
 function bilingualTitle(raw) {
   if (!raw) return raw;
-  const parts = raw.split('|');
+  const parts = raw.split('|').map(p => p.trim()).filter(Boolean);
   if (parts.length >= 2) {
-    return parts[0].trim() + ' / ' + parts[1].trim();
+    const hasUrdu = p => /[\u0600-\u06FF]/.test(p);
+    const ur = parts.find(hasUrdu) || parts[1];
+    const en = parts.find(p => !hasUrdu(p)) || parts[0];
+    return currentLang === 'ur' ? ur : en;
   }
   return raw.trim();
 }
@@ -1922,6 +1929,34 @@ async function autoTranslateField(enFieldId, urFieldId, btn) {
   } finally {
     if (btn) { btn.disabled = false; btn.innerText = origText; }
   }
+}
+
+// Event ke andar ka text (lamba, kai line ka) — English aur Urdu alag box mein
+// likhte hain, ek hi jagah "[[UR]]" nishaan laga kar save hota hai. Dikhate
+// waqt sirf chuni hui language ka hissa dikhta hai. Purana (bina nishaan ka)
+// text waise hi dikhta rahega.
+const UR_TEXT_MARK = '\n[[UR]]\n';
+function combineBilingualText(enVal, urVal) {
+  enVal = (enVal || '').trim();
+  urVal = (urVal || '').trim();
+  if (enVal && urVal) return enVal + UR_TEXT_MARK + urVal;
+  return enVal || urVal;
+}
+function splitBilingualText(raw) {
+  if (!raw) return { en: '', ur: '' };
+  const i = raw.indexOf(UR_TEXT_MARK);
+  if (i >= 0) {
+    return { en: raw.slice(0, i).trim(), ur: raw.slice(i + UR_TEXT_MARK.length).trim() };
+  }
+  // Purana text: Urdu akshar hon to Urdu box mein, warna English box mein
+  if (/[\u0600-\u06FF]/.test(raw)) return { en: '', ur: raw.trim() };
+  return { en: raw.trim(), ur: '' };
+}
+function bilingualText(raw) {
+  const p = splitBilingualText(raw);
+  if (!p.ur) return p.en;
+  if (!p.en) return p.ur;
+  return currentLang === 'ur' ? p.ur : p.en;
 }
 
 // English aur Urdu wale alag box ka content jodkar "English | Urdu" format
@@ -2695,6 +2730,7 @@ function toggleEventScheduleFields() {
 function toggleEventContentFields() {
   const type = document.getElementById('eventContentType').value;
   document.getElementById('eventTextContent').style.display = type === 'text' ? 'block' : 'none';
+  document.getElementById('eventTextContentUrWrap').style.display = type === 'text' ? 'block' : 'none';
   const fileInput = document.getElementById('eventFileInput');
   fileInput.style.display = (type === 'image' || type === 'pdf') ? 'block' : 'none';
   fileInput.accept = type === 'pdf' ? 'application/pdf' : 'image/*';
@@ -2768,7 +2804,10 @@ async function saveEvent() {
 
   try {
     if (content_type === 'text') {
-      content_text = document.getElementById('eventTextContent').value.trim();
+      content_text = combineBilingualText(
+        document.getElementById('eventTextContent').value,
+        document.getElementById('eventTextContentUr').value
+      );
       if (!content_text) { alert('Text likho'); return; }
     } else if (content_type === 'image' || content_type === 'pdf') {
       const file = document.getElementById('eventFileInput').files[0];
@@ -2855,7 +2894,9 @@ function editEvent(id) {
   document.getElementById('eventGroup').value = ev.group_type;
   document.getElementById('eventContentType').value = ev.content_type || 'text';
   toggleEventContentFields();
-  document.getElementById('eventTextContent').value = ev.content_text || '';
+  const txtSplit = splitBilingualText(ev.content_text || '');
+  document.getElementById('eventTextContent').value = txtSplit.en;
+  document.getElementById('eventTextContentUr').value = txtSplit.ur;
   document.getElementById('cancelEditEventBtn').style.display = 'block';
   document.getElementById('saveEventBtn').innerText = 'Event Update Karo';
   document.getElementById('eventTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2866,6 +2907,7 @@ function cancelEditEvent() {
   document.getElementById('eventTitle').value = '';
   document.getElementById('eventTitleUr').value = '';
   document.getElementById('eventTextContent').value = '';
+  document.getElementById('eventTextContentUr').value = '';
   document.getElementById('eventFileInput').value = '';
   document.getElementById('eventAudioFileInput').value = '';
   window.eventRecordedBlob = null;
@@ -2948,7 +2990,7 @@ function openEventContent(id) {
   let inner = '<div style="background:#0f2a0f; border-radius:12px; padding:20px; max-width:500px; width:100%; max-height:80vh; overflow:auto; border:1px solid #2a6b2a;">';
   inner += '<h3 style="color:#ffd700; margin-top:0;">' + bilingualTitle(ev.title) + '</h3>';
   if (ev.content_type === 'text') {
-    inner += '<p style="white-space:pre-wrap;">' + (ev.content_text || 'Koi text nahi hai.') + '</p>';
+    inner += '<p style="white-space:pre-wrap;">' + (bilingualText(ev.content_text) || 'Koi text nahi hai.') + '</p>';
   } else if (ev.content_type === 'image' && ev.file_url) {
     inner += '<img src="' + ev.file_url + '" style="max-width:100%; border-radius:8px;">';
   } else if (ev.content_type === 'pdf' && ev.file_url) {
