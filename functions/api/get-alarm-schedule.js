@@ -29,6 +29,21 @@ function buildISTDateTime(dateStr, hhmm) {
   return dateStr + 'T' + hh + ':' + mm + ':00+05:30';
 }
 
+// Fajr ka asli "khatam" waqt Sunrise hota hai (website bhi yahi dikhati hai).
+// Sunrise DB mein save nahi hota, isliye yahin se le lete hain. Na mile to
+// purana tareeka (agli namaz ka waqt) hi chalega.
+let _sunriseCache = { date: '', value: null };
+async function getSunriseHHMM(dateStr) {
+  if (_sunriseCache.date === dateStr && _sunriseCache.value) return _sunriseCache.value;
+  try {
+    const res = await fetch('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
+    const data = await res.json();
+    const v = String(data.data.timings.Sunrise || '').split(' ')[0];
+    if (v) { _sunriseCache = { date: dateStr, value: v }; return v; }
+  } catch (e) {}
+  return null;
+}
+
 async function getTodayPrayerTimes(db, dateStr) {
   const row = await db.prepare(`SELECT * FROM daily_prayer_cache WHERE date = ?`).bind(dateStr).first();
   if (row) return row;
@@ -132,6 +147,13 @@ export async function onRequestGet(context) {
             const hh = String(Math.floor(nextFajrMin / 60)).padStart(2, '0');
             const mm = String(nextFajrMin % 60).padStart(2, '0');
             dt = buildISTDateTime(tomorrowISO, hh + ':' + mm);
+          }
+
+          // Fajr ka "End" = Sunrise (website jaisa), Dhuhr ka waqt nahi
+          if (i === 0) {
+            const sr = await getSunriseHHMM(todayISO);
+            const srMin = toMinutes(sr);
+            if (srMin !== null && srMin > tMin) dt = buildISTDateTime(todayISO, sr);
           }
 
           if (dt) {
