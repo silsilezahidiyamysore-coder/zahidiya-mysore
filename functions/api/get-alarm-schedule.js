@@ -123,6 +123,8 @@ export async function onRequestGet(context) {
     }
 
     const schedule = [];
+    // Sirf phone mein alarm lagane ke liye (list mein nahi dikhte): custom alarm / event ka END alarm
+    const extraAlarms = [];
 
     const alarmSettings = await db.prepare(`SELECT * FROM alarm_settings WHERE id = 1`).first();
 
@@ -228,6 +230,15 @@ export async function onRequestGet(context) {
           contentText: alarmSettings.custom_alarm_content_text || '',
           fileUrl: caFileUrl
         });
+        // End time par bhi alarm (jaise namaz / event ke end par bajta hai)
+        if (caEnd && caEnd > dt) {
+          extraAlarms.push({
+            id: 'customalarm-end-' + todayISO,
+            type: 'custom_alarm_end',
+            title: alarmSettings.custom_alarm_title || 'Alarm',
+            dateTime: caEnd
+          });
+        }
       }
     }
 
@@ -261,6 +272,14 @@ export async function onRequestGet(context) {
           contentText: ev.content_text || '',
           fileUrl: evFileUrl
         });
+        if (evEnd && evEnd > dt) {
+          extraAlarms.push({
+            id: 'event-end-' + ev.id + '-' + todayISO,
+            type: 'event_end',
+            title: ev.title,
+            dateTime: evEnd
+          });
+        }
       }
     }
 
@@ -285,6 +304,7 @@ export async function onRequestGet(context) {
       success: true,
       checked_at_ist: ist.toISOString(),
       schedule,
+      extra_alarms: extraAlarms,
       tone_url: toneUrl,
       event_tone_url: eventToneUrl,
       live_class_tone_url: liveToneUrl,
