@@ -203,6 +203,22 @@ async function handle(context) {
       }
     }
 
+    // ---------- 2.5) CUSTOM ALARM END (khatam hone par alarm) ----------
+    if (alarmSettings && Number(alarmSettings.custom_alarm_enabled) !== 0 && alarmSettings.custom_alarm_start && alarmSettings.custom_alarm_end) {
+      const cEndMin = toMinutes(alarmSettings.custom_alarm_end);
+      if (isDueNow(cEndMin, nowMin)) {
+        const key = 'customalarm-end-' + todayISO + '-' + alarmSettings.custom_alarm_end;
+        if (await shouldSend(db, key)) {
+          await sendToSubscriptions(context.env, db, allSubs, {
+            title: '⏳ ' + (alarmSettings.custom_alarm_title || 'Alarm') + ' khatam ho gaya',
+            body: 'Silsila-e-Zahidiya Mysore', tag: 'custom-alarm-end'
+          });
+          await sendAlarmRingPush(context.env, alarmSettings.custom_alarm_title || 'Alarm', alarmSettings.end_reminder_beep_seconds || 20, 'both', 'custom');
+          sentCount++;
+        }
+      }
+    }
+
     // ---------- 3) EVENTS (weekly / monthly / ek-baar) ----------
     const events = (await db.prepare(`SELECT * FROM events WHERE is_enabled = 1`).all()).results || [];
     for (const ev of events) {
