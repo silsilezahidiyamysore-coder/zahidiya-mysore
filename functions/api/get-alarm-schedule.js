@@ -32,31 +32,67 @@ function buildISTDateTime(dateStr, hhmm) {
 // Fajr ka asli "khatam" waqt Sunrise hota hai (website bhi yahi dikhati hai).
 // Sunrise DB mein save nahi hota, isliye yahin se le lete hain. Na mile to
 // purana tareeka (agli namaz ka waqt) hi chalega.
-let _sunriseCache = { date: '', value: null };
-async function getSunriseHHMM(dateStr) {
-  if (_sunriseCache.date === dateStr && _sunriseCache.value) return _sunriseCache.value;
+// Kisi bhi tareekh (YYYY-MM-DD) ke liye Aladhan ka sahi (us din ka) URL
+function aladhanUrl(dateStr) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr || '');
+  if (!m) return 'https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2';
+  return 'https://api.aladhan.com/v1/timingsByCity/' + m[3] + '-' + m[2] + '-' + m[1] + '?city=Mysore&country=India&method=2';
+}
+
+// Us tareekh ke namaz ke time laata hai. Dated URL na chale to (sirf aaj ke liye)
+// purana bina-tareekh wala URL try karta hai.
+async function fetchTimings(dateStr) {
   try {
-    const res = await fetch('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
-    const data = await res.json();
-    const v = String(data.data.timings.Sunrise || '').split(' ')[0];
-    if (v) { _sunriseCache = { date: dateStr, value: v }; return v; }
+    const r = await fetch(aladhanUrl(dateStr));
+    const d = await r.json();
+    if (d && d.data && d.data.timings) return d.data.timings;
   } catch (e) {}
+  if (dateStr === istDateStr(nowIST())) {
+    try {
+      const r = await fetch(aladhanUrl(''));
+      const d = await r.json();
+      if (d && d.data && d.data.timings) return d.data.timings;
+    } catch (e) {}
+  }
   return null;
 }
 
+let _sunriseCache = { date: '', value: null };
+async function getSunriseHHMM(dateStr) {
+  if (_sunriseCache.date === dateStr && _sunriseCache.value) return _sunriseCache.value;
+  const t = await fetchTimings(dateStr);
+  const v = t ? String(t.Sunrise || '').split(' ')[0] : '';
+  if (v) { _sunriseCache = { date: dateStr, value: v }; return v; }
+  return null;
+}
+
+// Aane wale din (kal) ke time database ke purane save kiye hue par bharosa nahi
+// karte (pehle wo ghalat ~1 min wale save ho gaye the) — har baar sahi fetch
+// karke database bhi theek kar dete hain (6 ghante memory mein yaad rakhte hain).
+const _futureTimesCache = {};
 async function getTodayPrayerTimes(db, dateStr) {
-  const row = await db.prepare(`SELECT * FROM daily_prayer_cache WHERE date = ?`).bind(dateStr).first();
-  if (row) return row;
+  const isFuture = dateStr > istDateStr(nowIST());
+  if (isFuture) {
+    const c = _futureTimesCache[dateStr];
+    if (c && Date.now() - c.at < 6 * 60 * 60 * 1000) return c.value;
+  } else {
+    const row = await db.prepare(`SELECT * FROM daily_prayer_cache WHERE date = ?`).bind(dateStr).first();
+    if (row) return row;
+  }
   try {
-    const res = await fetch('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
-    const data = await res.json();
-    const t = data.data.timings;
-    const clean = (s) => (s || '').split(' ')[0];
+    // Pehle tha: hamesha AAJ ke time fetch hote the aur "kal" ki tareekh ke naam
+    // se save ho jaate the (isse kal ke time ~1 minute ghalat ho jaate the).
+    // Ab har tareekh ka apna sahi time aata hai.
+    const t = await fetchTimings(dateStr);
+    if (!t) return null;
+    const clean = (x) => (x || '').split(' ')[0];
     const times = { fajr: clean(t.Fajr), dhuhr: clean(t.Dhuhr), asr: clean(t.Asr), maghrib: clean(t.Maghrib), isha: clean(t.Isha) };
     await db.prepare(
       `INSERT OR REPLACE INTO daily_prayer_cache (date, fajr, dhuhr, asr, maghrib, isha) VALUES (?, ?, ?, ?, ?, ?)`
     ).bind(dateStr, times.fajr, times.dhuhr, times.asr, times.maghrib, times.isha).run();
-    return { date: dateStr, ...times };
+    const value = { date: dateStr, ...times };
+    if (isFuture) _futureTimesCache[dateStr] = { at: Date.now(), value };
+    return value;
   } catch (e) {
     return null;
   }
@@ -68,7 +104,10 @@ export async function onRequestGet(context) {
     const url = new URL(context.request.url);
     const mobile = url.searchParams.get('mobile') || '';
 
-    const ist = nowIST();
+    // Optional ?date=YYYY-MM-DD — app kal ka schedule bhi maangti hai taaki
+    // kal subah ke alarm raat se pehle hi phone mein set ho jaayein.
+    const dateParam = url.searchParams.get('date') || '';
+    const ist = /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? new Date(dateParam + 'T12:00:00Z') : nowIST();
     const todayISO = istDateStr(ist);
     const todayDow = ist.getUTCDay();
     const todayDate = ist.getUTCDate();
@@ -250,7 +289,9 @@ export async function onRequestGet(context) {
       event_tone_url: eventToneUrl,
       live_class_tone_url: liveToneUrl,
       custom_alarm_tone_url: customToneUrl,
-      start_alarm_duration_seconds: (alarmSettings && alarmSettings.start_alarm_duration_seconds) || 60
+      start_alarm_duration_seconds: (alarmSettings && alarmSettings.start_alarm_duration_seconds) || 60,
+      end_reminder_minutes_before: (alarmSettings && alarmSettings.end_reminder_minutes_before) || 0,
+      end_reminder_beep_seconds: (alarmSettings && alarmSettings.end_reminder_beep_seconds) || 20
     });
   } catch (err) {
     return Response.json({ success: false, message: err.message }, { status: 500 });
