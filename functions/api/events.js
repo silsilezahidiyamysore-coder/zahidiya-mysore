@@ -2,6 +2,8 @@
 // GET  -> saare events ki list deta hai
 // POST -> naya event banata hai (id na ho), ya purana update karta hai (id ho)
 
+import { sendRefreshSettingsPush } from './fcm-helper.js';
+
 export async function onRequestGet(context) {
   try {
     const db = context.env.DB;
@@ -40,6 +42,8 @@ export async function onRequestPost(context) {
         start_time, end_time, group_type, content_type ?? 'none', content_text ?? '', file_url ?? '',
         id
       ).run();
+      // Sabhi phones ko turant naya schedule lene ka ishara (taaki naye/badle event ka alarm turant lag jaaye)
+      context.waitUntil(sendRefreshSettingsPush(context.env).catch(() => {}));
       return Response.json({ success: true, message: "Event update ho gaya" });
     } else {
       // Create new event
@@ -52,6 +56,8 @@ export async function onRequestPost(context) {
         start_time, end_time, group_type, content_type ?? 'none', content_text ?? '', file_url ?? '',
         new Date().toISOString()
       ).run();
+      // Sabhi phones ko turant naya schedule lene ka ishara
+      context.waitUntil(sendRefreshSettingsPush(context.env).catch(() => {}));
       return Response.json({ success: true, message: "Event add ho gaya" });
     }
   } catch (err) {
