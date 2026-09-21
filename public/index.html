@@ -355,6 +355,13 @@ a { color: #ffd700; }
           <select id="customAlarmEndMin" style="margin:0;"></select>
           <select id="customAlarmEndAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
         </div>
+        <label style="font-size:13px; margin-top:12px; display:block;" data-i18n="custom_group_label">👥 Ye alarm kis ko jaye?</label>
+        <select id="customAlarmGroup" onchange="window.customContentDirty = true">
+          <option value="both" data-i18n="opt_both">Both</option>
+          <option value="mardana" data-i18n="group_mardana">Mardana</option>
+          <option value="zanana" data-i18n="group_zanana">Zanana</option>
+        </select>
+
         <label style="font-size:13px; margin-top:12px; display:block;" data-i18n="custom_content_label">📎 Is alarm ke saath dikhane wala content (optional)</label>
         <select id="customAlarmContentType" onchange="window.customContentDirty = true; toggleCustomContentFields()">
           <option value="none" data-i18n="opt_no_reminder">Kuch nahi, sirf reminder</option>
@@ -371,6 +378,10 @@ a { color: #ffd700; }
         <input type="file" id="customAlarmFileInput" accept="image/*" style="display:none;" onchange="onCustomFileChosen(this)">
         <div id="customAlarmFilePreview" style="display:none;"></div>
         <div id="customAlarmAudioBox" style="display:none;">
+          <div id="customAlarmSavedAudio" style="display:none; margin-bottom:8px;">
+            <p style="font-size:12px; color:#cde; margin:4px 0;">✅ Pehle se ek audio save hai (nayi record ya upload karoge to badal jayegi)</p>
+            <button type="button" class="secondary" style="width:auto; padding:6px 14px;" onclick="playSavedCustomAudio()">▶️ Purani audio suno</button>
+          </div>
           <input type="file" id="customAlarmAudioFileInput" accept="audio/*" onchange="onCustomAudioFileChosen(this)">
           <p style="font-size:12px; text-align:center; margin:6px 0; color:#cde;" data-i18n="or_record_note">— ya seedha record karo —</p>
           <button type="button" id="customAlarmRecordBtn" class="secondary" onclick="startCustomRecording()" data-i18n="record_karo_btn">🎙️ Record Karo</button>
@@ -633,7 +644,7 @@ const TRANSLATIONS = {
     event_tone_note: "This tone will play when an event's time arrives. If nothing is uploaded, the default Alarm Tone will be used.",
     custom_tone_label: "🔔 Custom Alarm Tone",
     custom_tone_note: "A separate ringtone for this custom alarm. If nothing is uploaded, the default Alarm Tone will be used.",
-    custom_alarm_title_ur_ph: "Urdu name (optional)", event_title_ur_ph: "Urdu name (optional)", custom_content_label: "📎 Content to show with this alarm (optional)",
+    custom_alarm_title_ur_ph: "Urdu name (optional)", event_title_ur_ph: "Urdu name (optional)", custom_content_label: "📎 Content to show with this alarm (optional)", custom_group_label: "👥 Who should get this alarm?",
     bilingual_name_note: "Fill both to show the correct name in English and Urdu. Just one also works.",
     auto_translate_btn: "🔄 Auto-Translate to Urdu", auto_urdu_btn: "🌐 Auto Make Urdu",
     urdu_suno_btn: "🌐 Listen in Urdu",
@@ -744,7 +755,7 @@ const TRANSLATIONS = {
     event_tone_note: "جب کسی ایونٹ کا وقت آتا ہے تو یہ ٹون بجے گی۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
     custom_tone_label: "🔔 کسٹم الارم ٹون",
     custom_tone_note: "اس کسٹم الارم کے لیے الگ ٹون۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
-    custom_alarm_title_ur_ph: "اردو نام (اختیاری)", event_title_ur_ph: "اردو نام (اختیاری)", custom_content_label: "📎 اس الارم کے ساتھ دکھانے کا مواد (اختیاری)",
+    custom_alarm_title_ur_ph: "اردو نام (اختیاری)", event_title_ur_ph: "اردو نام (اختیاری)", custom_content_label: "📎 اس الارم کے ساتھ دکھانے کا مواد (اختیاری)", custom_group_label: "👥 یہ الارم کس کو جائے؟",
     bilingual_name_note: "دونوں بھر دیں تو انگریزی/اردو دونوں میں صحیح نام دکھے گا۔ صرف ایک بھی چلے گا۔",
     auto_translate_btn: "🔄 اردو میں خودکار ترجمہ کریں", auto_urdu_btn: "🌐 اردو خودکار بنائیں",
     urdu_suno_btn: "🌐 اردو میں سنیں",
@@ -1861,11 +1872,14 @@ async function loadAlarmSettings() {
         const cType = alarmSettings.custom_alarm_content_type || 'none';
         const cUrl = alarmSettings.custom_alarm_file_url || '';
         document.getElementById('customAlarmContentType').value = cType;
+        document.getElementById('customAlarmGroup').value = alarmSettings.custom_alarm_group || 'both';
         toggleCustomContentFields();
         const cSplit = splitBilingualText(alarmSettings.custom_alarm_content_text || '');
         document.getElementById('customAlarmTextContent').value = cSplit.en;
         document.getElementById('customAlarmTextContentUr').value = cSplit.ur;
-        setEventAudioPreview(cType === 'audio' && cUrl ? cUrl : '', 'customAlarmAudioPreview');
+        window.customSavedAudioUrl = cUrl;
+        setEventAudioPreview('', 'customAlarmAudioPreview');
+        document.getElementById('customAlarmSavedAudio').style.display = (cType === 'audio' && cUrl) ? 'block' : 'none';
         setEventFilePreview((cType === 'image' || cType === 'pdf') && cUrl ? cUrl : '', cType, 'customAlarmFilePreview');
       }
 
@@ -2041,6 +2055,7 @@ async function saveCustomAlarm() {
   } catch (e) { alert(e.message || 'Upload fail ho gaya'); return; }
 
   const body = {
+    custom_alarm_group: document.getElementById('customAlarmGroup').value,
     custom_alarm_content_type: cType,
     custom_alarm_content_text: cText,
     custom_alarm_file_url: cUrl,
@@ -2095,6 +2110,7 @@ function onCustomFileChosen(input) {
 
 function onCustomAudioFileChosen(input) {
   window.customContentDirty = true;
+  document.getElementById('customAlarmSavedAudio').style.display = 'none';
   const f = input.files && input.files[0];
   if (f) {
     window.customAlarmRecordedBlob = null; // chuni hui file hi save hogi
@@ -2115,6 +2131,7 @@ async function startCustomRecording() {
       stream.getTracks().forEach(t => t.stop());
       window.customAlarmRecordedBlob = new Blob(customAlarmRecordedChunks, { type: 'audio/webm' });
       window.customContentDirty = true;
+      document.getElementById('customAlarmSavedAudio').style.display = 'none';
       document.getElementById('customAlarmRecordStatus').innerText = '✅ Recording taiyar hai (' + Math.round(window.customAlarmRecordedBlob.size / 1024) + ' KB) — neeche play karke suno, theek ho to "Save Custom Alarm" dabao';
       document.getElementById('customAlarmAudioFileInput').value = ''; // ab yahi recording save hogi
       setEventAudioPreview(URL.createObjectURL(window.customAlarmRecordedBlob), 'customAlarmAudioPreview');
@@ -2156,6 +2173,12 @@ function checkCustomAlarm() {
   const titleEl = document.getElementById('customAlarmTitle');
   if (!card) return;
   if (!alarmSettings.custom_alarm_enabled || !alarmSettings.custom_alarm_start || !alarmSettings.custom_alarm_end) {
+    card.classList.add('hidden');
+    return;
+  }
+  // Ye alarm sirf chune hue group ko dikhe (admin ko hamesha)
+  const cGroup = alarmSettings.custom_alarm_group || 'both';
+  if (cGroup !== 'both' && currentUser && currentUser.role !== 'admin' && currentUser.group_type !== cGroup) {
     card.classList.add('hidden');
     return;
   }
@@ -2934,10 +2957,32 @@ function onEventFileChosen(input) {
 }
 
 // Audio (record ki hui, chuni hui ya purani) save karne se pehle sunkar check karne ke liye
+// Browser ki recording (webm) mein length likhi nahi hoti, isliye player "0:00 / 0:00"
+// dikhata tha. Ye usse sahi length dikhane layak bana deta hai.
+function fixAudioDuration(a) {
+  if (a.dataset.durFix) return;
+  a.dataset.durFix = '1';
+  a.addEventListener('loadedmetadata', function () {
+    if (a.duration === Infinity || isNaN(a.duration)) {
+      a.currentTime = 1e101;
+      const back = function () {
+        a.removeEventListener('timeupdate', back);
+        a.currentTime = 0;
+      };
+      a.addEventListener('timeupdate', back);
+    }
+  });
+}
+
+function playSavedCustomAudio() {
+  if (window.customSavedAudioUrl) setEventAudioPreview(window.customSavedAudioUrl, 'customAlarmAudioPreview');
+}
+
 function setEventAudioPreview(src, audioId) {
   const a = document.getElementById(audioId || 'eventAudioPreview');
   if (!a) return;
   if (src) {
+    fixAudioDuration(a);
     a.src = src;
     a.style.display = 'block';
     a.load();
