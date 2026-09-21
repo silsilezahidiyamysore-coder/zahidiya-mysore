@@ -1,316 +1,133 @@
-// functions/api/check-and-notify.js
-// Isko har 1 minute mein ek free cron-service (jaise cron-job.org) se hit karwana hai.
-// Yeh khud current IST time check karke, agar namaz/custom-alarm/event ka time hua ho,
-// to sab (ya matching) mureedon ke phone par REAL push notification bhej deta hai —
-// chahe unki screen lock ho ya app band ho.
+// GET /api/alarm-settings -> current settings laata hai
+// POST /api/alarm-settings -> Admin naye settings save karta hai
+import { sendRefreshSettingsPush } from './fcm-helper.js';
 
-import { buildPushHTTPRequest } from "@pushforge/builder";
-import { sendAlarmRingPush } from "./fcm-helper.js";
-
-function nowIST() {
-  // Cloudflare Worker hamesha UTC mein chalta hai, isliye 5:30 add karke IST nikalte hain
-  return new Date(Date.now() + 5.5 * 60 * 60 * 1000);
-}
-
-function istDateStr(d) {
-  return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
-}
-
-function toMinutes(hhmm) {
-  if (!hhmm) return null;
-  const parts = String(hhmm).trim().split(' ')[0].split(':');
-  const h = parseInt(parts[0], 10);
-  const m = parseInt(parts[1], 10);
-  if (isNaN(h) || isNaN(m)) return null;
-  return h * 60 + m;
-}
-
-// cron-job.org (free plan) hamesha EXACT minute par hit nahi karta — kabhi 1-2 min
-// late ho jaata hai ya ek baar ka "tick" miss ho jaata hai. Pehle code sirf
-// "abhi ka minute == namaz ka minute" (===) check karta tha, jisse agar cron
-// thodi der se chala to us din ka alarm hamesha ke liye miss ho jaata tha
-// (dubara try hi nahi hota tha). Ab hum ek chhota "pakड़ने" wala window
-// (0 se WINDOW_MIN minute tak der se) allow karte hain — agar cron thodi der
-// se chale to bhi alarm baj jaayega, aur shouldSend() ki wajah se dubara
-// (duplicate) nahi bajega.
-const CATCHUP_WINDOW_MIN = 4;
-function isDueNow(targetMin, nowMin) {
-  if (targetMin === null) return false;
-  const diff = nowMin - targetMin;
-  return diff >= 0 && diff <= CATCHUP_WINDOW_MIN;
-}
-
-async function shouldSend(db, key) {
+export async function onRequestGet(context) {
+  const db = context.env.DB;
   try {
-    const res = await db.prepare(`INSERT OR IGNORE INTO push_sent_log (alarm_key, sent_at) VALUES (?, ?)`)
-      .bind(key, new Date().toISOString()).run();
-    return res.meta && res.meta.changes > 0;
-  } catch (e) { return false; }
-}
-
-async function getTodayPrayerTimes(db, dateStr) {
-  const row = await db.prepare(`SELECT * FROM daily_prayer_cache WHERE date = ?`).bind(dateStr).first();
-  if (row) return row;
-  try {
-    const res = await fetch('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
-    const data = await res.json();
-    const t = data.data.timings;
-    const clean = (s) => (s || '').split(' ')[0];
-    const times = { fajr: clean(t.Fajr), dhuhr: clean(t.Dhuhr), asr: clean(t.Asr), maghrib: clean(t.Maghrib), isha: clean(t.Isha) };
-    await db.prepare(
-      `INSERT OR REPLACE INTO daily_prayer_cache (date, fajr, dhuhr, asr, maghrib, isha) VALUES (?, ?, ?, ?, ?, ?)`
-    ).bind(dateStr, times.fajr, times.dhuhr, times.asr, times.maghrib, times.isha).run();
-    return { date: dateStr, ...times };
-  } catch (e) { return null; }
-}
-
-// Fajr ka asli "khatam" waqt Sunrise hota hai (website aur app ki list bhi
-// yahi dikhati hain). Sunrise DB mein save nahi hota, isliye yahin se lete
-// hain. Na mile to purana tareeka (agli namaz ka waqt) chalega.
-let _sunriseCache = { date: '', value: null };
-async function getSunriseHHMM(dateStr) {
-  if (_sunriseCache.date === dateStr && _sunriseCache.value) return _sunriseCache.value;
-  try {
-    const res = await fetch('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
-    const data = await res.json();
-    const v = String(data.data.timings.Sunrise || '').split(' ')[0];
-    if (v) { _sunriseCache = { date: dateStr, value: v }; return v; }
-  } catch (e) {}
-  return null;
-}
-
-async function sendPushToSubscription(env, sub, payload) {
-  const request = await buildPushHTTPRequest({
-    privateJWK: env.VAPID_PRIVATE_KEY_JWK,
-    subscription: { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-    message: {
-      payload,
-      adminContact: 'mailto:silsilezahidiyamysore@gmail.com',
-      options: { ttl: 1800, urgency: 'high' }
-    }
-  });
-  const res = await fetch(request.endpoint, { method: 'POST', headers: request.headers, body: request.body });
-  return res.status;
-}
-
-async function sendToSubscriptions(env, db, subs, payload) {
-  for (const sub of subs) {
-    try {
-      const status = await sendPushToSubscription(env, sub, payload);
-      if (status === 404 || status === 410) {
-        // Yeh subscription ab mar chuki hai (mureed ne notification band kar di ya app uninstall)
-        await db.prepare(`DELETE FROM push_subscriptions WHERE id = ?`).bind(sub.id).run();
-      }
-    } catch (e) { /* ek subscription fail ho to baaki na ruken */ }
+    const settings = await db
+      .prepare('SELECT * FROM alarm_settings WHERE id = 1')
+      .first();
+    return Response.json({ settings });
+  } catch (err) {
+    return Response.json({ error: String(err) }, { status: 500 });
   }
 }
 
-export async function onRequestGet(context) {
-  return handle(context);
-}
-export async function onRequestPost(context) {
-  return handle(context);
-}
-
-async function handle(context) {
+// Custom alarm ke content (text/image/audio/PDF) ke liye 3 naye column chahiye.
+// Agar database mein nahi hain to yahin apne aap ban jaate hain (kuch manually
+// karne ki zaroorat nahi). Fail ho to false deta hai, baaki save phir bhi chalta hai.
+async function ensureCustomContentColumns(db) {
   try {
-    const db = context.env.DB;
-    if (!context.env.VAPID_PRIVATE_KEY_JWK) {
-      return Response.json({ success: false, message: "VAPID_PRIVATE_KEY_JWK env var set nahi hai" }, { status: 500 });
-    }
-
-    const ist = nowIST();
-    const nowMin = ist.getUTCHours() * 60 + ist.getUTCMinutes();
-    const todayISO = istDateStr(ist);
-    const todayDow = ist.getUTCDay();
-    const todayDate = ist.getUTCDate();
-    let sentCount = 0;
-
-    const alarmSettings = await db.prepare(`SELECT * FROM alarm_settings WHERE id = 1`).first();
-    const allSubs = (await db.prepare(`SELECT * FROM push_subscriptions`).all()).results || [];
-    const allMureeds = (await db.prepare(`SELECT id, mobile, group_type, role FROM mureeds`).all()).results || [];
-    const mureedByMobile = {};
-    allMureeds.forEach(m => { mureedByMobile[m.mobile] = m; });
-
-    // ---------- 1) NAMAZ ALARM ----------
-    if (alarmSettings && Number(alarmSettings.start_alarm_enabled) !== 0) {
-      const prayerTimes = await getTodayPrayerTimes(db, todayISO);
-      if (prayerTimes) {
-        const prayers = [
-          ['Fajr', prayerTimes.fajr], ['Dhuhr', prayerTimes.dhuhr], ['Asr', prayerTimes.asr],
-          ['Maghrib', prayerTimes.maghrib], ['Isha', prayerTimes.isha]
-        ];
-        for (const [name, time] of prayers) {
-          const tMin = toMinutes(time);
-          if (isDueNow(tMin, nowMin)) {
-            const key = 'namaz-' + name + '-' + todayISO;
-            if (await shouldSend(db, key)) {
-              await sendToSubscriptions(context.env, db, allSubs, {
-                title: '🕌 ' + name + ' ki namaz ka waqt ho gaya hai',
-                body: 'Silsila-e-Zahidiya Mysore', tag: 'namaz-' + name
-              });
-              await sendAlarmRingPush(context.env, name + ' ki namaz ka waqt ho gaya hai', alarmSettings.start_alarm_duration_seconds || 60, 'both', 'namaz');
-              sentCount++;
-            }
-          }
-        }
+    const info = await db.prepare('PRAGMA table_info(alarm_settings)').all();
+    const have = new Set((info.results || []).map(r => r.name));
+    const cols = [
+      ['custom_alarm_content_type', "TEXT DEFAULT 'none'"],
+      ['custom_alarm_content_text', "TEXT DEFAULT ''"],
+      ['custom_alarm_file_url', "TEXT DEFAULT ''"],
+      ['custom_alarm_group', "TEXT DEFAULT 'both'"]
+    ];
+    for (const [name, def] of cols) {
+      if (!have.has(name)) {
+        await db.prepare('ALTER TABLE alarm_settings ADD COLUMN ' + name + ' ' + def).run();
       }
     }
-    // ---------- 1.5) END REMINDER (namaz khatam hone se pehle) ----------
-    if (alarmSettings && Number(alarmSettings.end_reminder_enabled) !== 0) {
-      const prayerTimes = await getTodayPrayerTimes(db, todayISO);
-      if (prayerTimes) {
-        const names = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-        const times = [prayerTimes.fajr, prayerTimes.dhuhr, prayerTimes.asr, prayerTimes.maghrib, prayerTimes.isha];
-        for (let i = 0; i < names.length; i++) {
-          const tMin = toMinutes(times[i]);
-          if (tMin === null) continue;
-          let nextTMin = (i + 1 < names.length) ? toMinutes(times[i + 1]) : (tMin + 45);
-          if (nextTMin === null) continue;
-          // Fajr ka "End" = Sunrise (Dhuhr nahi) — admin panel/app jaisa
-          if (i === 0) {
-            const sr = toMinutes(await getSunriseHHMM(todayISO));
-            if (sr !== null && sr > tMin) nextTMin = sr;
-          }
-          const reminderMin = nextTMin - (alarmSettings.end_reminder_minutes_before || 0);
-          if (isDueNow(reminderMin, nowMin)) {
-            const key = 'endreminder-' + names[i] + '-' + todayISO;
-            if (await shouldSend(db, key)) {
-              await sendToSubscriptions(context.env, db, allSubs, {
-                title: '⏳ ' + names[i] + ' ki namaz khatam hone wali hai (' + alarmSettings.end_reminder_minutes_before + ' min)',
-                body: 'Silsila-e-Zahidiya Mysore', tag: 'end-reminder-' + names[i]
-              });
-              await sendAlarmRingPush(context.env, names[i] + ' ki namaz khatam hone wali hai', alarmSettings.end_reminder_beep_seconds || 20, 'both', 'namaz');
-              sentCount++;
-            }
-          }
-        }
-      }
-    }
-    // ---------- 2) CUSTOM ALARM ----------
-    if (alarmSettings && Number(alarmSettings.custom_alarm_enabled) !== 0 && alarmSettings.custom_alarm_start) {
-      const sMin = toMinutes(alarmSettings.custom_alarm_start);
-      if (isDueNow(sMin, nowMin)) {
-        const key = 'customalarm-' + todayISO + '-' + alarmSettings.custom_alarm_start;
-        if (await shouldSend(db, key)) {
-          await sendToSubscriptions(context.env, db, allSubs, {
-            title: '🔔 ' + (alarmSettings.custom_alarm_title || 'Alarm'),
-            body: 'Silsila-e-Zahidiya Mysore', tag: 'custom-alarm'
-          });
-          await sendAlarmRingPush(context.env, alarmSettings.custom_alarm_title || 'Alarm', alarmSettings.start_alarm_duration_seconds || 60, 'both', 'custom');
-          sentCount++;
-        }
-      }
-    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 
-    // ---------- 2.5) CUSTOM ALARM END (khatam hone par alarm) ----------
-    if (alarmSettings && Number(alarmSettings.custom_alarm_enabled) !== 0 && alarmSettings.custom_alarm_start && alarmSettings.custom_alarm_end) {
-      const cEndMin = toMinutes(alarmSettings.custom_alarm_end);
-      if (isDueNow(cEndMin, nowMin)) {
-        const key = 'customalarm-end-' + todayISO + '-' + alarmSettings.custom_alarm_end;
-        if (await shouldSend(db, key)) {
-          await sendToSubscriptions(context.env, db, allSubs, {
-            title: '⏳ ' + (alarmSettings.custom_alarm_title || 'Alarm') + ' khatam ho gaya',
-            body: 'Silsila-e-Zahidiya Mysore', tag: 'custom-alarm-end'
-          });
-          await sendAlarmRingPush(context.env, alarmSettings.custom_alarm_title || 'Alarm', alarmSettings.end_reminder_beep_seconds || 20, 'both', 'custom');
-          sentCount++;
-        }
-      }
-    }
+export async function onRequestPost(context) {
+  const db = context.env.DB;
+  try {
+    const body = await context.request.json();
 
-    // ---------- 3) EVENTS (weekly / monthly / ek-baar) ----------
-    const events = (await db.prepare(`SELECT * FROM events WHERE is_enabled = 1`).all()).results || [];
-    for (const ev of events) {
-      let matchesToday = false;
-      if (ev.repeat_type === 'weekly' && Number(ev.day_of_week) === todayDow) matchesToday = true;
-      else if (ev.repeat_type === 'monthly' && Number(ev.day_of_month) === todayDate) matchesToday = true;
-      else if (ev.repeat_type === 'once' && ev.event_date === todayISO) matchesToday = true;
-      if (!matchesToday) continue;
+    // Pehle current row nikalo taaki jo field bheji nahi gayi wo purani hi rahe
+    const existing = await db.prepare('SELECT * FROM alarm_settings WHERE id = 1').first();
 
-      const sMin = toMinutes(ev.start_time);
-      if (!isDueNow(sMin, nowMin)) continue;
+    const start_alarm_enabled = body.start_alarm_enabled !== undefined ? (body.start_alarm_enabled ? 1 : 0) : existing.start_alarm_enabled;
+    const start_alarm_duration_seconds = body.start_alarm_duration_seconds !== undefined ? body.start_alarm_duration_seconds : existing.start_alarm_duration_seconds;
+    const end_reminder_enabled = body.end_reminder_enabled !== undefined ? (body.end_reminder_enabled ? 1 : 0) : existing.end_reminder_enabled;
+    const end_reminder_minutes_before = body.end_reminder_minutes_before !== undefined ? body.end_reminder_minutes_before : existing.end_reminder_minutes_before;
+    const end_reminder_repeat_count = body.end_reminder_repeat_count !== undefined ? body.end_reminder_repeat_count : existing.end_reminder_repeat_count;
+    const end_reminder_beep_seconds = body.end_reminder_beep_seconds !== undefined ? body.end_reminder_beep_seconds : existing.end_reminder_beep_seconds;
+    const custom_alarm_enabled = body.custom_alarm_enabled !== undefined ? (body.custom_alarm_enabled ? 1 : 0) : (existing.custom_alarm_enabled || 0);
+    const custom_alarm_title = body.custom_alarm_title !== undefined ? body.custom_alarm_title : (existing.custom_alarm_title || '');
+    const custom_alarm_start = body.custom_alarm_start !== undefined ? body.custom_alarm_start : (existing.custom_alarm_start || '');
+    const custom_alarm_end = body.custom_alarm_end !== undefined ? body.custom_alarm_end : (existing.custom_alarm_end || '');
+    const khanqah_address = body.khanqah_address !== undefined ? body.khanqah_address : (existing.khanqah_address || '');
+    const khanqah_map_link = body.khanqah_map_link !== undefined ? body.khanqah_map_link : (existing.khanqah_map_link || '');
+    const alarm_tone_url = body.alarm_tone_url !== undefined ? body.alarm_tone_url : (existing.alarm_tone_url || '');
+    const event_tone_url = body.event_tone_url !== undefined ? body.event_tone_url : (existing.event_tone_url || '');
+    const live_class_tone_url = body.live_class_tone_url !== undefined ? body.live_class_tone_url : (existing.live_class_tone_url || '');
+    const custom_alarm_tone_url = body.custom_alarm_tone_url !== undefined ? body.custom_alarm_tone_url : (existing.custom_alarm_tone_url || '');
 
-      const key = 'event-' + ev.id + '-' + todayISO;
-      if (!(await shouldSend(db, key))) continue;
+    await db
+      .prepare(`
+        UPDATE alarm_settings SET
+          start_alarm_enabled = ?,
+          start_alarm_duration_seconds = ?,
+          end_reminder_enabled = ?,
+          end_reminder_minutes_before = ?,
+          end_reminder_repeat_count = ?,
+          end_reminder_beep_seconds = ?,
+          custom_alarm_enabled = ?,
+          custom_alarm_title = ?,
+          custom_alarm_start = ?,
+          custom_alarm_end = ?,
+          khanqah_address = ?,
+          khanqah_map_link = ?,
+          alarm_tone_url = ?,
+          event_tone_url = ?,
+          live_class_tone_url = ?,
+          custom_alarm_tone_url = ?,
+          updated_at = datetime('now')
+        WHERE id = 1
+      `)
+      .bind(
+        start_alarm_enabled,
+        start_alarm_duration_seconds,
+        end_reminder_enabled,
+        end_reminder_minutes_before,
+        end_reminder_repeat_count,
+        end_reminder_beep_seconds,
+        custom_alarm_enabled,
+        custom_alarm_title,
+        custom_alarm_start,
+        custom_alarm_end,
+        khanqah_address,
+        khanqah_map_link,
+        alarm_tone_url,
+        event_tone_url,
+        live_class_tone_url,
+        custom_alarm_tone_url
+      )
+      .run();
 
-      const targetSubs = allSubs.filter(sub => {
-        const m = mureedByMobile[sub.mobile];
-        if (!m) return false;
-        if (m.role === 'admin') return true;
-        return ev.group_type === 'both' || ev.group_type === m.group_type;
-      });
-      await sendToSubscriptions(context.env, db, targetSubs, {
-        title: '📅 ' + ev.title,
-        body: 'Silsila-e-Zahidiya Mysore', tag: 'event-' + ev.id
-      });
-      await sendAlarmRingPush(context.env, ev.title, alarmSettings ? (alarmSettings.start_alarm_duration_seconds || 60) : 60, ev.group_type, 'event');
-      sentCount++;
-    }
-
-    // ---------- 3.5) EVENT END TIME (khatam hone par alarm) ----------
-    for (const ev of events) {
-      let matchesToday = false;
-      if (ev.repeat_type === 'weekly' && Number(ev.day_of_week) === todayDow) matchesToday = true;
-      else if (ev.repeat_type === 'monthly' && Number(ev.day_of_month) === todayDate) matchesToday = true;
-      else if (ev.repeat_type === 'once' && ev.event_date === todayISO) matchesToday = true;
-      if (!matchesToday) continue;
-      if (!ev.end_time) continue;
-
-      const eMin = toMinutes(ev.end_time);
-      if (!isDueNow(eMin, nowMin)) continue;
-
-      const key = 'event-end-' + ev.id + '-' + todayISO;
-      if (!(await shouldSend(db, key))) continue;
-
-      const targetSubs = allSubs.filter(sub => {
-        const m = mureedByMobile[sub.mobile];
-        if (!m) return false;
-        if (m.role === 'admin') return true;
-        return ev.group_type === 'both' || ev.group_type === m.group_type;
-      });
-      await sendToSubscriptions(context.env, db, targetSubs, {
-        title: '⏳ ' + ev.title + ' khatam ho gaya',
-        body: 'Silsila-e-Zahidiya Mysore', tag: 'event-end-' + ev.id
-      });
-      await sendAlarmRingPush(context.env, ev.title, alarmSettings ? (alarmSettings.end_reminder_beep_seconds || 20) : 20, ev.group_type, 'event');
-      sentCount++;
+    // Custom alarm ka content (alag se save — taaki upar wala purana save kabhi na bigde)
+    if (body.custom_alarm_content_type !== undefined && await ensureCustomContentColumns(db)) {
+      await db
+        .prepare(`UPDATE alarm_settings SET
+          custom_alarm_content_type = ?,
+          custom_alarm_content_text = ?,
+          custom_alarm_file_url = ?,
+          custom_alarm_group = ?
+          WHERE id = 1`)
+        .bind(
+          body.custom_alarm_content_type || 'none',
+          body.custom_alarm_content_text || '',
+          body.custom_alarm_file_url || '',
+          ['both', 'mardana', 'zanana'].includes(body.custom_alarm_group) ? body.custom_alarm_group : 'both'
+        )
+        .run();
     }
 
-    // ---------- 4) NAYI/EDIT CLASSES (existing "notifications" table use karte hain) ----------
-    const recentNotifs = (await db.prepare(
-      `SELECT * FROM notifications ORDER BY id DESC LIMIT 30`
-    ).all()).results || [];
-    for (const n of recentNotifs) {
-      const key = 'classnotif-' + n.id;
-      if (!(await shouldSend(db, key))) continue;
+    // Sabhi mureedon ki app ko turant naya tone/duration fetch karne ka signal bhejo
+    context.waitUntil(sendRefreshSettingsPush(context.env).catch(() => {}));
 
-      let targetSubs;
-      if (n.target_mobile) {
-        targetSubs = allSubs.filter(sub => sub.mobile === n.target_mobile);
-      } else if (n.target_role === 'admin') {
-        targetSubs = allSubs.filter(sub => {
-          const m = mureedByMobile[sub.mobile];
-          return m && m.role === 'admin';
-        });
-      } else if (n.target_role === 'mureed') {
-        targetSubs = allSubs.filter(sub => {
-          const m = mureedByMobile[sub.mobile];
-          return m && m.role !== 'admin';
-        });
-      } else {
-        targetSubs = allSubs;
-      }
-
-      await sendToSubscriptions(context.env, db, targetSubs, {
-        title: '📚 ' + (n.message || 'Nayi Class Aayi Hai'),
-        body: 'Silsila-e-Zahidiya Mysore', tag: 'class-notif-' + n.id
-      });
-      sentCount++;
-    }
-
-    return Response.json({ success: true, checked_at_ist: ist.toISOString(), sent: sentCount });
+    return Response.json({ message: 'Alarm settings updated successfully' });
   } catch (err) {
-    return Response.json({ success: false, message: err.message, stack: err.stack }, { status: 500 });
+    return Response.json({ error: String(err) }, { status: 500 });
   }
 }
