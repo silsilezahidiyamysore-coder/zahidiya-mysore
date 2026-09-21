@@ -24,7 +24,8 @@ async function ensureCustomContentColumns(db) {
     const cols = [
       ['custom_alarm_content_type', "TEXT DEFAULT 'none'"],
       ['custom_alarm_content_text', "TEXT DEFAULT ''"],
-      ['custom_alarm_file_url', "TEXT DEFAULT ''"]
+      ['custom_alarm_file_url', "TEXT DEFAULT ''"],
+      ['custom_alarm_group', "TEXT DEFAULT 'both'"]
     ];
     for (const [name, def] of cols) {
       if (!have.has(name)) {
@@ -110,12 +111,14 @@ export async function onRequestPost(context) {
         .prepare(`UPDATE alarm_settings SET
           custom_alarm_content_type = ?,
           custom_alarm_content_text = ?,
-          custom_alarm_file_url = ?
+          custom_alarm_file_url = ?,
+          custom_alarm_group = ?
           WHERE id = 1`)
         .bind(
           body.custom_alarm_content_type || 'none',
           body.custom_alarm_content_text || '',
-          body.custom_alarm_file_url || ''
+          body.custom_alarm_file_url || '',
+          ['both', 'mardana', 'zanana'].includes(body.custom_alarm_group) ? body.custom_alarm_group : 'both'
         )
         .run();
     }
