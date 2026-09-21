@@ -210,7 +210,8 @@ export async function onRequestGet(context) {
     }
 
     // ---------- 1b) CUSTOM ALARM ----------
-    if (alarmSettings && Number(alarmSettings.custom_alarm_enabled) !== 0 && alarmSettings.custom_alarm_start) {
+    if (alarmSettings && Number(alarmSettings.custom_alarm_enabled) !== 0 && alarmSettings.custom_alarm_start &&
+        (isAdmin || !groupType || !alarmSettings.custom_alarm_group || alarmSettings.custom_alarm_group === 'both' || alarmSettings.custom_alarm_group === groupType)) {
       const dt = buildISTDateTime(todayISO, alarmSettings.custom_alarm_start);
       if (dt) {
         // Custom alarm ka text/file bhi bhejte hain, taaki alarm app ke andar hi khul jaaye
