@@ -122,12 +122,12 @@ export async function onRequestPost(context) {
 
     if (geminiKey) {
       const audio_base64 = await synthGemini(text, geminiKey, speed);
-      return Response.json({ success: true, audio_base64, engine: 'gemini' });
+      return Response.json({ success: true, audio_base64, format: 'wav', engine: 'gemini' });
     }
 
     if (googleTtsKey) {
       const audio_base64 = await synthGoogleCloudFallback(text, googleTtsKey, speed);
-      return Response.json({ success: true, audio_base64, engine: 'google-cloud-tts' });
+      return Response.json({ success: true, audio_base64, format: 'mp3', engine: 'google-cloud-tts' });
     }
 
     return Response.json({ success: false, message: 'GEMINI_API_KEY ya GOOGLE_TTS_API_KEY set nahi hai' });
