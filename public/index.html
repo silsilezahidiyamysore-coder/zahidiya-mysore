@@ -450,8 +450,12 @@ a { color: #ffd700; }
           <option value="image" data-i18n="opt_image">Image</option>
           <option value="pdf" data-i18n="opt_pdf">PDF</option>
           <option value="audio" data-i18n="opt_content_audio">Audio (record ya upload)</option>
+          <option value="youtube" data-i18n="opt_youtube">YouTube Live / Video Link</option>
           <option value="none" data-i18n="opt_no_reminder">Kuch nahi, sirf reminder</option>
         </select>
+
+        <input type="text" id="eventYoutubeLink" placeholder="YouTube link paste karo (Live ya video)" data-i18n-placeholder="event_youtube_ph" style="display:none;" oninput="onEventYoutubeInput()">
+        <div id="eventYoutubePreview" style="display:none; margin-top:8px;"></div>
 
         <textarea id="eventTextContent" data-i18n-placeholder="event_text_content_ph" placeholder="Yahan likho jo mureedon ko dikhna hai..." style="display:block; min-height:70px;"></textarea>
         <div id="eventTextContentUrWrap" style="display:block;">
@@ -460,7 +464,12 @@ a { color: #ffd700; }
         </div>
         <input type="file" id="eventFileInput" accept="image/*" style="display:none;" onchange="onEventFileChosen(this)">
         <div id="eventFilePreview" style="display:none;"></div>
+        <button type="button" id="eventRemoveContentBtn" class="secondary" style="display:none; background:#8b1a1a; margin-top:6px;" onclick="removeEventContent()" data-i18n="remove_content_btn">🗑️ Content Hatao</button>
         <div id="eventAudioBox" style="display:none;">
+          <div id="eventSavedAudio" style="display:none; margin-bottom:8px;">
+            <p style="font-size:12px; color:#cde; margin:4px 0;" data-i18n="saved_audio_note">✅ Pehle se ek audio save hai (nayi record ya upload karoge to badal jayegi)</p>
+            <button type="button" class="secondary" style="width:auto; padding:6px 14px;" onclick="playSavedEventAudio()" data-i18n="listen_saved_audio_btn">▶️ Purani audio suno</button>
+          </div>
           <input type="file" id="eventAudioFileInput" accept="audio/*" onchange="onEventAudioFileChosen(this)">
           <p style="font-size:12px; text-align:center; margin:6px 0; color:#cde;" data-i18n="or_record_note">— ya seedha record karo —</p>
           <button type="button" id="eventRecordBtn" class="secondary" onclick="startEventRecording()" data-i18n="record_karo_btn">🎙️ Record Karo</button>
@@ -644,7 +653,7 @@ const TRANSLATIONS = {
     event_tone_note: "This tone will play when an event's time arrives. If nothing is uploaded, the default Alarm Tone will be used.",
     custom_tone_label: "🔔 Custom Alarm Tone",
     custom_tone_note: "A separate ringtone for this custom alarm. If nothing is uploaded, the default Alarm Tone will be used.",
-    custom_alarm_title_ur_ph: "Urdu name (optional)", event_title_ur_ph: "Urdu name (optional)", custom_content_label: "📎 Content to show with this alarm (optional)", custom_group_label: "👥 Who should get this alarm?",
+    custom_alarm_title_ur_ph: "Urdu name (optional)", event_title_ur_ph: "Urdu name (optional)", opt_youtube: "YouTube Live / Video Link", event_youtube_ph: "Paste YouTube link (live or video)", custom_content_label: "📎 Content to show with this alarm (optional)", custom_group_label: "👥 Who should get this alarm?", saved_audio_note: "✅ An audio is already saved (recording or uploading a new one will replace it)", listen_saved_audio_btn: "▶️ Listen to saved audio", remove_content_btn: "🗑️ Remove content",
     bilingual_name_note: "Fill both to show the correct name in English and Urdu. Just one also works.",
     auto_translate_btn: "🔄 Auto-Translate to Urdu", auto_urdu_btn: "🌐 Auto Make Urdu",
     urdu_suno_btn: "🌐 Listen in Urdu",
@@ -755,7 +764,7 @@ const TRANSLATIONS = {
     event_tone_note: "جب کسی ایونٹ کا وقت آتا ہے تو یہ ٹون بجے گی۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
     custom_tone_label: "🔔 کسٹم الارم ٹون",
     custom_tone_note: "اس کسٹم الارم کے لیے الگ ٹون۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
-    custom_alarm_title_ur_ph: "اردو نام (اختیاری)", event_title_ur_ph: "اردو نام (اختیاری)", custom_content_label: "📎 اس الارم کے ساتھ دکھانے کا مواد (اختیاری)", custom_group_label: "👥 یہ الارم کس کو جائے؟",
+    custom_alarm_title_ur_ph: "اردو نام (اختیاری)", event_title_ur_ph: "اردو نام (اختیاری)", opt_youtube: "یوٹیوب لائیو / ویڈیو لنک", event_youtube_ph: "یوٹیوب لنک پیسٹ کریں (لائیو یا ویڈیو)", custom_content_label: "📎 اس الارم کے ساتھ دکھانے کا مواد (اختیاری)", custom_group_label: "👥 یہ الارم کس کو جائے؟", saved_audio_note: "✅ پہلے سے ایک آڈیو محفوظ ہے (نئی ریکارڈ یا اپ لوڈ کرنے پر بدل جائے گی)", listen_saved_audio_btn: "▶️ محفوظ آڈیو سنیں", remove_content_btn: "🗑️ مواد ہٹائیں",
     bilingual_name_note: "دونوں بھر دیں تو انگریزی/اردو دونوں میں صحیح نام دکھے گا۔ صرف ایک بھی چلے گا۔",
     auto_translate_btn: "🔄 اردو میں خودکار ترجمہ کریں", auto_urdu_btn: "🌐 اردو خودکار بنائیں",
     urdu_suno_btn: "🌐 اردو میں سنیں",
@@ -2925,11 +2934,16 @@ function toggleEventContentFields() {
   const type = document.getElementById('eventContentType').value;
   document.getElementById('eventTextContent').style.display = type === 'text' ? 'block' : 'none';
   document.getElementById('eventTextContentUrWrap').style.display = type === 'text' ? 'block' : 'none';
+  document.getElementById('eventYoutubeLink').style.display = type === 'youtube' ? 'block' : 'none';
+  if (type !== 'youtube') document.getElementById('eventYoutubePreview').style.display = 'none';
   const fileInput = document.getElementById('eventFileInput');
   fileInput.style.display = (type === 'image' || type === 'pdf') ? 'block' : 'none';
   fileInput.accept = type === 'pdf' ? 'application/pdf' : 'image/*';
   document.getElementById('eventAudioBox').style.display = type === 'audio' ? 'block' : 'none';
   setEventFilePreview('', ''); // type badalne par purana preview hata do
+  const hasSavedContent = !!(window.eventSavedAudioUrl || window.eventEditingHasContent);
+  document.getElementById('eventRemoveContentBtn').style.display = (type !== 'none' && hasSavedContent) ? 'block' : 'none';
+  if (type !== 'audio') document.getElementById('eventSavedAudio').style.display = 'none';
 }
 
 // Image / PDF save karne se pehle dekhkar check karne ke liye preview
@@ -2978,6 +2992,42 @@ function playSavedCustomAudio() {
   if (window.customSavedAudioUrl) setEventAudioPreview(window.customSavedAudioUrl, 'customAlarmAudioPreview');
 }
 
+function playSavedEventAudio() {
+  if (window.eventSavedAudioUrl) setEventAudioPreview(window.eventSavedAudioUrl);
+}
+
+// "Content Hatao" — is event/alarm se text/image/audio/PDF hata deta hai (agli
+// baar Save karne par khud-ba-khud "kuch nahi" ho jayega)
+// Kisi bhi YouTube link (video ya /live/...) se uski ID nikalta hai, taaki
+// use seedha isi page ke andar (embed) dikhaya ja sake — YouTube app ya
+// naya tab kholne ki zaroorat nahi padti
+function youtubeVideoId(url) {
+  if (!url) return '';
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|live\/|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/);
+  return m ? m[1] : '';
+}
+function youtubeEmbedHtml(url) {
+  const id = youtubeVideoId(url);
+  if (!id) return '';
+  return '<div style="position:relative; padding-top:56.25%;"><iframe src="https://www.youtube.com/embed/' + id + '?autoplay=0" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0; border-radius:8px;" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
+}
+function onEventYoutubeInput() {
+  window.customContentDirty = true;
+  const url = document.getElementById('eventYoutubeLink').value.trim();
+  const box = document.getElementById('eventYoutubePreview');
+  const html = youtubeEmbedHtml(url);
+  if (html) { box.innerHTML = html; box.style.display = 'block'; }
+  else { box.style.display = 'none'; box.innerHTML = ''; }
+}
+
+function removeEventContent() {
+  document.getElementById('eventContentType').value = 'none';
+  toggleEventContentFields();
+  window.eventSavedAudioUrl = '';
+  document.getElementById('eventSavedAudio').style.display = 'none';
+  document.getElementById('eventRemoveContentBtn').style.display = 'none';
+}
+
 function setEventAudioPreview(src, audioId) {
   const a = document.getElementById(audioId || 'eventAudioPreview');
   if (!a) return;
@@ -2994,6 +3044,7 @@ function setEventAudioPreview(src, audioId) {
   }
 }
 function onEventAudioFileChosen(input) {
+  document.getElementById('eventSavedAudio').style.display = 'none';
   const f = input.files && input.files[0];
   if (f) {
     window.eventRecordedBlob = null; // chuni hui file hi save hogi
@@ -3014,6 +3065,7 @@ async function startEventRecording() {
       stream.getTracks().forEach(t => t.stop());
       window.eventRecordedBlob = new Blob(eventRecordedChunks, { type: 'audio/webm' });
       document.getElementById('eventRecordStatus').innerText = '✅ Recording taiyar hai (' + Math.round(window.eventRecordedBlob.size / 1024) + ' KB) — neeche play karke suno, theek ho to "Event Save Karo" dabao';
+      document.getElementById('eventSavedAudio').style.display = 'none';
       document.getElementById('eventAudioFileInput').value = ''; // ab yahi recording save hogi
       setEventAudioPreview(URL.createObjectURL(window.eventRecordedBlob));
       const btn = document.getElementById('eventRecordBtn');
@@ -3083,6 +3135,9 @@ async function saveEvent() {
       if (file) { file_url = await uploadFileGetUrl(file); }
       else if (existing) { file_url = existing.file_url || ''; }
       else { alert('File choose karo'); return; }
+    } else if (content_type === 'youtube') {
+      file_url = document.getElementById('eventYoutubeLink').value.trim();
+      if (!youtubeVideoId(file_url)) { alert('Sahi YouTube link daalo'); return; }
     } else if (content_type === 'audio') {
       const file = document.getElementById('eventAudioFileInput').files[0];
       if (file) { file_url = await uploadFileGetUrl(file); }
@@ -3162,8 +3217,13 @@ function editEvent(id) {
   set12HourFields('eventEnd', ev.end_time);
   document.getElementById('eventGroup').value = ev.group_type;
   document.getElementById('eventContentType').value = ev.content_type || 'text';
+  document.getElementById('eventYoutubeLink').value = ev.content_type === 'youtube' ? (ev.file_url || '') : '';
+  if (ev.content_type === 'youtube') onEventYoutubeInput();
+  window.eventSavedAudioUrl = ev.content_type === 'audio' ? (ev.file_url || '') : '';
+  window.eventEditingHasContent = !!((ev.content_type === 'text' && ev.content_text) || (ev.content_type !== 'text' && ev.content_type !== 'none' && ev.file_url));
   toggleEventContentFields();
-  setEventAudioPreview(ev.content_type === 'audio' && ev.file_url ? ev.file_url : '');
+  setEventAudioPreview('');
+  document.getElementById('eventSavedAudio').style.display = window.eventSavedAudioUrl ? 'block' : 'none';
   setEventFilePreview((ev.content_type === 'image' || ev.content_type === 'pdf') && ev.file_url ? ev.file_url : '', ev.content_type);
   const txtSplit = splitBilingualText(ev.content_text || '');
   document.getElementById('eventTextContent').value = txtSplit.en;
@@ -3180,6 +3240,12 @@ function cancelEditEvent() {
   document.getElementById('eventTextContent').value = '';
   document.getElementById('eventTextContentUr').value = '';
   document.getElementById('eventFileInput').value = '';
+  window.eventSavedAudioUrl = '';
+  window.eventEditingHasContent = false;
+  document.getElementById('eventYoutubeLink').value = '';
+  document.getElementById('eventYoutubePreview').style.display = 'none';
+  document.getElementById('eventSavedAudio').style.display = 'none';
+  document.getElementById('eventRemoveContentBtn').style.display = 'none';
   document.getElementById('eventAudioFileInput').value = '';
   window.eventRecordedBlob = null;
   document.getElementById('eventRecordStatus').innerText = '';
@@ -3275,6 +3341,8 @@ function showContentModal(title, contentType, contentText, fileUrl) {
     inner += '<a href="' + fileUrl + '" target="_blank" style="color:#ffd700; font-weight:bold;">📄 PDF Kholo / Download Karo</a>';
   } else if (contentType === 'audio' && fileUrl) {
     inner += '<audio controls style="width:100%;" src="' + fileUrl + '"></audio>';
+  } else if (contentType === 'youtube' && fileUrl) {
+    inner += youtubeEmbedHtml(fileUrl) || '<a href="' + fileUrl + '" target="_blank" style="color:#ffd700; font-weight:bold;">▶️ YouTube par kholo</a>';
   } else {
     inner += '<p>' + t('no_event_content_msg') + '</p>';
   }
