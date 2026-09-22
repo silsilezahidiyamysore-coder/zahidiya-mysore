@@ -368,6 +368,7 @@ a { color: #ffd700; }
           <option value="text" data-i18n="opt_content_text">Text (khud likh kar)</option>
           <option value="image" data-i18n="opt_image">Image</option>
           <option value="pdf" data-i18n="opt_pdf">PDF</option>
+          <option value="video" data-i18n="opt_video_upload">Video (upload karo)</option>
           <option value="audio" data-i18n="opt_content_audio">Audio (record ya upload)</option>
         </select>
         <textarea id="customAlarmTextContent" oninput="window.customContentDirty = true" data-i18n-placeholder="event_text_content_ph" placeholder="Yahan likho jo mureedon ko dikhna hai..." style="display:none; min-height:70px;"></textarea>
@@ -449,6 +450,7 @@ a { color: #ffd700; }
           <option value="text" data-i18n="opt_content_text">Text (khud likh kar)</option>
           <option value="image" data-i18n="opt_image">Image</option>
           <option value="pdf" data-i18n="opt_pdf">PDF</option>
+          <option value="video" data-i18n="opt_video_upload">Video (upload karo)</option>
           <option value="audio" data-i18n="opt_content_audio">Audio (record ya upload)</option>
           <option value="youtube" data-i18n="opt_youtube">YouTube Live / Video Link</option>
           <option value="none" data-i18n="opt_no_reminder">Kuch nahi, sirf reminder</option>
@@ -524,6 +526,11 @@ a { color: #ffd700; }
       <p id="qaAnswerText" style="white-space:pre-wrap;"></p>
       <button class="secondary" style="width:auto; padding:6px 14px;" onclick="speakQaAnswer()" data-i18n="listen_btn">🔊 Suno</button>
       <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px;" onclick="stopQaSpeak()" data-i18n="stop_btn">⏹️ Roko</button>
+      <select id="ttsSpeedSelect" onchange="setTtsSpeed(this.value)" style="width:auto; margin-left:6px; padding:6px 8px; border-radius:6px; background:#0f2a17; color:#fff; border:1px solid #2a6b2a;">
+        <option value="0.75">🐢 Dheemi</option>
+        <option value="0.9" selected>🚶 Normal</option>
+        <option value="1.15">🐇 Tez</option>
+      </select>
     </div>
 
     <hr style="border-color:#2a6b2a; margin:14px 0;">
@@ -653,7 +660,7 @@ const TRANSLATIONS = {
     event_tone_note: "This tone will play when an event's time arrives. If nothing is uploaded, the default Alarm Tone will be used.",
     custom_tone_label: "🔔 Custom Alarm Tone",
     custom_tone_note: "A separate ringtone for this custom alarm. If nothing is uploaded, the default Alarm Tone will be used.",
-    custom_alarm_title_ur_ph: "Urdu name (optional)", event_title_ur_ph: "Urdu name (optional)", opt_youtube: "YouTube Live / Video Link", event_youtube_ph: "Paste YouTube link (live or video)", custom_content_label: "📎 Content to show with this alarm (optional)", custom_group_label: "👥 Who should get this alarm?", saved_audio_note: "✅ An audio is already saved (recording or uploading a new one will replace it)", listen_saved_audio_btn: "▶️ Listen to saved audio", remove_content_btn: "🗑️ Remove content",
+    custom_alarm_title_ur_ph: "Urdu name (optional)", event_title_ur_ph: "Urdu name (optional)", opt_youtube: "YouTube Live / Video Link", opt_video_upload: "Video (upload)", event_youtube_ph: "Paste YouTube link (live or video)", custom_content_label: "📎 Content to show with this alarm (optional)", custom_group_label: "👥 Who should get this alarm?", saved_audio_note: "✅ An audio is already saved (recording or uploading a new one will replace it)", listen_saved_audio_btn: "▶️ Listen to saved audio", remove_content_btn: "🗑️ Remove content",
     bilingual_name_note: "Fill both to show the correct name in English and Urdu. Just one also works.",
     auto_translate_btn: "🔄 Auto-Translate to Urdu", auto_urdu_btn: "🌐 Auto Make Urdu",
     urdu_suno_btn: "🌐 Listen in Urdu",
@@ -764,7 +771,7 @@ const TRANSLATIONS = {
     event_tone_note: "جب کسی ایونٹ کا وقت آتا ہے تو یہ ٹون بجے گی۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
     custom_tone_label: "🔔 کسٹم الارم ٹون",
     custom_tone_note: "اس کسٹم الارم کے لیے الگ ٹون۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
-    custom_alarm_title_ur_ph: "اردو نام (اختیاری)", event_title_ur_ph: "اردو نام (اختیاری)", opt_youtube: "یوٹیوب لائیو / ویڈیو لنک", event_youtube_ph: "یوٹیوب لنک پیسٹ کریں (لائیو یا ویڈیو)", custom_content_label: "📎 اس الارم کے ساتھ دکھانے کا مواد (اختیاری)", custom_group_label: "👥 یہ الارم کس کو جائے؟", saved_audio_note: "✅ پہلے سے ایک آڈیو محفوظ ہے (نئی ریکارڈ یا اپ لوڈ کرنے پر بدل جائے گی)", listen_saved_audio_btn: "▶️ محفوظ آڈیو سنیں", remove_content_btn: "🗑️ مواد ہٹائیں",
+    custom_alarm_title_ur_ph: "اردو نام (اختیاری)", event_title_ur_ph: "اردو نام (اختیاری)", opt_youtube: "یوٹیوب لائیو / ویڈیو لنک", opt_video_upload: "ویڈیو (اپ لوڈ)", event_youtube_ph: "یوٹیوب لنک پیسٹ کریں (لائیو یا ویڈیو)", custom_content_label: "📎 اس الارم کے ساتھ دکھانے کا مواد (اختیاری)", custom_group_label: "👥 یہ الارم کس کو جائے؟", saved_audio_note: "✅ پہلے سے ایک آڈیو محفوظ ہے (نئی ریکارڈ یا اپ لوڈ کرنے پر بدل جائے گی)", listen_saved_audio_btn: "▶️ محفوظ آڈیو سنیں", remove_content_btn: "🗑️ مواد ہٹائیں",
     bilingual_name_note: "دونوں بھر دیں تو انگریزی/اردو دونوں میں صحیح نام دکھے گا۔ صرف ایک بھی چلے گا۔",
     auto_translate_btn: "🔄 اردو میں خودکار ترجمہ کریں", auto_urdu_btn: "🌐 اردو خودکار بنائیں",
     urdu_suno_btn: "🌐 اردو میں سنیں",
@@ -1171,18 +1178,53 @@ function speakPdf(url) {
 
 // PDF class ka jo Urdu tarjuma (auto-translate se) bana hua hai, usse Google
 // TTS (achhi, saaf awaaz) se sunata hai — Sawal-Jawab wale "Suno" jaisa hi.
+// Awaaz ki speed (Dheemi/Normal/Tez) - ek baar select karo to yaad rehta hai
+// (localStorage mein save hota hai), Sawal-Jawab aur PDF "Suno" dono mein use hota hai.
+function getTtsSpeed() {
+  const saved = localStorage.getItem('ttsSpeed');
+  return saved ? parseFloat(saved) : 0.9;
+}
+function setTtsSpeed(val) {
+  localStorage.setItem('ttsSpeed', val);
+}
+(function initTtsSpeedSelect() {
+  const saved = localStorage.getItem('ttsSpeed');
+  if (saved) {
+    document.addEventListener('DOMContentLoaded', () => {
+      const sel = document.getElementById('ttsSpeedSelect');
+      if (sel) sel.value = saved;
+    });
+  }
+})();
+
+// Mobile data slow/weak ho to audio download beech mein fail ho sakti hai -
+// isliye pehli koshish fail ho to 1 baar automatically dobara try karta hai,
+// tabhi jaake phone ki default (robotic) awaaz par jaata hai.
+async function fetchTtsAudio(text, speed) {
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch(API + '/api/tts', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, speed })
+      });
+      const data = await res.json();
+      if (data.success && data.audio_base64) return { audio_base64: data.audio_base64, format: data.format || 'mp3' };
+    } catch (e) {
+      // network hiccup - agar pehli koshish thi to thoda ruk ke dobara try karo
+    }
+    if (attempt === 1) await new Promise(r => setTimeout(r, 1500));
+  }
+  return null;
+}
+
 async function speakTranslatedPdf(classId) {
   const c = findClassById(classId);
   if (!c || !c.translated_text) { alert('Is class ka Urdu tarjuma abhi maujood nahi hai'); return; }
   try {
-    const res = await fetch(API + '/api/tts', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: c.translated_text.slice(0, 4500) })
-    });
-    const data = await res.json();
-    if (data.success && data.audio_base64) {
+    const ttsResult = await fetchTtsAudio(c.translated_text.slice(0, 4500), getTtsSpeed());
+    if (ttsResult) {
       if (window.currentQaAudio) window.currentQaAudio.pause();
-      const audio = new Audio('data:audio/mp3;base64,' + data.audio_base64);
+      const audio = new Audio('data:audio/' + ttsResult.format + ';base64,' + ttsResult.audio_base64);
       window.currentQaAudio = audio;
       audio.play();
     } else {
@@ -1698,6 +1740,8 @@ function autoFillTitle() {
     fileBox.style.display = '';
     liveRow.style.display = 'none';
     document.getElementById('classIsLive').checked = false;
+    // Sahi file type chunne mein madad (galti se PDF wali jagah video chunna, waghera)
+    fileBox.accept = type === 'video' ? 'video/*' : (type === 'audio' ? 'audio/*' : (type === 'pdf' ? 'application/pdf' : ''));
   }
 }
 
@@ -1889,7 +1933,7 @@ async function loadAlarmSettings() {
         window.customSavedAudioUrl = cUrl;
         setEventAudioPreview('', 'customAlarmAudioPreview');
         document.getElementById('customAlarmSavedAudio').style.display = (cType === 'audio' && cUrl) ? 'block' : 'none';
-        setEventFilePreview((cType === 'image' || cType === 'pdf') && cUrl ? cUrl : '', cType, 'customAlarmFilePreview');
+        setEventFilePreview((cType === 'image' || cType === 'pdf' || cType === 'video') && cUrl ? cUrl : '', cType, 'customAlarmFilePreview');
       }
 
       checkCustomAlarm();
@@ -2049,7 +2093,7 @@ async function saveCustomAlarm() {
         document.getElementById('customAlarmTextContentUr').value
       );
       if (!cText) { alert('Text likho'); return; }
-    } else if (cType === 'image' || cType === 'pdf') {
+    } else if (cType === 'image' || cType === 'pdf' || cType === 'video') {
       const f = document.getElementById('customAlarmFileInput').files[0];
       if (f) { cUrl = await uploadFileGetUrl(f); }
       else if (sameTypeOld) { cUrl = sameTypeOld; }
@@ -2103,8 +2147,8 @@ function toggleCustomContentFields() {
   document.getElementById('customAlarmTextContent').style.display = type === 'text' ? 'block' : 'none';
   document.getElementById('customAlarmTextUrWrap').style.display = type === 'text' ? 'block' : 'none';
   const fi = document.getElementById('customAlarmFileInput');
-  fi.style.display = (type === 'image' || type === 'pdf') ? 'block' : 'none';
-  fi.accept = type === 'pdf' ? 'application/pdf' : 'image/*';
+  fi.style.display = (type === 'image' || type === 'pdf' || type === 'video') ? 'block' : 'none';
+  fi.accept = type === 'pdf' ? 'application/pdf' : (type === 'video' ? 'video/*' : 'image/*');
   document.getElementById('customAlarmAudioBox').style.display = type === 'audio' ? 'block' : 'none';
   setEventFilePreview('', '', 'customAlarmFilePreview');
 }
@@ -2113,7 +2157,8 @@ function onCustomFileChosen(input) {
   window.customContentDirty = true;
   const f = input.files && input.files[0];
   if (!f) { setEventFilePreview('', '', 'customAlarmFilePreview'); return; }
-  const type = document.getElementById('customAlarmContentType').value === 'pdf' ? 'pdf' : 'image';
+  const ct = document.getElementById('customAlarmContentType').value;
+  const type = ct === 'pdf' ? 'pdf' : (ct === 'video' ? 'video' : 'image');
   setEventFilePreview(URL.createObjectURL(f), type, 'customAlarmFilePreview');
 }
 
@@ -2164,7 +2209,7 @@ function stopCustomRecording() {
 function customAlarmHasContent() {
   const type = alarmSettings.custom_alarm_content_type || 'none';
   if (type === 'text') return !!(alarmSettings.custom_alarm_content_text || '').trim();
-  if (type === 'image' || type === 'pdf' || type === 'audio') return !!alarmSettings.custom_alarm_file_url;
+  if (type === 'image' || type === 'pdf' || type === 'video' || type === 'audio') return !!alarmSettings.custom_alarm_file_url;
   return false;
 }
 
@@ -2937,8 +2982,8 @@ function toggleEventContentFields() {
   document.getElementById('eventYoutubeLink').style.display = type === 'youtube' ? 'block' : 'none';
   if (type !== 'youtube') document.getElementById('eventYoutubePreview').style.display = 'none';
   const fileInput = document.getElementById('eventFileInput');
-  fileInput.style.display = (type === 'image' || type === 'pdf') ? 'block' : 'none';
-  fileInput.accept = type === 'pdf' ? 'application/pdf' : 'image/*';
+  fileInput.style.display = (type === 'image' || type === 'pdf' || type === 'video') ? 'block' : 'none';
+  fileInput.accept = type === 'pdf' ? 'application/pdf' : (type === 'video' ? 'video/*' : 'image/*');
   document.getElementById('eventAudioBox').style.display = type === 'audio' ? 'block' : 'none';
   setEventFilePreview('', ''); // type badalne par purana preview hata do
   const hasSavedContent = !!(window.eventSavedAudioUrl || window.eventEditingHasContent);
@@ -2958,6 +3003,8 @@ function setEventFilePreview(url, type, boxId) {
   box.style.display = 'block';
   if (type === 'image') {
     box.innerHTML = '<img src="' + url + '" style="max-width:100%; max-height:300px; border-radius:8px; display:block; margin:6px 0;">';
+  } else if (type === 'video') {
+    box.innerHTML = '<video controls style="max-width:100%; border-radius:8px; display:block; margin:6px 0;" src="' + url + '"></video>';
   } else {
     box.innerHTML = '<iframe src="' + url + '" style="width:100%; height:300px; border:1px solid #2a6b2a; border-radius:8px; background:#fff;"></iframe>' +
       '<a href="' + url + '" target="_blank" style="color:#ffd700; font-weight:bold; display:block; margin:6px 0;">📄 PDF alag se kholo</a>';
@@ -2966,7 +3013,8 @@ function setEventFilePreview(url, type, boxId) {
 function onEventFileChosen(input) {
   const f = input.files && input.files[0];
   if (!f) { setEventFilePreview('', ''); return; }
-  const type = document.getElementById('eventContentType').value === 'pdf' ? 'pdf' : 'image';
+  const ct = document.getElementById('eventContentType').value;
+  const type = ct === 'pdf' ? 'pdf' : (ct === 'video' ? 'video' : 'image');
   setEventFilePreview(URL.createObjectURL(f), type);
 }
 
@@ -3130,7 +3178,7 @@ async function saveEvent() {
         document.getElementById('eventTextContentUr').value
       );
       if (!content_text) { alert('Text likho'); return; }
-    } else if (content_type === 'image' || content_type === 'pdf') {
+    } else if (content_type === 'image' || content_type === 'pdf' || content_type === 'video') {
       const file = document.getElementById('eventFileInput').files[0];
       if (file) { file_url = await uploadFileGetUrl(file); }
       else if (existing) { file_url = existing.file_url || ''; }
@@ -3224,7 +3272,7 @@ function editEvent(id) {
   toggleEventContentFields();
   setEventAudioPreview('');
   document.getElementById('eventSavedAudio').style.display = window.eventSavedAudioUrl ? 'block' : 'none';
-  setEventFilePreview((ev.content_type === 'image' || ev.content_type === 'pdf') && ev.file_url ? ev.file_url : '', ev.content_type);
+  setEventFilePreview((ev.content_type === 'image' || ev.content_type === 'pdf' || ev.content_type === 'video') && ev.file_url ? ev.file_url : '', ev.content_type);
   const txtSplit = splitBilingualText(ev.content_text || '');
   document.getElementById('eventTextContent').value = txtSplit.en;
   document.getElementById('eventTextContentUr').value = txtSplit.ur;
@@ -3337,6 +3385,8 @@ function showContentModal(title, contentType, contentText, fileUrl) {
     inner += '<p style="white-space:pre-wrap;">' + (bilingualText(contentText) || 'Koi text nahi hai.') + '</p>';
   } else if (contentType === 'image' && fileUrl) {
     inner += '<img src="' + fileUrl + '" style="max-width:100%; border-radius:8px;">';
+  } else if (contentType === 'video' && fileUrl) {
+    inner += '<video controls style="max-width:100%; border-radius:8px;" src="' + fileUrl + '"></video>';
   } else if (contentType === 'pdf' && fileUrl) {
     inner += '<a href="' + fileUrl + '" target="_blank" style="color:#ffd700; font-weight:bold;">📄 PDF Kholo / Download Karo</a>';
   } else if (contentType === 'audio' && fileUrl) {
@@ -3641,14 +3691,10 @@ async function speakQaAnswer() {
   const btn = document.querySelector('button[onclick="speakAnswer()"], button[onclick="speakQaAnswer()"]');
   if (btn) { btn.dataset.origText = btn.dataset.origText || btn.innerText; btn.innerText = '⏳...'; }
   try {
-    const res = await fetch(API + '/api/tts', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: cleanText })
-    });
-    const data = await res.json();
-    if (data.success && data.audio_base64) {
+    const ttsResult = await fetchTtsAudio(cleanText, getTtsSpeed());
+    if (ttsResult) {
       if (window.currentQaAudio) { window.currentQaAudio.pause(); }
-      const audio = new Audio('data:audio/mp3;base64,' + data.audio_base64);
+      const audio = new Audio('data:audio/' + ttsResult.format + ';base64,' + ttsResult.audio_base64);
       window.currentQaAudio = audio;
       audio.play();
     } else {
