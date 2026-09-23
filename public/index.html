@@ -37,10 +37,6 @@
   #notifBadge { background: red; border-radius: 50%; padding: 2px 7px; font-size: 11px; margin-left: 6px; }
   .content-area { padding-bottom: 70px; }
 a { color: #ffd700; }
-  /* "اللہ" ka naam jahan bhi aaye, khoobsurat/bada style mein dikhe */
-  .allah-lafz {
-    font-family: 'Noto Nastaliq Urdu','Segoe UI',sans-serif;
-  }
 
   /* Laptop/bade screen par wide layout aur boxes wali grid */
   @media (min-width: 900px) {
@@ -535,7 +531,6 @@ a { color: #ffd700; }
       <button class="secondary" style="width:auto; padding:6px 14px;" onclick="speakQaAnswer()" data-i18n="listen_btn">🔊 Suno</button>
       <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px;" onclick="stopQaSpeak()" data-i18n="stop_btn">⏹️ Roko</button>
       <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px;" onclick="downloadCurrentQaPdf()" data-i18n="download_btn">⬇️ Download</button>
-      <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px;" id="qaAudioDownloadBtn" onclick="downloadQaAudio()">⬇️🔊 Awaaz Download</button>
       <select id="ttsSpeedSelect" onchange="setTtsSpeed(this.value)" style="width:auto; margin-left:6px; padding:6px 8px; border-radius:6px; background:#0f2a17; color:#fff; border:1px solid #2a6b2a;">
         <option value="0.75">🐢 Dheemi</option>
         <option value="0.9" selected>🚶 Normal</option>
@@ -1054,13 +1049,6 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
-}
-
-// Jawab dikhane se pehle "اللہ" ka naam jahan bhi aaye, usko khoobsurat/bada style mein
-// highlight karta hai (text safe/escaped rehta hai, sirf Allah ka lafz style hota hai).
-function highlightAllahName(text) {
-  const escaped = escapeHtml(text || '');
-  return escaped.replace(/(اللہ|الله)/g, '<span class="allah-lafz">$1</span>');
 }
 
 function renderClasses(list) {
@@ -3655,7 +3643,7 @@ async function toggleQaAnswerUrdu() {
     return;
   }
   if (window.qaLastAnswerUr) {
-    textEl.innerHTML = highlightAllahName(window.qaLastAnswerUr);
+    textEl.innerText = window.qaLastAnswerUr;
     textEl.style.fontFamily = "'Noto Nastaliq Urdu','Segoe UI',sans-serif";
     textEl.dir = 'rtl';
     btn.innerText = t('english_dekho_btn');
@@ -3672,7 +3660,7 @@ async function toggleQaAnswerUrdu() {
     const data = await res.json();
     if (data.success) {
       window.qaLastAnswerUr = data.translated || data.text || data.translated_text;
-      textEl.innerHTML = highlightAllahName(window.qaLastAnswerUr);
+      textEl.innerText = window.qaLastAnswerUr;
       textEl.style.fontFamily = "'Noto Nastaliq Urdu','Segoe UI',sans-serif";
       textEl.dir = 'rtl';
       btn.innerText = t('english_dekho_btn');
@@ -3856,31 +3844,6 @@ function speakQaAnswerBrowserFallback(cleanText) {
 function stopQaSpeak() {
   if ('speechSynthesis' in window) speechSynthesis.cancel();
   if (window.currentQaAudio) { window.currentQaAudio.pause(); window.currentQaAudio.currentTime = 0; }
-}
-
-// Jawab ki awaaz ko phone mein file ki tarah save/download karne ke liye
-// (jaise PDF download hoti hai, waisi hi ab audio file bhi milti hai).
-async function downloadQaAudio() {
-  if (!window.qaLastAnswer) return;
-  const textToDownload = window.qaAnswerShowingUrdu && window.qaLastAnswerUr ? window.qaLastAnswerUr : window.qaLastAnswer;
-  const cleanText = cleanTextForSpeech(textToDownload);
-  const dlBtn = document.getElementById('qaAudioDownloadBtn');
-  const orig = dlBtn.innerText;
-  dlBtn.disabled = true; dlBtn.innerText = '⏳...';
-  try {
-    const ttsResult = await fetchTtsAudio(cleanText, getTtsSpeed());
-    if (!ttsResult) { alert('Awaaz banane mein dikkat hui, dobara try karo'); return; }
-    const link = document.createElement('a');
-    link.href = 'data:audio/' + ttsResult.format + ';base64,' + ttsResult.audio_base64;
-    link.download = 'jawab-awaaz.' + ttsResult.format;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (e) {
-    alert('Internet check karo aur dobara try karo');
-  } finally {
-    dlBtn.disabled = false; dlBtn.innerText = orig;
-  }
 }
 
 async function loadQaHistory() {
