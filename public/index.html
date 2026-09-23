@@ -3859,12 +3859,40 @@ async function loadQaHistory() {
     `<div style="font-size:12px; border:1px solid #2a6b2a; border-radius:6px; padding:8px; margin-top:6px;">
       <b>Q:</b> ${qa.question}<br><b id="qaAnsLabel-${qa.id}">A:</b> <span id="qaAns-${qa.id}">${qa.answer}</span>
       <div style="margin-top:8px;">
-        <button class="secondary" style="width:auto; padding:4px 10px; font-size:11px;" id="qaHistUrduBtn-${qa.id}" onclick="toggleHistoryUrdu(${qa.id})">${t('urdu_dekho_btn')}</button>
+        <button class="secondary" style="width:auto; padding:4px 10px; font-size:11px;" id="qaHistSpeakBtn-${qa.id}" onclick="speakHistoryQa(${qa.id})">${t('listen_btn')}</button>
+        <button class="secondary" style="width:auto; padding:4px 10px; font-size:11px; margin-left:6px;" id="qaHistUrduBtn-${qa.id}" onclick="toggleHistoryUrdu(${qa.id})">${t('urdu_dekho_btn')}</button>
         <button class="secondary" style="width:auto; padding:4px 10px; font-size:11px; margin-left:6px;" onclick="downloadOneQaPdf(${qa.id})">${t('download_btn')}</button>
         <button class="secondary" style="width:auto; padding:4px 10px; font-size:11px; margin-left:6px; background:#8b1a1a;" onclick="deleteOneQa(${qa.id})">${t('delete_btn')}</button>
       </div>
     </div>`
   ).join('');
+}
+
+// History ke ek purane jawab ko awaaz mein sunata hai (abhi ka jawab jis
+// button se sunte hain, wahi kaam yahan bhi — jo bhi language (Urdu/English)
+// abhi dikh rahi ho, wahi bolega)
+async function speakHistoryQa(id) {
+  const qa = (window.qaHistoryList || []).find(x => x.id === id);
+  if (!qa) return;
+  const btn = document.getElementById('qaHistSpeakBtn-' + id);
+  const textToSpeak = qa._showingUrdu && qa._answerUr ? qa._answerUr : qa.answer;
+  const orig = btn.innerText;
+  btn.disabled = true; btn.innerText = '⏳...';
+  try {
+    const ttsResult = await fetchTtsAudio(cleanTextForSpeech(textToSpeak), getTtsSpeed());
+    if (ttsResult) {
+      if (window.currentQaAudio) window.currentQaAudio.pause();
+      const audio = new Audio('data:audio/' + ttsResult.format + ';base64,' + ttsResult.audio_base64);
+      window.currentQaAudio = audio;
+      audio.play();
+    } else {
+      alert('Awaaz banane mein dikkat hui, dobara try karo');
+    }
+  } catch (e) {
+    alert('Internet check karo');
+  } finally {
+    btn.disabled = false; btn.innerText = orig;
+  }
 }
 
 // History ke ek item ka answer Urdu mein dikhata hai (dobara dabane par English wapas)
