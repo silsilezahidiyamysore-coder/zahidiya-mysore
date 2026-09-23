@@ -42,6 +42,9 @@ export async function onRequestPost(context) {
       "bullet points, numbering (1. 2. 3.), asterisk (*), dash (-), ya koi bhi formatting symbol istemal MAT karo, " +
       "kyunki yeh jawab awaaz (text-to-speech) se bhi padha jaata hai aur wo symbols ajeeb tarah se bol diye jaate hain.\n\nNOTES:\n" + combinedText;
 
+    // STREAMING: jawab jaise-jaise AI likhta hai, waise-waise seedha phone/browser
+    // tak jaata hai (jaise Claude chat mein hota hai) — isse jawab BADHNA shuru
+    // hota hai lagbhag turant, poore jawab ka intezaar nahi karna padta.
     const apiRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -53,29 +56,59 @@ export async function onRequestPost(context) {
         model: "claude-haiku-4-5-20251001",
         max_tokens: 700,
         system: systemPrompt,
-        messages: [{ role: "user", content: question }]
+        messages: [{ role: "user", content: question }],
+        stream: true
       })
     });
 
-    const apiData = await apiRes.json();
-
-    if (!apiRes.ok) {
-      return Response.json({
-        success: false,
-        message: "AI se jawab nahi mila: " + (apiData.error?.message || "Unknown error")
-      }, { status: 500 });
+    if (!apiRes.ok || !apiRes.body) {
+      let msg = "Unknown error";
+      try { msg = (await apiRes.json()).error?.message || msg; } catch (e) {}
+      return Response.json({ success: false, message: "AI se jawab nahi mila: " + msg }, { status: 500 });
     }
 
-    const answer = (apiData.content || [])
-      .map(c => c.text || '')
-      .join('\n')
-      .trim() || "Jawab nahi mil saka.";
+    let fullAnswer = '';
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+    const reader = apiRes.body.getReader();
 
-    await db.prepare(
-      `INSERT INTO qa_history (mobile, question, answer, created_at) VALUES (?, ?, ?, ?)`
-    ).bind(mobile || '', question, answer, new Date().toISOString()).run();
+    const stream = new ReadableStream({
+      async start(controller) {
+        let buffer = '';
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // aakhri (adhoori) line agli baar ke liye rakho
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+              try {
+                const evt = JSON.parse(line.slice(6));
+                if (evt.type === 'content_block_delta' && evt.delta?.text) {
+                  fullAnswer += evt.delta.text;
+                  controller.enqueue(encoder.encode(evt.delta.text));
+                }
+              } catch (e) { /* ping/heartbeat lines waghera - ignore */ }
+            }
+          }
+        } catch (e) {
+          // stream beech mein tooti - jo tak mila wahi save/dikha denge
+        } finally {
+          controller.close();
+          if (fullAnswer.trim()) {
+            await db.prepare(
+              `INSERT INTO qa_history (mobile, question, answer, created_at) VALUES (?, ?, ?, ?)`
+            ).bind(mobile || '', question, fullAnswer.trim(), new Date().toISOString()).run();
+          }
+        }
+      }
+    });
 
-    return Response.json({ success: true, answer });
+    return new Response(stream, {
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Qa-Stream': '1' }
+    });
   } catch (err) {
     return Response.json({ success: false, message: err.message }, { status: 500 });
   }
