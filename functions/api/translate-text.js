@@ -44,7 +44,8 @@ export async function onRequestPost(context) {
           system:
             "Aap ek tarjuma karne wale (translator) hain. Diya hua text Urdu mein tarjuma karo. " +
             "Sirf tarjuma wapas do — koi preamble, koi explanation, koi extra comment mat likho. " +
-            "Agar text pehle se Urdu mein hai to wapas wahi de do.",
+            "Agar text pehle se Urdu mein hai to wapas wahi de do. " +
+            "Allah ka naam hamesha \u0627\u0644\u0644\u0647 (alif-lam-lam-heh) likho, \u0627\u0644\u0644\u06c1 (do-chashme-heh wala) mat likho.",
           messages: [{ role: "user", content: chunk }],
         }),
       });
