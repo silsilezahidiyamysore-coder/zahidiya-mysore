@@ -530,6 +530,7 @@ a { color: #ffd700; }
       <button class="secondary" style="width:auto; padding:6px 14px;" id="qaUrduToggleBtn" onclick="toggleQaAnswerUrdu()" data-i18n="urdu_dekho_btn">🌐 Urdu Mein Dekho</button>
       <button class="secondary" style="width:auto; padding:6px 14px;" onclick="speakQaAnswer()" data-i18n="listen_btn">🔊 Suno</button>
       <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px;" onclick="stopQaSpeak()" data-i18n="stop_btn">⏹️ Roko</button>
+      <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px;" onclick="downloadCurrentQaPdf()" data-i18n="download_btn">⬇️ Download</button>
       <select id="ttsSpeedSelect" onchange="setTtsSpeed(this.value)" style="width:auto; margin-left:6px; padding:6px 8px; border-radius:6px; background:#0f2a17; color:#fff; border:1px solid #2a6b2a;">
         <option value="0.75">🐢 Dheemi</option>
         <option value="0.9" selected>🚶 Normal</option>
@@ -3730,6 +3731,7 @@ async function askQaQuestion() {
     answerText.dir = 'ltr';
 
     if (isStream) {
+      window.qaLastQuestion = question;
       answerText.innerText = '';
       answerBox.classList.remove('hidden');
       document.getElementById('qaQuestionInput').value = '';
@@ -3752,6 +3754,7 @@ async function askQaQuestion() {
       const data = await res.json();
       if (data.success) {
         window.qaLastAnswer = data.answer;
+        window.qaLastQuestion = question;
         answerText.innerText = data.answer;
         answerBox.classList.remove('hidden');
         document.getElementById('qaQuestionInput').value = '';
@@ -3970,6 +3973,35 @@ async function clearQaHistory() {
     const data = await res.json();
     if (data.success) loadQaHistory(); else alert(data.message || 'Delete fail ho gaya');
   } catch (e) { alert('Delete karne mein error aayi'); }
+}
+
+// Abhi jo jawab mila hai (history mein save hone se pehle) usko PDF banakar
+// download karta hai — jo bhi language (Urdu/English) abhi screen par dikh
+// rahi ho, wahi PDF mein jayegi.
+async function downloadCurrentQaPdf() {
+  const shownAnswer = window.qaAnswerShowingUrdu && window.qaLastAnswerUr ? window.qaLastAnswerUr : window.qaLastAnswer;
+  if (!shownAnswer) return;
+
+  const container = document.createElement('div');
+  container.style.cssText = "position:fixed; left:-9999px; top:0; width:700px; background:#fff; color:#000; padding:24px; font-size:16px; direction:rtl; font-family:'Noto Nastaliq Urdu','Segoe UI',sans-serif;";
+  container.innerHTML = `<h2 style="text-align:center;">Sawal-Jawab</h2>
+    <p><b>Sawal:</b> ${window.qaLastQuestion || ''}</p>
+    <p><b>Jawab:</b> ${shownAnswer}</p>`;
+  document.body.appendChild(container);
+  try {
+    const canvas = await html2canvas(container, { scale: 2 });
+    document.body.removeChild(container);
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgWidth = 210;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+    pdf.save('sawal-jawab.pdf');
+  } catch (e) {
+    document.body.removeChild(container);
+    alert('PDF banane mein error: ' + e.message);
+  }
 }
 
 // Sirf ek Q&A ko PDF banakar download karta hai (poori history ka pehle se hai)
