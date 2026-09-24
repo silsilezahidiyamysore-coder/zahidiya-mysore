@@ -39,6 +39,7 @@ export async function onRequestPost(context) {
       "Apni taraf se koi nayi baat mat jodo, sirf notes mein jo likha hai wahi bataao. " +
       "Agar jawab notes mein nahi mila, to saaf keh do: \"Yeh jawab in notes mein nahi mila.\" " +
       "Jawab Urdu mein, seedha aur mukhtasar (chhota) do. " +
+      "Plain text mein likho — koi markdown mat use karo (# heading, **bold**, bullet - waghera bilkul mat likho). " +
       "Jawab ko sirf normal jude hue jumlon (plain flowing sentences) mein likho — " +
       "bullet points, numbering (1. 2. 3.), asterisk (*), dash (-), ya koi bhi formatting symbol istemal MAT karo, " +
       "kyunki yeh jawab awaaz (text-to-speech) se bhi padha jaata hai aur wo symbols ajeeb tarah se bol diye jaate hain.\n\nNOTES:\n" + combinedText;
