@@ -532,6 +532,8 @@ a { color: #ffd700; }
       <button class="secondary" style="width:auto; padding:6px 14px;" onclick="speakQaAnswer()" data-i18n="listen_btn">🔊 Suno</button>
       <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px;" onclick="stopQaSpeak()" data-i18n="stop_btn">⏹️ Roko</button>
       <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px;" onclick="downloadCurrentQaPdf()" data-i18n="download_btn">⬇️ Download</button>
+      <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px;" id="qaAudioDownloadBtn" onclick="downloadQaAudio(window.qaLastAnswer, window.qaLastAnswerUr, window.qaAnswerShowingUrdu, this)" data-i18n="download_audio_btn">⬇️🎵 Awaaz Download</button>
+      <button class="secondary" style="width:auto; padding:6px 14px; margin-left:6px; background:#8b1a1a;" onclick="deleteCurrentQa()" data-i18n="delete_btn">🗑️ Delete</button>
       <select id="ttsSpeedSelect" onchange="setTtsSpeed(this.value)" style="width:auto; margin-left:6px; padding:6px 8px; border-radius:6px; background:#0f2a17; color:#fff; border:1px solid #2a6b2a;">
         <option value="0.75">🐢 Dheemi</option>
         <option value="0.9" selected>🚶 Normal</option>
@@ -666,7 +668,7 @@ const TRANSLATIONS = {
     event_tone_note: "This tone will play when an event's time arrives. If nothing is uploaded, the default Alarm Tone will be used.",
     custom_tone_label: "🔔 Custom Alarm Tone",
     custom_tone_note: "A separate ringtone for this custom alarm. If nothing is uploaded, the default Alarm Tone will be used.",
-    custom_alarm_title_ur_ph: "Urdu name (optional)", event_title_ur_ph: "Urdu name (optional)", speak_question_btn: "🎤 Speak your question", urdu_dekho_btn: "🌐 View in Urdu", english_dekho_btn: "🌐 View in English", clear_all_qa_btn: "🗑️ Clear All", opt_youtube: "YouTube Live / Video Link", opt_video_upload: "Video (upload)", event_youtube_ph: "Paste YouTube link (live or video)", custom_content_label: "📎 Content to show with this alarm (optional)", custom_group_label: "👥 Who should get this alarm?", saved_audio_note: "✅ An audio is already saved (recording or uploading a new one will replace it)", listen_saved_audio_btn: "▶️ Listen to saved audio", remove_content_btn: "🗑️ Remove content",
+    custom_alarm_title_ur_ph: "Urdu name (optional)", event_title_ur_ph: "Urdu name (optional)", speak_question_btn: "🎤 Speak your question", download_audio_btn: "⬇️🎵 Download Audio", no_qa_history_msg: "You don't have any past Q&A yet.", urdu_dekho_btn: "🌐 View in Urdu", english_dekho_btn: "🌐 View in English", clear_all_qa_btn: "🗑️ Clear All", opt_youtube: "YouTube Live / Video Link", opt_video_upload: "Video (upload)", event_youtube_ph: "Paste YouTube link (live or video)", custom_content_label: "📎 Content to show with this alarm (optional)", custom_group_label: "👥 Who should get this alarm?", saved_audio_note: "✅ An audio is already saved (recording or uploading a new one will replace it)", listen_saved_audio_btn: "▶️ Listen to saved audio", remove_content_btn: "🗑️ Remove content",
     bilingual_name_note: "Fill both to show the correct name in English and Urdu. Just one also works.",
     auto_translate_btn: "🔄 Auto-Translate to Urdu", auto_urdu_btn: "🌐 Auto Make Urdu",
     urdu_suno_btn: "🌐 Listen in Urdu",
@@ -777,7 +779,7 @@ const TRANSLATIONS = {
     event_tone_note: "جب کسی ایونٹ کا وقت آتا ہے تو یہ ٹون بجے گی۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
     custom_tone_label: "🔔 کسٹم الارم ٹون",
     custom_tone_note: "اس کسٹم الارم کے لیے الگ ٹون۔ کچھ اپلوڈ نہیں کرو گے تو ڈیفالٹ الارم ٹون استعمال ہوگی۔",
-    custom_alarm_title_ur_ph: "اردو نام (اختیاری)", event_title_ur_ph: "اردو نام (اختیاری)", speak_question_btn: "🎤 بول کر پوچھیں", urdu_dekho_btn: "🌐 اردو میں دیکھیں", english_dekho_btn: "🌐 انگریزی میں دیکھیں", clear_all_qa_btn: "🗑️ سب صاف کریں", opt_youtube: "یوٹیوب لائیو / ویڈیو لنک", opt_video_upload: "ویڈیو (اپ لوڈ)", event_youtube_ph: "یوٹیوب لنک پیسٹ کریں (لائیو یا ویڈیو)", custom_content_label: "📎 اس الارم کے ساتھ دکھانے کا مواد (اختیاری)", custom_group_label: "👥 یہ الارم کس کو جائے؟", saved_audio_note: "✅ پہلے سے ایک آڈیو محفوظ ہے (نئی ریکارڈ یا اپ لوڈ کرنے پر بدل جائے گی)", listen_saved_audio_btn: "▶️ محفوظ آڈیو سنیں", remove_content_btn: "🗑️ مواد ہٹائیں",
+    custom_alarm_title_ur_ph: "اردو نام (اختیاری)", event_title_ur_ph: "اردو نام (اختیاری)", speak_question_btn: "🎤 بول کر پوچھیں", download_audio_btn: "⬇️🎵 آڈیو ڈاؤن لوڈ", no_qa_history_msg: "ابھی تک آپ کا کوئی پرانا سوال جواب نہیں ہے۔", urdu_dekho_btn: "🌐 اردو میں دیکھیں", english_dekho_btn: "🌐 انگریزی میں دیکھیں", clear_all_qa_btn: "🗑️ سب صاف کریں", opt_youtube: "یوٹیوب لائیو / ویڈیو لنک", opt_video_upload: "ویڈیو (اپ لوڈ)", event_youtube_ph: "یوٹیوب لنک پیسٹ کریں (لائیو یا ویڈیو)", custom_content_label: "📎 اس الارم کے ساتھ دکھانے کا مواد (اختیاری)", custom_group_label: "👥 یہ الارم کس کو جائے؟", saved_audio_note: "✅ پہلے سے ایک آڈیو محفوظ ہے (نئی ریکارڈ یا اپ لوڈ کرنے پر بدل جائے گی)", listen_saved_audio_btn: "▶️ محفوظ آڈیو سنیں", remove_content_btn: "🗑️ مواد ہٹائیں",
     bilingual_name_note: "دونوں بھر دیں تو انگریزی/اردو دونوں میں صحیح نام دکھے گا۔ صرف ایک بھی چلے گا۔",
     auto_translate_btn: "🔄 اردو میں خودکار ترجمہ کریں", auto_urdu_btn: "🌐 اردو خودکار بنائیں",
     urdu_suno_btn: "🌐 اردو میں سنیں",
@@ -1040,6 +1042,17 @@ async function loadClasses() {
     allClasses = newClasses;
     renderClasses(allClasses);
   } catch(e) { console.error(e); }
+}
+
+// Kisi bhi jawab (English ho ya Urdu) ke andar agar kahin Arabic/Urdu ka
+// tukda aaye (jaise Kalma), usko sahi direction (RTL) aur Nastaliq font mein
+// dikhata hai — baaki jawab jis language mein hai usi mein rehta hai.
+const ARABIC_RUN_RE = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF\u200C\u200D]+(?:[\s،۔]+[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF\u200C\u200D]+)*/g;
+function renderMixedText(text) {
+  const escaped = escapeHtml(text || '');
+  return escaped.replace(ARABIC_RUN_RE, (m) =>
+    '<span dir="rtl" style="font-family:\'Noto Nastaliq Urdu\',\'Segoe UI\',sans-serif; unicode-bidi:embed;">' + m + '</span>'
+  );
 }
 
 function escapeHtml(str) {
@@ -3644,7 +3657,7 @@ async function toggleQaAnswerUrdu() {
   const btn = document.getElementById('qaUrduToggleBtn');
   const textEl = document.getElementById('qaAnswerText');
   if (window.qaAnswerShowingUrdu) {
-    textEl.innerText = window.qaLastAnswer;
+    textEl.innerHTML = renderMixedText(window.qaLastAnswer);
     textEl.style.fontFamily = '';
     textEl.dir = 'ltr';
     btn.innerText = t('urdu_dekho_btn');
@@ -3652,7 +3665,7 @@ async function toggleQaAnswerUrdu() {
     return;
   }
   if (window.qaLastAnswerUr) {
-    textEl.innerText = window.qaLastAnswerUr;
+    textEl.innerHTML = renderMixedText(window.qaLastAnswerUr);
     textEl.style.fontFamily = "'Noto Nastaliq Urdu','Segoe UI',sans-serif";
     textEl.dir = 'rtl';
     btn.innerText = t('english_dekho_btn');
@@ -3669,7 +3682,7 @@ async function toggleQaAnswerUrdu() {
     const data = await res.json();
     if (data.success) {
       window.qaLastAnswerUr = data.translated || data.text || data.translated_text;
-      textEl.innerText = window.qaLastAnswerUr;
+      textEl.innerHTML = renderMixedText(window.qaLastAnswerUr);
       textEl.style.fontFamily = "'Noto Nastaliq Urdu','Segoe UI',sans-serif";
       textEl.dir = 'rtl';
       btn.innerText = t('english_dekho_btn');
@@ -3751,7 +3764,7 @@ async function askQaQuestion() {
         const { done, value } = await reader.read();
         if (done) break;
         full += decoder.decode(value, { stream: true });
-        answerText.innerText = full;
+        answerText.innerHTML = renderMixedText(full);
       }
       window.qaLastAnswer = full.trim();
       if (!window.qaLastAnswer) {
@@ -3764,7 +3777,7 @@ async function askQaQuestion() {
       if (data.success) {
         window.qaLastAnswer = data.answer;
         window.qaLastQuestion = question;
-        answerText.innerText = data.answer;
+        answerText.innerHTML = renderMixedText(data.answer);
         answerBox.classList.remove('hidden');
         document.getElementById('qaQuestionInput').value = '';
         loadQaHistory();
@@ -3855,6 +3868,46 @@ function stopQaSpeak() {
   if (window.currentQaAudio) { window.currentQaAudio.pause(); window.currentQaAudio.currentTime = 0; }
 }
 
+async function downloadQaAudio(answer, answerUr, showingUrdu, btn) {
+  const textToDownload = showingUrdu && answerUr ? answerUr : answer;
+  if (!textToDownload) { alert('Pehle koi jawab lo'); return; }
+  const orig = btn.innerText;
+  btn.disabled = true; btn.innerText = '⏳...';
+  try {
+    const ttsResult = await fetchTtsAudio(cleanTextForSpeech(textToDownload), getTtsSpeed());
+    if (!ttsResult) { alert('Awaaz banane mein dikkat hui, dobara try karo'); return; }
+    const link = document.createElement('a');
+    link.href = 'data:audio/' + ttsResult.format + ';base64,' + ttsResult.audio_base64;
+    link.download = 'jawab-awaaz.' + ttsResult.format;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (e) {
+    alert('Internet check karo aur dobara try karo');
+  } finally {
+    btn.disabled = false; btn.innerText = orig;
+  }
+}
+
+async function deleteCurrentQa() {
+  if (!window.qaHistoryList || !window.qaHistoryList.length) return;
+  const id = window.qaHistoryList[0].id;
+  if (!confirm('Yeh sawal-jawab delete karna hai?')) return;
+  try {
+    const res = await fetch(API + '/api/delete-qa-history', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id, mobile: currentUser.mobile })
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('qaAnswerBox').classList.add('hidden');
+      loadQaHistory();
+    } else {
+      alert(data.message || 'Delete fail ho gaya');
+    }
+  } catch (e) { alert('Delete karne mein error aayi'); }
+}
+
 async function loadQaHistory() {
   if (!currentUser) return;
   try {
@@ -3864,14 +3917,15 @@ async function loadQaHistory() {
   } catch (e) { window.qaHistoryList = []; }
   const box = document.getElementById('qaHistoryList');
   if (!box) return;
-  if (!window.qaHistoryList.length) { box.innerHTML = ''; return; }
+  if (!window.qaHistoryList.length) { box.innerHTML = `<p style="font-size:12px; color:#cde;">${t('no_qa_history_msg')}</p>`; return; }
   box.innerHTML = `<p style="font-size:12px; color:#ffd700;">${t('qa_history_label')}</p>` +
     `<button class="secondary" style="width:auto; padding:6px 12px; background:#8b1a1a; margin-bottom:8px;" onclick="clearQaHistory()">${t('clear_all_qa_btn')}</button>` +
     window.qaHistoryList.map(qa =>
     `<div style="font-size:12px; border:1px solid #2a6b2a; border-radius:6px; padding:8px; margin-top:6px;">
-      <b>Q:</b> ${qa.question}<br><b id="qaAnsLabel-${qa.id}">A:</b> <span id="qaAns-${qa.id}">${qa.answer}</span>
+      <b>Q:</b> ${renderMixedText(qa.question)}<br><b id="qaAnsLabel-${qa.id}">A:</b> <span id="qaAns-${qa.id}">${renderMixedText(qa.answer)}</span>
       <div style="margin-top:8px;">
         <button class="secondary" style="width:auto; padding:4px 10px; font-size:11px;" id="qaHistSpeakBtn-${qa.id}" onclick="speakHistoryQa(${qa.id})">${t('listen_btn')}</button>
+        <button class="secondary" style="width:auto; padding:4px 10px; font-size:11px; margin-left:6px;" onclick="downloadHistoryQaAudio(${qa.id}, this)">${t('download_audio_btn')}</button>
         <button class="secondary" style="width:auto; padding:4px 10px; font-size:11px; margin-left:6px;" id="qaHistUrduBtn-${qa.id}" onclick="toggleHistoryUrdu(${qa.id})">${t('urdu_dekho_btn')}</button>
         <button class="secondary" style="width:auto; padding:4px 10px; font-size:11px; margin-left:6px;" onclick="downloadOneQaPdf(${qa.id})">${t('download_btn')}</button>
         <button class="secondary" style="width:auto; padding:4px 10px; font-size:11px; margin-left:6px; background:#8b1a1a;" onclick="deleteOneQa(${qa.id})">${t('delete_btn')}</button>
@@ -3916,7 +3970,7 @@ async function toggleHistoryUrdu(id) {
   if (!span || !btn) return;
 
   if (qa._showingUrdu) {
-    span.innerText = qa.answer;
+    span.innerHTML = renderMixedText(qa.answer);
     span.style.fontFamily = '';
     span.dir = 'ltr';
     btn.innerText = t('urdu_dekho_btn');
@@ -3924,7 +3978,7 @@ async function toggleHistoryUrdu(id) {
     return;
   }
   if (qa._answerUr) {
-    span.innerText = qa._answerUr;
+    span.innerHTML = renderMixedText(qa._answerUr);
     span.style.fontFamily = "'Noto Nastaliq Urdu','Segoe UI',sans-serif";
     span.dir = 'rtl';
     btn.innerText = t('english_dekho_btn');
@@ -3941,7 +3995,7 @@ async function toggleHistoryUrdu(id) {
     const data = await res.json();
     if (data.success) {
       qa._answerUr = data.translated;
-      span.innerText = qa._answerUr;
+      span.innerHTML = renderMixedText(qa._answerUr);
       span.style.fontFamily = "'Noto Nastaliq Urdu','Segoe UI',sans-serif";
       span.dir = 'rtl';
       btn.innerText = t('english_dekho_btn');
@@ -3959,6 +4013,13 @@ async function toggleHistoryUrdu(id) {
 }
 
 // Sirf ek Q&A ko delete karta hai
+async function downloadHistoryQaAudio(id, btn) {
+  const qa = (window.qaHistoryList || []).find(x => x.id === id);
+  if (!qa) return;
+  const textToDownload = qa._showingUrdu && qa._answerUr ? qa._answerUr : qa.answer;
+  await downloadQaAudio(textToDownload, null, false, btn);
+}
+
 async function deleteOneQa(id) {
   if (!confirm('Yeh sawal-jawab delete karna hai?')) return;
   try {
