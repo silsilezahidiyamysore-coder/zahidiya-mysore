@@ -144,6 +144,7 @@ a { color: #ffd700; }
     <div class="card">
       <h3 style="margin:0;" data-i18n="namaz_times_heading">🌙 Aaj ke Namaz Auqaat</h3>
       <div id="namazDateLabel" style="font-size:13px; color:#ffd700; margin-top:6px;"></div>
+      <button id="useMyLocationBtn" class="secondary" style="width:auto; padding:5px 12px; font-size:12px; margin-top:6px; display:none;" onclick="loadPrayerTimes(true)" data-i18n="use_my_location_btn">📍 Apni Location Use Karo</button>
       <div id="prayerTimes" style="display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:6px; margin-top:10px;"></div>
       <div id="alarmStatusLine" style="font-size:11px; color:#8fbf8f; margin-top:8px;"></div>
     </div>
@@ -582,7 +583,7 @@ const TRANSLATIONS = {
     site_name: "🕌 Silsila-e-Zahidiya Mysore",
     prayer_fajr: "Fajr", prayer_zuhr: "Zuhr", prayer_asr: "Asr", prayer_maghrib: "Maghrib", prayer_isha: "Isha",
     prayer_start_label: "Start", prayer_end_label: "End",
-    loc_current: " 📍 (Your current location)", loc_default: " 📍 (Mysore - default)",
+    use_my_location_btn: "📍 Use My Location", loc_current: " 📍 (Your current location)", loc_default: " 📍 (Mysore - default)",
     offline_saved: " 📡 (Offline — previously saved time)",
     no_internet_data: "Could not connect to internet and no saved time available — please open once with internet on.",
     no_classes_msg: "No classes available yet.", live_count_suffix: " Live",
@@ -693,7 +694,7 @@ const TRANSLATIONS = {
     site_name: "🕌 سلسلہ زاہدیہ میسور",
     prayer_fajr: "فجر", prayer_zuhr: "ظہر", prayer_asr: "عصر", prayer_maghrib: "مغرب", prayer_isha: "عشاء",
     prayer_start_label: "شروع", prayer_end_label: "ختم",
-    loc_current: " 📍 (آپ کا موجودہ مقام)", loc_default: " 📍 (میسور - ڈیفالٹ)",
+    use_my_location_btn: "📍 اپنا مقام استعمال کریں", loc_current: " 📍 (آپ کا موجودہ مقام)", loc_default: " 📍 (میسور - ڈیفالٹ)",
     offline_saved: " 📡 (آف لائن — پہلے سے محفوظ وقت)",
     no_internet_data: "انٹرنیٹ نہیں ملا اور کوئی محفوظ وقت بھی موجود نہیں — ایک بار انٹرنیٹ آن کر کے کھولیں۔",
     no_classes_msg: "ابھی تک کوئی کلاس موجود نہیں۔", live_count_suffix: " لائیو",
@@ -1332,10 +1333,14 @@ function isPrayerActive(startHHMM, endHHMM) {
   return startMin <= endMin ? (nowMin >= startMin && nowMin < endMin) : (nowMin >= startMin || nowMin < endMin);
 }
 
-async function getNamazApiUrl() {
-  // Pehle phone ki GPS location try karo, na mile to Mysore default use karo
+async function getNamazApiUrl(forceAsk) {
+  // Pehle phone ki GPS location try karo, na mile to Mysore default use karo.
+  // Kai mobile browsers/webview khud-ba-khud (bina tap kiye) location maangne
+  // par chup-chaap "na" kar dete hain — isliye "📍 Apni Location Use Karo"
+  // button se seedha tap karke maangna zyada reliably chalta hai.
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
+      document.getElementById('useMyLocationBtn').style.display = 'none';
       resolve('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
       return;
     }
@@ -1343,10 +1348,14 @@ async function getNamazApiUrl() {
       (pos) => {
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
+        document.getElementById('useMyLocationBtn').style.display = 'none';
+        try { localStorage.setItem('zahidiya_loc_ok', '1'); } catch (e) {}
         resolve(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=2`);
       },
       () => {
-        // permission nahi mila ya error aaya -> Mysore default
+        // permission nahi mila ya error aaya -> Mysore default. Button dikha do
+        // taaki mureed khud tap karke dobara try kar sake.
+        document.getElementById('useMyLocationBtn').style.display = 'block';
         resolve('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
       },
       { timeout: 8000 }
@@ -1354,10 +1363,10 @@ async function getNamazApiUrl() {
   });
 }
 
-async function loadPrayerTimes() {
+async function loadPrayerTimes(fromButton) {
   const todayKey = 'zahidiya_namaz_' + new Date().toDateString();
   try {
-    const url = await getNamazApiUrl();
+    const url = await getNamazApiUrl(fromButton);
     const res = await fetch(url);
     const data = await res.json();
     const timings = data.data.timings;
