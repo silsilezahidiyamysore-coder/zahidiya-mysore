@@ -1049,10 +1049,21 @@ async function loadClasses() {
 // dikhata hai — baaki jawab jis language mein hai usi mein rehta hai.
 const ARABIC_RUN_RE = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF\u200C\u200D]+(?:[\s،۔]+[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF\u200C\u200D]+)*/g;
 function renderMixedText(text) {
-  const escaped = escapeHtml(text || '');
-  return escaped.replace(ARABIC_RUN_RE, (m) =>
-    '<span dir="rtl" style="font-family:\'Noto Nastaliq Urdu\',\'Segoe UI\',sans-serif; unicode-bidi:embed;">' + m + '</span>'
-  );
+  try {
+    // Purane ya naye jawab mein reh gaye markdown nishaan (**bold**, # heading,
+    // - bullet) hata do — website unhe format nahi karti, isliye ye sirf
+    // "**" aur "#" jaisa bekar dikhte hain
+    let clean = String(text || '')
+      .replace(/^#{1,6}\s*/gm, '')
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/^[-*]\s+/gm, '• ');
+    const escaped = escapeHtml(clean);
+    return escaped.replace(ARABIC_RUN_RE, (m) =>
+      '<span dir="rtl" style="font-family:\'Noto Nastaliq Urdu\',\'Segoe UI\',sans-serif; unicode-bidi:embed;">' + m + '</span>'
+    );
+  } catch (e) {
+    return escapeHtml(text || '');
+  }
 }
 
 function escapeHtml(str) {
@@ -3918,9 +3929,9 @@ async function loadQaHistory() {
   const box = document.getElementById('qaHistoryList');
   if (!box) return;
   if (!window.qaHistoryList.length) { box.innerHTML = `<p style="font-size:12px; color:#cde;">${t('no_qa_history_msg')}</p>`; return; }
-  box.innerHTML = `<p style="font-size:12px; color:#ffd700;">${t('qa_history_label')}</p>` +
-    `<button class="secondary" style="width:auto; padding:6px 12px; background:#8b1a1a; margin-bottom:8px;" onclick="clearQaHistory()">${t('clear_all_qa_btn')}</button>` +
-    window.qaHistoryList.map(qa =>
+  let itemsHtml = '';
+  try {
+    itemsHtml = window.qaHistoryList.map(qa =>
     `<div style="font-size:12px; border:1px solid #2a6b2a; border-radius:6px; padding:8px; margin-top:6px;">
       <b>Q:</b> ${renderMixedText(qa.question)}<br><b id="qaAnsLabel-${qa.id}">A:</b> <span id="qaAns-${qa.id}">${renderMixedText(qa.answer)}</span>
       <div style="margin-top:8px;">
@@ -3932,6 +3943,12 @@ async function loadQaHistory() {
       </div>
     </div>`
   ).join('');
+  } catch (e) {
+    itemsHtml = '<p style="font-size:12px; color:#f88;">History dikhane mein error aayi.</p>';
+  }
+  box.innerHTML = `<p style="font-size:12px; color:#ffd700;">${t('qa_history_label')}</p>` +
+    `<button class="secondary" style="width:auto; padding:6px 12px; background:#8b1a1a; margin-bottom:8px;" onclick="clearQaHistory()">${t('clear_all_qa_btn')}</button>` +
+    itemsHtml;
 }
 
 // History ke ek purane jawab ko awaaz mein sunata hai (abhi ka jawab jis
