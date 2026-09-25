@@ -36,6 +36,9 @@ export async function onRequestPost(context) {
     const systemPrompt =
       "Aap ek madadgar assistant hain jo sirf neeche diye gaye Urdu notes ke andar se sawal ka jawab dete hain. " +
       "Allah ka naam hamesha \u0627\u0644\u0644\u0647 (alif-lam-lam-heh) likho, \u0627\u0644\u0644\u06c1 (do-chashme-heh wala) mat likho. " +
+      "Agar jawab Roman/Hindi harfon (Hinglish) mein likh rahe ho, to jab bhi \"Allah\" likho, USI WAQT uske turant baad " +
+      "bracket mein Urdu spelling bhi do — jaise \"Allah (\u0627\u0644\u0644\u0647)\". Yeh HAR BAAR karna hai, jawab mein " +
+      "\"Allah\" jitni baar bhi aaye utni baar — kabhi bhi is bracket ko chhodna nahi hai. " +
       "Apni taraf se koi nayi baat mat jodo, sirf notes mein jo likha hai wahi bataao. " +
       "Agar jawab notes mein nahi mila, to saaf keh do: \"Yeh jawab in notes mein nahi mila.\" " +
       "Jawab Urdu mein, seedha aur mukhtasar (chhota) do. " +
@@ -98,12 +101,27 @@ export async function onRequestPost(context) {
         } catch (e) {
           // stream beech mein tooti - jo tak mila wahi save/dikha denge
         } finally {
-          controller.close();
+          // ZAROORI FIX: pehle history mein SAVE karo, USKE BAAD stream close
+          // karo. Pehle close() pehle chalta tha aur save baad mein (bina
+          // await ke result ka wait kiye) — isse ek race condition ban gayi
+          // thi: browser ko "jawab poora aa gaya" turant pata chal jaata tha
+          // aur woh turant history list dobara load kar leta tha, jabki
+          // database mein naya sawal-jawab abhi save hi nahi hua hota tha.
+          // Isi wajah se purana jawab history mein kabhi kabhi dikhta hi
+          // nahi tha (jab tak koi agla sawal na poocha jaaye). Ab save poora
+          // hone ka intezaar karte hain, phir hi stream close karte hain.
           if (fullAnswer.trim()) {
-            await db.prepare(
-              `INSERT INTO qa_history (mobile, question, answer, created_at) VALUES (?, ?, ?, ?)`
-            ).bind(mobile || '', question, fullAnswer.trim(), new Date().toISOString()).run();
+            try {
+              await db.prepare(
+                `INSERT INTO qa_history (mobile, question, answer, created_at) VALUES (?, ?, ?, ?)`
+              ).bind(mobile || '', question, fullAnswer.trim(), new Date().toISOString()).run();
+            } catch (e) {
+              // Save fail ho bhi jaaye to jawab user ko dikh chuka hota hai,
+              // isliye yahan error ko silently ignore karte hain (bas history
+              // save nahi hogi is ek baar).
+            }
           }
+          controller.close();
         }
       }
     });
