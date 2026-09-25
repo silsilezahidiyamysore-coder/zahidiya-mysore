@@ -542,8 +542,9 @@ a { color: #ffd700; }
     </div>
 
     <hr style="border-color:#2a6b2a; margin:14px 0;">
-    <button class="secondary" onclick="downloadQaHistoryPdf()" data-i18n="download_qa_pdf_btn">📄 Mere Sawal-Jawab PDF Download Karo</button>
-    <div id="qaHistoryList" style="margin-top:12px;"></div>
+    <button class="secondary" id="qaHistoryToggleBtn" style="background:#ffd700; color:#1a3a1a; font-weight:bold;" onclick="toggleQaHistorySection()" data-i18n="qa_history_btn">📜 Purane Sawal-Jawab (History)</button>
+    <button class="secondary" style="margin-top:6px;" onclick="downloadQaHistoryPdf()" data-i18n="download_qa_pdf_btn">📄 Mere Sawal-Jawab PDF Download Karo</button>
+    <div id="qaHistoryList" class="hidden" style="margin-top:12px;"></div>
   </div>
 </div>
 
@@ -580,7 +581,7 @@ const TRANSLATIONS = {
     notes_name_ph: "Notes name (e.g. Malfoozat Part 1)", notes_upload_btn: "Upload Notes",
     question_ph: "Type your question here...", ask_btn: "Ask",
     listen_btn: "🔊 Listen", stop_btn: "⏹️ Stop",
-    download_qa_pdf_btn: "📄 Download My Q&A PDF",
+    download_qa_pdf_btn: "📄 Download My Q&A PDF", qa_history_btn: "📜 Past Q&A (History)",
     tab_home: "🏠 Home", tab_qa: "📖 Q&A", tab_admin: "⚙️ Admin",
     site_name: "🕌 Silsila-e-Zahidiya Mysore",
     prayer_fajr: "Fajr", prayer_zuhr: "Zuhr", prayer_asr: "Asr", prayer_maghrib: "Maghrib", prayer_isha: "Isha",
@@ -691,7 +692,7 @@ const TRANSLATIONS = {
     notes_name_ph: "نوٹس کا نام (مثلاً: ملفوظات حصہ 1)", notes_upload_btn: "نوٹس اپلوڈ کریں",
     question_ph: "اپنا سوال یہاں لکھیں...", ask_btn: "پوچھیں",
     listen_btn: "🔊 سنیں", stop_btn: "⏹️ روکیں",
-    download_qa_pdf_btn: "📄 میرے سوال و جواب کی پی ڈی ایف ڈاؤنلوڈ کریں",
+    download_qa_pdf_btn: "📄 میرے سوال و جواب کی پی ڈی ایف ڈاؤنلوڈ کریں", qa_history_btn: "📜 پرانے سوال و جواب (ہسٹری)",
     tab_home: "🏠 ہوم", tab_qa: "📖 سوال و جواب", tab_admin: "⚙️ ایڈمن",
     site_name: "🕌 سلسلہ زاہدیہ میسور",
     prayer_fajr: "فجر", prayer_zuhr: "ظہر", prayer_asr: "عصر", prayer_maghrib: "مغرب", prayer_isha: "عشاء",
@@ -1048,7 +1049,7 @@ async function loadClasses() {
 // tukda aaye (jaise Kalma), usko sahi direction (RTL) aur Nastaliq font mein
 // dikhata hai — baaki jawab jis language mein hai usi mein rehta hai.
 const ARABIC_RUN_RE = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF\u200C\u200D]+(?:[\s،۔]+[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF\u200C\u200D]+)*/g;
-function renderMixedText(text) {
+function renderMixedText(text, alreadyNastaliq) {
   try {
     // Purane ya naye jawab mein reh gaye markdown nishaan (**bold**, # heading,
     // - bullet) hata do — website unhe format nahi karti, isliye ye sirf
@@ -1058,6 +1059,13 @@ function renderMixedText(text) {
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/^[-*]\s+/gm, '• ');
     const escaped = escapeHtml(clean);
+    // Agar poora jawab pehle se hi Urdu view mein hai (parent par RTL +
+    // Nastaliq font pehle se laga hua hai), to andar ke Arabic/Quraani
+    // tukdo ko dobara ek alag <span> mein mat lapeto. Wrapping se Nastaliq
+    // ke jude hue (cursive) letters beech mein toot jaate the aur wahi
+    // tukda (jaise "لا الہ الا اللہ" ya "صلی اللہ علیہ وسلم") ek alag,
+    // bemel font jaisa dikhta tha jabki baaki jawab sahi Nastaliq mein tha.
+    if (alreadyNastaliq) return escaped;
     return escaped.replace(ARABIC_RUN_RE, (m) =>
       '<span dir="rtl" style="font-family:\'Noto Nastaliq Urdu\',\'Segoe UI\',sans-serif; unicode-bidi:embed;">' + m + '</span>'
     );
@@ -3676,7 +3684,7 @@ async function toggleQaAnswerUrdu() {
     return;
   }
   if (window.qaLastAnswerUr) {
-    textEl.innerHTML = renderMixedText(window.qaLastAnswerUr);
+    textEl.innerHTML = renderMixedText(window.qaLastAnswerUr, true);
     textEl.style.fontFamily = "'Noto Nastaliq Urdu','Segoe UI',sans-serif";
     textEl.dir = 'rtl';
     btn.innerText = t('english_dekho_btn');
@@ -3693,7 +3701,7 @@ async function toggleQaAnswerUrdu() {
     const data = await res.json();
     if (data.success) {
       window.qaLastAnswerUr = data.translated || data.text || data.translated_text;
-      textEl.innerHTML = renderMixedText(window.qaLastAnswerUr);
+      textEl.innerHTML = renderMixedText(window.qaLastAnswerUr, true);
       textEl.style.fontFamily = "'Noto Nastaliq Urdu','Segoe UI',sans-serif";
       textEl.dir = 'rtl';
       btn.innerText = t('english_dekho_btn');
@@ -3720,7 +3728,14 @@ function toggleQaVoiceInput() {
     return;
   }
   qaRecognition = new SR();
-  qaRecognition.lang = currentLang === 'ur' ? 'ur-PK' : 'hi-IN';
+  // Pehle 'hi-IN' set tha, jo awaaz ko Devanagari (Hindi) script mein
+  // likhta tha (jaise "कलमा तैयब") — jabki puri website aur AI Roman/Hinglish
+  // mein sawal expect karte hain (jaise typed sawal "Kalma taiyyab mai...").
+  // 'en-IN' (English-India) use karne se Chrome/Android wahi bole gaye
+  // Hindi/Urdu lafz Roman letters mein likhta hai, jo typed sawal jaisa
+  // hi format hai — isse AI ko sawal samajhne aur sahi jawab dene mein
+  // aasani hoti hai.
+  qaRecognition.lang = currentLang === 'ur' ? 'ur-PK' : 'en-IN';
   qaRecognition.interimResults = false;
   qaRecognition.onstart = () => { btn.innerText = '🔴 Sun raha hoon...'; };
   qaRecognition.onresult = (e) => {
@@ -3919,6 +3934,19 @@ async function deleteCurrentQa() {
   } catch (e) { alert('Delete karne mein error aayi'); }
 }
 
+// "📜 History" button dabane par history list dikhti/chhupti hai (pehle
+// hamesha chhupi rehti thi, PDF button ke bilkul niche, isliye milti nahi thi)
+function toggleQaHistorySection() {
+  const box = document.getElementById('qaHistoryList');
+  if (!box) return;
+  if (box.classList.contains('hidden')) {
+    box.classList.remove('hidden');
+    loadQaHistory();
+  } else {
+    box.classList.add('hidden');
+  }
+}
+
 async function loadQaHistory() {
   if (!currentUser) return;
   try {
@@ -3995,7 +4023,7 @@ async function toggleHistoryUrdu(id) {
     return;
   }
   if (qa._answerUr) {
-    span.innerHTML = renderMixedText(qa._answerUr);
+    span.innerHTML = renderMixedText(qa._answerUr, true);
     span.style.fontFamily = "'Noto Nastaliq Urdu','Segoe UI',sans-serif";
     span.dir = 'rtl';
     btn.innerText = t('english_dekho_btn');
@@ -4012,7 +4040,7 @@ async function toggleHistoryUrdu(id) {
     const data = await res.json();
     if (data.success) {
       qa._answerUr = data.translated;
-      span.innerHTML = renderMixedText(qa._answerUr);
+      span.innerHTML = renderMixedText(qa._answerUr, true);
       span.style.fontFamily = "'Noto Nastaliq Urdu','Segoe UI',sans-serif";
       span.dir = 'rtl';
       btn.innerText = t('english_dekho_btn');
