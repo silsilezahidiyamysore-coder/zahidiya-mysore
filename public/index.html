@@ -858,6 +858,7 @@ function toggleLang() {
   if (typeof allClasses !== 'undefined' && allClasses.length) renderClasses(allClasses);
   if (typeof loadNotifications === 'function' && currentUser) loadNotifications();
   if (typeof loadQaHistory === 'function' && currentUser) loadQaHistory();
+  if (typeof reloadQuranSurahIfOpen === 'function') reloadQuranSurahIfOpen();
   if (typeof renderEventsAdminList === 'function' && window.eventsList) renderEventsAdminList();
   if (typeof loadAlarmSettings === 'function' && currentUser && currentUser.role === 'admin') loadAlarmSettings();
   if (typeof currentUser !== 'undefined' && currentUser && currentUser.name) {
@@ -2094,6 +2095,9 @@ async function toggleGlobalQaAccess() {
   } catch (e) { alert('Kuch galat ho gaya'); }
 }
 
+let quranAudioPlayer = null;
+let currentQuranSurahNumber = null; // jo Surah abhi khuli hai uska number (language switch par dobara load karne ke liye)
+
 // ---------- QURAN (Holy Quran) ----------
 // Data (Arabic/Urdu/English text + audio) free "alquran.cloud" service se aati hai —
 // isliye humein khud koi bhaari PDF/MP3 file apne server pe store nahi karni padti.
@@ -2202,11 +2206,22 @@ function toggleQuranVoiceSearch() {
 }
 
 function backToQuranList() {
+  currentQuranSurahNumber = null;
   document.getElementById('quranSurahView').classList.add('hidden');
   document.getElementById('quranListView').classList.remove('hidden');
 }
 
+// Jab global 🌐 language button dabaya jaaye aur koi Surah khuli ho, to uska
+// tarjuma (Urdu/English) turant nayi language mein dobara load ho.
+function reloadQuranSurahIfOpen() {
+  const view = document.getElementById('quranSurahView');
+  if (view && !view.classList.contains('hidden') && currentQuranSurahNumber) {
+    openQuranSurah(currentQuranSurahNumber);
+  }
+}
+
 async function openQuranSurah(number) {
+  currentQuranSurahNumber = number;
   document.getElementById('quranListView').classList.add('hidden');
   document.getElementById('quranSurahView').classList.remove('hidden');
   const ayahsBox = document.getElementById('quranAyahsBox');
@@ -2252,7 +2267,6 @@ async function openQuranSurah(number) {
   }
 }
 
-let quranAudioPlayer = null;
 function playQuranAyah(globalNum, btn) {
   const url = `https://cdn.islamic.network/quran/audio/128/${QURAN_RECITER}/${globalNum}.mp3`;
   if (quranAudioPlayer) { quranAudioPlayer.pause(); quranAudioPlayer = null; }
