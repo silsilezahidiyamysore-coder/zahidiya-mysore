@@ -548,10 +548,41 @@ a { color: #ffd700; }
   </div>
 </div>
 
+<!-- ============ QURAN SCREEN ============ -->
+<div id="quranScreen" class="hidden">
+  <div class="card">
+    <h3 data-i18n="quran_heading">📖 Holy Quran</h3>
+
+    <div id="quranAdminBox" class="hidden">
+      <div style="border:1px solid #2a6b2a; border-radius:8px; padding:10px; margin-bottom:12px;">
+        <p style="font-size:13px; color:#ffd700; margin:0 0 6px;" data-i18n="global_quran_label">🌐 Sab Mureedon ke liye Quran Tab</p>
+        <button class="secondary" id="globalQuranToggleBtn" style="width:100%;" onclick="toggleGlobalQuranAccess()" data-i18n="loading_text">Loading...</button>
+        <p style="font-size:11px; color:#cde; margin-top:6px;" data-i18n="event_toggle_note">Ek hi button se sab mureedon ke liye tab dikhega ya gayab ho jaayega.</p>
+      </div>
+    </div>
+
+    <div id="quranListView">
+      <div class="row">
+        <input type="text" id="quranSearchInput" oninput="filterQuranSurahList()" data-i18n-placeholder="quran_search_ph" placeholder="Search Surah (name or number)..." style="flex:1;">
+        <button type="button" class="secondary" id="quranMicBtn" style="width:auto; padding:8px 14px; margin-left:6px;" onclick="toggleQuranVoiceSearch()" data-i18n="speak_question_btn">🎤 Bol Kar Poocho</button>
+      </div>
+      <div id="quranSurahListBox" style="margin-top:12px;"><p data-i18n="quran_loading">Loading...</p></div>
+    </div>
+
+    <div id="quranSurahView" class="hidden">
+      <button class="secondary" onclick="backToQuranList()" data-i18n="quran_back_to_list_btn">← All Surahs</button>
+      <h3 id="quranSurahTitle" style="margin:10px 0 4px;"></h3>
+      <button class="secondary" id="quranDownloadSurahBtn" style="width:100%; margin-bottom:10px;" data-i18n="quran_download_surah_btn">⬇️ Download Full Surah (Audio)</button>
+      <div id="quranAyahsBox"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ============ BOTTOM TAB BAR ============ -->
 <div class="tab-bar hidden" id="tabBar">
   <button onclick="showScreen('home')" id="tabHome" class="active" data-i18n="tab_home">🏠 Home</button>
   <button onclick="showScreen('qa')" id="tabQA" class="hidden" data-i18n="tab_qa">📖 Sawal-Jawab</button>
+  <button onclick="showScreen('quran')" id="tabQuran" class="hidden" data-i18n="tab_quran">📖 Quran</button>
   <button onclick="showScreen('admin')" id="tabAdmin" class="hidden" data-i18n="tab_admin">⚙️ Admin</button>
 </div>
 
@@ -674,6 +705,12 @@ const TRANSLATIONS = {
     auto_translate_btn: "🔄 Auto-Translate to Urdu", auto_urdu_btn: "🌐 Auto Make Urdu",
     urdu_suno_btn: "🌐 Listen in Urdu",
     tone_in_use_msg: "✅ An uploaded tone is being used", tone_default_msg: "Default \"ding-dong\" tone is being used",
+    tab_quran: "📖 Quran", quran_heading: "📖 Holy Quran",
+    quran_search_ph: "Search Surah (name or number)...",
+    quran_no_results: "No Surah found.", quran_back_to_list_btn: "← All Surahs",
+    quran_download_surah_btn: "⬇️ Download Full Surah (Audio)",
+    quran_loading: "Loading...", quran_ayahs_of: " Ayahs",
+    global_quran_label: "🌐 Quran Tab for All Mureeds",
   },
   ur: {
     login_title: "لاگ ان", new_user_register: "نئے صارف؟ یہاں رجسٹر کریں",
@@ -785,6 +822,12 @@ const TRANSLATIONS = {
     auto_translate_btn: "🔄 اردو میں خودکار ترجمہ کریں", auto_urdu_btn: "🌐 اردو خودکار بنائیں",
     urdu_suno_btn: "🌐 اردو میں سنیں",
     tone_in_use_msg: "✅ اپلوڈ کی ہوئی ٹون استعمال ہو رہی ہے", tone_default_msg: "ڈیفالٹ \"ڈنگ ڈونگ\" ٹون استعمال ہو رہی ہے",
+    tab_quran: "📖 قرآن", quran_heading: "📖 قرآن کریم",
+    quran_search_ph: "سورت تلاش کریں (نام یا نمبر)...",
+    quran_no_results: "کوئی سورت نہیں ملی۔", quran_back_to_list_btn: "← تمام سورتیں",
+    quran_download_surah_btn: "⬇️ پوری سورت ڈاؤن لوڈ کریں (آڈیو)",
+    quran_loading: "لوڈ ہو رہا ہے...", quran_ayahs_of: " آیات",
+    global_quran_label: "🌐 تمام مریدوں کے لیے قرآن ٹیب",
   }
 };
 let currentLang = localStorage.getItem('zahidiya_lang') || 'ur';
@@ -962,6 +1005,7 @@ function loginSuccess() {
   // Mureed ke liye Sawal-Jawab tab tabhi dikhega jab Admin ne global switch ON kiya ho.
   // OFF hone par tab bilkul hide rahega — mureed ko pata bhi nahi chalega ki yeh page hai.
   updateQaTabVisibility();
+  updateQuranTabVisibility();
  loadClasses();
   loadNotifications();
   loadPrayerTimes();
@@ -989,9 +1033,11 @@ function showScreen(name) {
   document.getElementById('notificationsScreen').classList.add('hidden');
   document.getElementById('adminScreen').classList.add('hidden');
   document.getElementById('qaScreen').classList.add('hidden');
+  document.getElementById('quranScreen').classList.add('hidden');
   document.getElementById('tabHome').classList.remove('active');
   document.getElementById('tabAdmin').classList.remove('active');
   document.getElementById('tabQA').classList.remove('active');
+  document.getElementById('tabQuran').classList.remove('active');
   if (name === 'notifications') {
     document.getElementById('notificationsScreen').classList.remove('hidden');
     markNotificationsRead();
@@ -1004,6 +1050,14 @@ function showScreen(name) {
     document.getElementById('tabQA').classList.add('active');
     loadQaHistory();
     if (currentUser && currentUser.role === 'admin') loadQaNotes();
+  } else if (name === 'quran') {
+    document.getElementById('quranScreen').classList.remove('hidden');
+    document.getElementById('tabQuran').classList.add('active');
+    if (currentUser && currentUser.role === 'admin') {
+      document.getElementById('quranAdminBox').classList.remove('hidden');
+      updateQuranTabVisibility();
+    }
+    loadQuranSurahList();
   } else {
     document.getElementById('homeScreen').classList.remove('hidden');
     document.getElementById('tabHome').classList.add('active');
@@ -2038,6 +2092,181 @@ async function toggleGlobalQaAccess() {
     alarmSettings.qa_global_access = newState;
     updateQaTabVisibility();
   } catch (e) { alert('Kuch galat ho gaya'); }
+}
+
+// ---------- QURAN (Holy Quran) ----------
+// Data (Arabic/Urdu/English text + audio) free "alquran.cloud" service se aati hai —
+// isliye humein khud koi bhaari PDF/MP3 file apne server pe store nahi karni padti.
+let allQuranSurahs = null; // ek baar fetch karke cache kar lete hain
+let quranRecognition = null;
+const QURAN_URDU_EDITION = 'ur.kanzuliman'; // Ahmed Raza Khan (Kanzul Iman) tarjuma
+const QURAN_ENGLISH_EDITION = 'en.sahih';
+const QURAN_RECITER = 'ar.alafasy'; // Mishary Rashid Alafasy
+
+// Sirf ek hi global switch se sab mureedon ke liye "Quran" tab dikhta/gayab hota hai.
+function updateQuranTabVisibility() {
+  const quranTabBtn = document.getElementById('tabQuran');
+  if (!quranTabBtn || !currentUser) return;
+  // qa_global_access ulta hai (default ON), Quran naya feature hai isliye
+  // safe default OFF rakha hai — jab tak admin khud ek baar ON na kare.
+  const globalOn = Number(alarmSettings.quran_global_access) === 1;
+  if (currentUser.role === 'admin' || globalOn) {
+    quranTabBtn.classList.remove('hidden');
+  } else {
+    quranTabBtn.classList.add('hidden');
+  }
+  const btn = document.getElementById('globalQuranToggleBtn');
+  if (btn && currentUser.role === 'admin') {
+    btn.innerText = globalOn ? '✅ ON hai (dabao OFF karne ke liye)' : '⛔ OFF hai (dabao ON karne ke liye)';
+  }
+}
+
+async function toggleGlobalQuranAccess() {
+  const newState = Number(alarmSettings.quran_global_access) === 0 ? 1 : 0;
+  const action = newState ? 'ON' : 'OFF';
+  if (!confirm(`Sab mureedon ke liye Quran tab ${action} karna hai?`)) return;
+  try {
+    const res = await fetch(API + '/api/toggle-global-quran', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ quran_global_access: newState })
+    });
+    const data = await res.json();
+    if (!data.success) { alert(data.message || 'Kuch galat ho gaya'); return; }
+    alarmSettings.quran_global_access = newState;
+    updateQuranTabVisibility();
+  } catch (e) { alert('Kuch galat ho gaya'); }
+}
+
+// 114 Surahon ki list ek hi baar laate hain (chhota, halka data — text/audio nahi)
+async function loadQuranSurahList() {
+  const box = document.getElementById('quranSurahListBox');
+  if (allQuranSurahs) { renderQuranSurahList(allQuranSurahs); return; }
+  try {
+    const res = await fetch('https://api.alquran.cloud/v1/surah');
+    const data = await res.json();
+    allQuranSurahs = data.data || [];
+    renderQuranSurahList(allQuranSurahs);
+  } catch (e) {
+    box.innerHTML = '<p style="color:#f88;">Surah list load nahi ho payi. Internet check karo.</p>';
+  }
+}
+
+function renderQuranSurahList(list) {
+  const box = document.getElementById('quranSurahListBox');
+  if (!list.length) { box.innerHTML = `<p>${t('quran_no_results')}</p>`; return; }
+  box.innerHTML = list.map(s => `
+    <div class="card" style="padding:10px 14px; margin-bottom:6px; cursor:pointer;" onclick="openQuranSurah(${s.number})">
+      <div class="row" style="align-items:center;">
+        <div style="flex:1;">
+          <b>${s.number}. ${s.englishName}</b>
+          <div style="font-size:12px; color:#cde;">${s.englishNameTranslation} — ${s.numberOfAyahs}${t('quran_ayahs_of')}</div>
+        </div>
+        <div style="font-size:20px; direction:rtl;">${s.name}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterQuranSurahList() {
+  if (!allQuranSurahs) return;
+  const q = document.getElementById('quranSearchInput').value.trim().toLowerCase();
+  if (!q) { renderQuranSurahList(allQuranSurahs); return; }
+  const filtered = allQuranSurahs.filter(s =>
+    String(s.number) === q ||
+    s.englishName.toLowerCase().includes(q) ||
+    s.englishNameTranslation.toLowerCase().includes(q)
+  );
+  renderQuranSurahList(filtered);
+}
+
+// Mic se Surah dhoondhna — Q&A wale mic jaisa hi 'en-IN' use karte hain, taaki
+// bola hua naam Roman letters mein aaye aur upar wali filterQuranSurahList()
+// ke saath seedha match ho jaaye.
+function toggleQuranVoiceSearch() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Is browser mein bol kar dhoondne ki suvidha nahi hai. Chrome try karo.'); return; }
+  const btn = document.getElementById('quranMicBtn');
+  if (quranRecognition) { quranRecognition.stop(); return; }
+  quranRecognition = new SR();
+  quranRecognition.lang = currentLang === 'ur' ? 'ur-PK' : 'en-IN';
+  quranRecognition.interimResults = false;
+  quranRecognition.onstart = () => { btn.innerText = '🔴 Sun raha hoon...'; };
+  quranRecognition.onresult = (e) => {
+    const said = e.results[0][0].transcript;
+    document.getElementById('quranSearchInput').value = said;
+    filterQuranSurahList();
+  };
+  quranRecognition.onerror = () => { btn.innerText = t('speak_question_btn'); };
+  quranRecognition.onend = () => { quranRecognition = null; btn.innerText = t('speak_question_btn'); };
+  quranRecognition.start();
+}
+
+function backToQuranList() {
+  document.getElementById('quranSurahView').classList.add('hidden');
+  document.getElementById('quranListView').classList.remove('hidden');
+}
+
+async function openQuranSurah(number) {
+  document.getElementById('quranListView').classList.add('hidden');
+  document.getElementById('quranSurahView').classList.remove('hidden');
+  const ayahsBox = document.getElementById('quranAyahsBox');
+  ayahsBox.innerHTML = `<p>${t('quran_loading')}</p>`;
+  const meta = (allQuranSurahs || []).find(s => s.number === number);
+  document.getElementById('quranSurahTitle').innerText = meta ? `${meta.number}. ${meta.englishName} (${meta.name})` : ('Surah ' + number);
+
+  document.getElementById('quranDownloadSurahBtn').onclick = () => {
+    const url = `https://cdn.islamic.network/quran/audio-surah/128/${QURAN_RECITER}/${number}.mp3`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Surah-${number}.mp3`;
+    a.target = '_blank';
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+
+  try {
+    const translationEdition = currentLang === 'ur' ? QURAN_URDU_EDITION : QURAN_ENGLISH_EDITION;
+    const [arabicRes, transRes] = await Promise.all([
+      fetch(`https://api.alquran.cloud/v1/surah/${number}/quran-uthmani`),
+      fetch(`https://api.alquran.cloud/v1/surah/${number}/${translationEdition}`)
+    ]);
+    const arabicData = (await arabicRes.json()).data;
+    const transData = (await transRes.json()).data;
+
+    ayahsBox.innerHTML = arabicData.ayahs.map((ayah, i) => {
+      const globalNum = ayah.number; // 1-6236, CDN audio isi number se milta hai
+      const transText = (transData.ayahs[i] && transData.ayahs[i].text) || '';
+      return `
+        <div class="card" style="padding:12px; margin-bottom:8px;">
+          <div style="font-size:12px; color:#ffd700;">${ayah.numberInSurah}</div>
+          <div style="font-size:22px; direction:rtl; line-height:1.8; margin:4px 0;">${ayah.text}</div>
+          <div style="font-size:14px; color:#cde; direction:${currentLang === 'ur' ? 'rtl' : 'ltr'};">${transText}</div>
+          <div class="row" style="margin-top:8px;">
+            <button class="secondary" style="width:auto; padding:6px 12px;" onclick="playQuranAyah(${globalNum}, this)">🔊 ${t('listen_btn')}</button>
+            <button class="secondary" style="width:auto; padding:6px 12px; margin-left:6px;" onclick="downloadQuranAyah(${globalNum}, ${number}, ${ayah.numberInSurah})">${t('download_btn')}</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    ayahsBox.innerHTML = '<p style="color:#f88;">Ayat load nahi ho payi. Internet check karo.</p>';
+  }
+}
+
+let quranAudioPlayer = null;
+function playQuranAyah(globalNum, btn) {
+  const url = `https://cdn.islamic.network/quran/audio/128/${QURAN_RECITER}/${globalNum}.mp3`;
+  if (quranAudioPlayer) { quranAudioPlayer.pause(); quranAudioPlayer = null; }
+  quranAudioPlayer = new Audio(url);
+  quranAudioPlayer.play();
+}
+
+function downloadQuranAyah(globalNum, surahNum, ayahNumInSurah) {
+  const url = `https://cdn.islamic.network/quran/audio/128/${QURAN_RECITER}/${globalNum}.mp3`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Surah-${surahNum}-Ayah-${ayahNumInSurah}.mp3`;
+  a.target = '_blank';
+  document.body.appendChild(a); a.click(); a.remove();
 }
 
 async function saveHijriAdjustment() {
