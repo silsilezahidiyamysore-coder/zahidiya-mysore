@@ -868,6 +868,7 @@ function toggleLang() {
   if (typeof allClasses !== 'undefined' && allClasses.length) renderClasses(allClasses);
   if (typeof loadNotifications === 'function' && currentUser) loadNotifications();
   if (typeof loadQaHistory === 'function' && currentUser) loadQaHistory();
+  if (typeof loadQaNotes === 'function' && currentUser && currentUser.role === 'admin') loadQaNotes();
   if (typeof reloadQuranSurahIfOpen === 'function') reloadQuranSurahIfOpen();
   if (typeof renderEventsAdminList === 'function' && window.eventsList) renderEventsAdminList();
   if (typeof loadAlarmSettings === 'function' && currentUser && currentUser.role === 'admin') loadAlarmSettings();
