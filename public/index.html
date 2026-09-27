@@ -49,7 +49,6 @@
 
 <div class="container content-area" id="app">
 
-  <!-- LOGIN SCREEN -->
   <div id="loginScreen">
     <h1 data-i18n="site_name">🕌 Silsila-e-Zahidiya Mysore</h1>
     <button class="secondary" style="width:auto; margin:0 auto 10px; display:block;" id="langToggleBtnLogin" onclick="toggleLang()">🌐 English</button>
@@ -74,7 +73,6 @@
     </div>
   </div>
 
-  <!-- MAIN APP -->
   <div id="mainApp" class="hidden">
 
     <div class="row" style="justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; row-gap:8px;">
@@ -155,7 +153,6 @@
       </div>
     </div>
 
-    <!-- NOTIFICATIONS SCREEN -->
     <div id="notificationsScreen" class="hidden">
       <div class="card">
         <div class="row" style="justify-content:space-between;">
@@ -465,7 +462,7 @@
 
   </div>
 </div>
-<!-- Q&A SCREEN -->
+
 <div id="qaScreen" class="hidden">
   <div class="card">
     <h3 data-i18n="notes_qa_heading">📖 Notes se Sawal-Jawab</h3>
@@ -514,7 +511,7 @@
   </div>
 </div>
 
-<!-- QURAN SCREEN (IndoPak + Sab Options) -->
+<!-- QURAN SCREEN -->
 <div id="quranScreen" class="hidden">
   <div class="card">
     <h3 data-i18n="quran_heading">📖 Holy Quran</h3>
@@ -526,7 +523,6 @@
       </div>
     </div>
 
-    <!-- Surah List View -->
     <div id="quranListView">
       <div class="row">
         <input type="text" id="quranSearchInput" oninput="filterQuranSurahList()" placeholder="Search Surah..." style="flex:1;">
@@ -535,10 +531,9 @@
       <div id="quranSurahListBox" style="margin-top:12px;"><p>Loading...</p></div>
     </div>
 
-    <!-- Surah Detail View -->
     <div id="quranSurahView" class="hidden">
       <div class="row" style="flex-wrap:wrap; gap:6px;">
-        <button class="secondary" style="width:auto;" onclick="closeQuranSurah()">← All Surahs</button>
+        <button class="secondary" style="width:auto;" onclick="closeQuranSurah()" data-i18n="quran_back_to_list_btn">← All Surahs</button>
         <button class="secondary" style="width:auto;" onclick="downloadFullQuranSurahPdf()">⬇️ PDF</button>
       </div>
 
@@ -548,7 +543,6 @@
         <div id="quranSurahMeta" style="font-size:11px; color:#8fbf8f; margin-top:2px;"></div>
       </div>
 
-      <!-- Settings Row -->
       <div style="background:#0f2a0f; border:1px solid #2a6b2a; border-radius:8px; padding:10px; margin-top:14px;">
         <div class="row" style="flex-wrap:wrap; gap:6px; margin-bottom:6px;">
           <label style="font-size:12px; color:#cde; width:100%; margin-bottom:2px;">🎨 Font</label>
@@ -581,9 +575,14 @@
         </div>
       </div>
 
-      <!-- Audio Player Box -->
       <div style="background:#0f2a0f; border:1px solid #2a6b2a; border-radius:8px; padding:12px; margin-top:12px;">
         <div id="quranNowPlaying" style="font-size:12px; color:#ffd700; margin-bottom:8px; text-align:center;">🎵 Ready to play</div>
+        <div id="quranLoadingBar" class="hidden" style="text-align:center; margin-bottom:8px;">
+          <div style="display:inline-block; width:100%; height:4px; background:#2a6b2a; border-radius:2px; overflow:hidden;">
+            <div id="quranLoadingFill" style="width:0%; height:100%; background:#ffd700; transition:width 0.3s;"></div>
+          </div>
+          <div style="font-size:11px; color:#8fbf8f; margin-top:4px;">📥 Audio load ho rahi hai...</div>
+        </div>
         <div class="row" style="flex-wrap:wrap; gap:6px; justify-content:center;">
           <button class="secondary" style="width:auto; padding:8px 16px;" id="quranPlaySurahBtn" onclick="playFullSurah()">▶️ Poori Surah</button>
           <button class="secondary" style="width:auto; padding:8px 16px;" id="quranPlayAyahBtn" onclick="playAyahByAyah()">▶️ Ayat-by-Ayat</button>
@@ -597,7 +596,6 @@
         </label>
       </div>
 
-      <!-- Ayah Navigation (single mode) -->
       <div id="quranSingleNav" class="hidden" style="text-align:center; margin-top:14px;">
         <button class="secondary" style="width:auto; padding:8px 16px;" id="quranPrevBtn" onclick="quranPrevAyah()">◀ Pichli Ayat</button>
         <span id="quranAyahCounter" style="font-size:14px; color:#ffd700; margin:0 12px; font-weight:bold;"></span>
@@ -606,11 +604,9 @@
 
       <div id="quranAyahsBox" style="margin-top:14px;"></div>
     </div>
-
   </div>
 </div>
 
-<!-- BOTTOM TAB BAR -->
 <div class="tab-bar hidden" id="tabBar">
   <button onclick="showScreen('home')" id="tabHome" class="active" data-i18n="tab_home">🏠 Home</button>
   <button onclick="showScreen('qa')" id="tabQA" class="hidden" data-i18n="tab_qa">📖 Sawal-Jawab</button>
@@ -1325,6 +1321,7 @@ async function loadPrayerTimes(fromButton) {
     document.getElementById('prayerTimes').innerHTML = '<p style="font-size:13px;">' + t('no_internet_data') + '</p>';
   }
 }
+
 let allMureedsData = [];
 async function loadAdminData() {
   setupAdminAccordion();
@@ -1642,7 +1639,6 @@ let alarmSettings = {
   custom_alarm_enabled: 0, custom_alarm_title: '', custom_alarm_start: '', custom_alarm_end: '',
   qa_global_access: 1
 };
-
 function populate12HourDropdowns() {
   ['customAlarmStartHour','customAlarmEndHour','eventStartHour','eventEndHour'].forEach(id => {
     const sel = document.getElementById(id);
@@ -2460,6 +2456,7 @@ function checkNamazAlarms() {
 function updateAlarmStatusLine(msg) { const el = document.getElementById('alarmStatusLine'); if (el) el.innerText = msg; }
 setInterval(checkNamazAlarms, 15000);
 checkNamazAlarms();
+
 window.eventsList = [];
 window.eventRecordedBlob = null;
 let eventMediaRecorder = null;
@@ -2879,11 +2876,12 @@ function stopAutoRefresh() {
   if (fastRefreshTimer) { clearInterval(fastRefreshTimer); fastRefreshTimer = null; }
   if (slowRefreshTimer) { clearInterval(slowRefreshTimer); slowRefreshTimer = null; }
 }
+// ================== QURAN SYSTEM ==================
+// Arabic + 2 tarjume (Kanz ul Iman + English) laayenge. Arabic dono mein same.
+// Sirf tarjuma aur Surah ka naam language ke hisaab se badlega.
 
-// ================== QURAN SYSTEM (IndoPak + Reciters + Auto-continue) ==================
 let quranAudioPlayer = null;
 let currentQuranSurahNumber = null;
-let currentQuranSurahData = null;
 let currentQuranAyahs = [];
 let currentQuranAyahIndex = 0;
 let allQuranSurahs = null;
@@ -2901,6 +2899,7 @@ const QURAN_FONTS = {
   nastaliq: "'Noto Nastaliq Urdu', serif"
 };
 const QURAN_ED_KANZULIMAN = 'ur.kanzuliman';
+const QURAN_ED_ENGLISH = 'en.sahih';
 
 if (localStorage.getItem('quranFontChoice')) quranFontChoice = localStorage.getItem('quranFontChoice');
 if (localStorage.getItem('quranReciterChoice')) quranReciterChoice = localStorage.getItem('quranReciterChoice');
@@ -2945,16 +2944,20 @@ async function loadQuranSurahList() {
 function renderQuranSurahList(list) {
   const box = document.getElementById('quranSurahListBox');
   if (!list.length) { box.innerHTML = `<p>${t('quran_no_results')}</p>`; return; }
-  box.innerHTML = list.map(s => `
+  box.innerHTML = list.map(s => {
+    const nameShown = currentLang === 'ur' ? s.name : s.englishName;
+    const meaningShown = currentLang === 'ur' ? s.englishName : s.englishNameTranslation;
+    return `
     <div class="card" style="padding:10px 14px; margin-bottom:6px; cursor:pointer;" onclick="openQuranSurah(${s.number})">
       <div class="row" style="align-items:center;">
         <div style="flex:1;">
-          <b>${s.number}. ${s.englishName}</b>
-          <div style="font-size:12px; color:#cde;">${s.englishNameTranslation} — ${s.numberOfAyahs}${t('quran_ayahs_of')}</div>
+          <b>${s.number}. ${nameShown}</b>
+          <div style="font-size:12px; color:#cde;">${meaningShown} — ${s.numberOfAyahs}${t('quran_ayahs_of')}</div>
         </div>
-        <div style="font-size:22px; direction:rtl; font-family:'Noto Naskh Arabic',serif;">${s.name}</div>
+        <div style="font-size:22px; direction:rtl; font-family:${QURAN_FONTS[quranFontChoice]};">${s.name}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function filterQuranSurahList() {
@@ -3002,12 +3005,15 @@ async function openQuranSurah(number) {
 
   const meta = (allQuranSurahs || []).find(s => s.number === number);
   document.getElementById('quranSurahTitleAr').innerText = meta ? meta.name : '';
-  document.getElementById('quranSurahTitle').innerText = meta
-    ? (meta.number + '. ' + meta.englishName + ' — ' + meta.englishNameTranslation)
-    : ('Surah ' + number);
-  document.getElementById('quranSurahMeta').innerText = meta
-    ? (meta.revelationType + ' • ' + meta.numberOfAyahs + t('quran_ayahs_of'))
-    : '';
+  if (meta) {
+    const nameShown = currentLang === 'ur' ? meta.name : meta.englishName;
+    const meaningShown = currentLang === 'ur' ? meta.englishName : meta.englishNameTranslation;
+    document.getElementById('quranSurahTitle').innerText = meta.number + '. ' + nameShown + ' — ' + meaningShown;
+    document.getElementById('quranSurahMeta').innerText = meta.revelationType + ' • ' + meta.numberOfAyahs + t('quran_ayahs_of');
+  } else {
+    document.getElementById('quranSurahTitle').innerText = 'Surah ' + number;
+    document.getElementById('quranSurahMeta').innerText = '';
+  }
 
   document.getElementById('quranFontSelect').value = quranFontChoice;
   document.getElementById('quranReciterSelect').value = quranReciterChoice;
@@ -3015,17 +3021,19 @@ async function openQuranSurah(number) {
   document.getElementById('quranAutoContinue').checked = quranAutoContinue;
 
   try {
-    const url = `https://api.alquran.cloud/v1/surah/${number}/editions/quran-uthmani,${QURAN_ED_KANZULIMAN}`;
+    const url = `https://api.alquran.cloud/v1/surah/${number}/editions/quran-uthmani,${QURAN_ED_KANZULIMAN},${QURAN_ED_ENGLISH}`;
     const res = await fetch(url);
     const json = await res.json();
     if (!json.data || !json.data[0]) throw new Error('No data');
     const arabic = json.data[0].ayahs || [];
     const kanz = (json.data[1] && json.data[1].ayahs) || [];
+    const eng = (json.data[2] && json.data[2].ayahs) || [];
     currentQuranAyahs = arabic.map((a, i) => ({
       numberInSurah: a.numberInSurah,
       globalNumber: a.number,
       arabic: a.text || '',
-      urduKanz: (kanz[i] && kanz[i].text) || ''
+      urduKanz: (kanz[i] && kanz[i].text) || '',
+      english: (eng[i] && eng[i].text) || ''
     }));
     currentQuranAyahIndex = 0;
     renderQuranAyahs();
@@ -3038,8 +3046,7 @@ async function openQuranSurah(number) {
 function changeQuranFont(fontKey) {
   quranFontChoice = fontKey;
   localStorage.setItem('quranFontChoice', fontKey);
-  const box = document.getElementById('quranAyahsBox');
-  box.querySelectorAll('.quran-arabic').forEach(el => el.style.fontFamily = QURAN_FONTS[fontKey]);
+  renderQuranAyahs();
 }
 function changeQuranReciter(r) {
   quranReciterChoice = r;
@@ -3050,9 +3057,7 @@ function changeQuranViewMode(mode) {
   renderQuranAyahs();
   updateQuranViewUI();
 }
-function toggleQuranAutoContinue(on) {
-  quranAutoContinue = on;
-}
+function toggleQuranAutoContinue(on) { quranAutoContinue = on; }
 
 function updateQuranViewUI() {
   const nav = document.getElementById('quranSingleNav');
@@ -3070,35 +3075,43 @@ function renderQuranAyahs() {
   const box = document.getElementById('quranAyahsBox');
   if (!currentQuranAyahs.length) { box.innerHTML = ''; return; }
   const fontFamily = QURAN_FONTS[quranFontChoice];
+  const tarjumaLabel = currentLang === 'ur' ? 'کنز الایمان' : 'English Translation';
 
   if (quranViewMode === 'single') {
     const a = currentQuranAyahs[currentQuranAyahIndex];
+    const tarjumaText = currentLang === 'ur' ? a.urduKanz : a.english;
+    const tarjumaDir = currentLang === 'ur' ? 'rtl' : 'ltr';
     box.innerHTML = `
       <div class="ayah-card highlight" id="ayah-card-${a.numberInSurah}">
         <div style="text-align:center; font-size:13px; color:#ffd700; margin-bottom:14px; font-weight:bold;">── Ayat ${a.numberInSurah} ──</div>
         <div class="quran-arabic" style="font-family:${fontFamily}; font-size:32px; line-height:2.4; margin:10px 0 24px;">${escapeHtml(a.arabic)}</div>
         <div style="border-top:1px dashed #2a6b2a; padding-top:14px;">
-          <div style="font-size:12px; color:#ffd700; margin-bottom:6px; font-weight:bold; direction:rtl; text-align:right;">کنز الایمان</div>
-          <div class="urdu-tarjuma" style="font-size:17px;">${escapeHtml(a.urduKanz)}</div>
+          <div style="font-size:12px; color:#ffd700; margin-bottom:6px; font-weight:bold; direction:${tarjumaDir}; text-align:${currentLang === 'ur' ? 'right' : 'left'};">${tarjumaLabel}</div>
+          <div class="urdu-tarjuma" style="font-size:17px; direction:${tarjumaDir}; text-align:${currentLang === 'ur' ? 'right' : 'left'};">${escapeHtml(tarjumaText)}</div>
         </div>
         <div class="row" style="margin-top:18px; justify-content:center; flex-wrap:wrap; gap:10px;">
           <button class="secondary" style="width:auto; padding:8px 16px;" onclick="playQuranAyah(${a.globalNumber})">🔊 Suno</button>
-          <button class="secondary" style="width:auto; padding:8px 16px;" onclick="downloadQuranAyah(${a.globalNumber}, ${currentQuranSurahNumber}, ${a.numberInSurah})">⬇️ MP3</button>
+          <button class="secondary" style="width:auto; padding:8px 16px;" onclick="downloadQuranAyahFile(${a.globalNumber}, ${currentQuranSurahNumber}, ${a.numberInSurah})">⬇️ MP3</button>
         </div>
       </div>`;
   } else {
-    box.innerHTML = currentQuranAyahs.map(a => `
+    box.innerHTML = currentQuranAyahs.map(a => {
+      const tarjumaText = currentLang === 'ur' ? a.urduKanz : a.english;
+      const tarjumaDir = currentLang === 'ur' ? 'rtl' : 'ltr';
+      return `
       <div class="ayah-card" id="ayah-card-${a.numberInSurah}">
         <div style="text-align:center; font-size:12px; color:#ffd700; margin-bottom:10px; font-weight:bold;">── Ayat ${a.numberInSurah} ──</div>
         <div class="quran-arabic" style="font-family:${fontFamily}; font-size:28px; line-height:2.4; margin:8px 0 16px;">${escapeHtml(a.arabic)}</div>
         <div style="border-top:1px dashed #2a6b2a; padding-top:10px;">
-          <div class="urdu-tarjuma" style="font-size:16px;">${escapeHtml(a.urduKanz)}</div>
+          <div style="font-size:11px; color:#ffd700; margin-bottom:4px; font-weight:bold; direction:${tarjumaDir}; text-align:${currentLang === 'ur' ? 'right' : 'left'};">${tarjumaLabel}</div>
+          <div class="urdu-tarjuma" style="font-size:16px; direction:${tarjumaDir}; text-align:${currentLang === 'ur' ? 'right' : 'left'};">${escapeHtml(tarjumaText)}</div>
         </div>
         <div class="row" style="margin-top:12px; justify-content:center; gap:8px;">
           <button class="secondary" style="width:auto; padding:6px 12px; font-size:13px;" onclick="playQuranAyah(${a.globalNumber})">🔊 Suno</button>
-          <button class="secondary" style="width:auto; padding:6px 12px; font-size:13px;" onclick="downloadQuranAyah(${a.globalNumber}, ${currentQuranSurahNumber}, ${a.numberInSurah})">⬇️ MP3</button>
+          <button class="secondary" style="width:auto; padding:6px 12px; font-size:13px;" onclick="downloadQuranAyahFile(${a.globalNumber}, ${currentQuranSurahNumber}, ${a.numberInSurah})">⬇️ MP3</button>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 }
 
@@ -3118,26 +3131,61 @@ function playQuranAyah(globalNum) {
   document.getElementById('quranNowPlaying').innerText = '🎵 Chal raha hai...';
 }
 
-// POORI SURAH EK SAATH (audio-surah endpoint)
+// POORI SURAH EK SAATH - with preload for instant play
 function playFullSurah() {
   if (!currentQuranSurahNumber) return;
   stopQuranAudio();
+  const meta = (allQuranSurahs || []).find(s => s.number === currentQuranSurahNumber);
+  const surahName = meta ? (currentLang === 'ur' ? meta.name : meta.englishName) : 'Surah';
+
   const url = `https://cdn.islamic.network/quran/audio-surah/128/${quranReciterChoice}/${currentQuranSurahNumber}.mp3`;
   quranAudioPlayer = new Audio(url);
-  quranAudioPlayer.play();
-  quranIsPlaying = true;
-  const meta = (allQuranSurahs || []).find(s => s.number === currentQuranSurahNumber);
-  document.getElementById('quranNowPlaying').innerText = '🎵 Poori ' + (meta ? meta.englishName : 'Surah') + ' chal rahi hai...';
-  quranAudioPlayer.onended = () => {
+  quranAudioPlayer.preload = 'auto';
+
+  const loadingBar = document.getElementById('quranLoadingBar');
+  const loadingFill = document.getElementById('quranLoadingFill');
+  loadingBar.classList.remove('hidden');
+  loadingFill.style.width = '0%';
+  document.getElementById('quranNowPlaying').innerText = '📥 ' + surahName + ' load ho rahi hai...';
+
+  quranAudioPlayer.addEventListener('progress', () => {
+    try {
+      if (quranAudioPlayer.buffered.length > 0 && quranAudioPlayer.duration) {
+        const pct = (quranAudioPlayer.buffered.end(0) / quranAudioPlayer.duration) * 100;
+        loadingFill.style.width = Math.min(pct, 100) + '%';
+      }
+    } catch (e) {}
+  });
+
+  quranAudioPlayer.addEventListener('canplaythrough', () => {
+    loadingBar.classList.add('hidden');
+  });
+
+  quranAudioPlayer.addEventListener('playing', () => {
+    loadingBar.classList.add('hidden');
+    document.getElementById('quranNowPlaying').innerText = '🎵 ' + surahName + ' chal rahi hai...';
+  });
+
+  quranAudioPlayer.addEventListener('ended', () => {
     quranIsPlaying = false;
     document.getElementById('quranNowPlaying').innerText = '🎵 Surah khatam';
     if (quranAutoContinue && currentQuranSurahNumber < 114) {
       setTimeout(() => { quranNextSurah(true); }, 1500);
     }
-  };
+  });
+
+  quranAudioPlayer.addEventListener('error', () => {
+    loadingBar.classList.add('hidden');
+    document.getElementById('quranNowPlaying').innerText = '❌ Audio load nahi hui';
+  });
+
+  quranIsPlaying = true;
+  quranAudioPlayer.play().catch((err) => {
+    loadingBar.classList.add('hidden');
+    document.getElementById('quranNowPlaying').innerText = '❌ Play nahi ho paya';
+  });
 }
 
-// AYAT-BY-AYAT AUTO-PLAY
 function playAyahByAyah() {
   if (!currentQuranAyahs.length) return;
   stopQuranAudio();
@@ -3157,11 +3205,17 @@ function playQuranAyahAuto(index) {
   const a = currentQuranAyahs[index];
   const url = `https://cdn.islamic.network/quran/audio/128/${quranReciterChoice}/${a.globalNumber}.mp3`;
   quranAudioPlayer = new Audio(url);
+  quranAudioPlayer.preload = 'auto';
   document.getElementById('quranNowPlaying').innerText = '🎵 Ayat ' + a.numberInSurah + ' chal rahi hai...';
-  quranAudioPlayer.onended = () => {
+  quranAudioPlayer.addEventListener('ended', () => {
     if (quranIsPlaying) playQuranAyahAuto(index + 1);
-  };
-  quranAudioPlayer.play();
+  });
+  quranAudioPlayer.addEventListener('error', () => {
+    if (quranIsPlaying) playQuranAyahAuto(index + 1);
+  });
+  quranAudioPlayer.play().catch(() => {
+    if (quranIsPlaying) playQuranAyahAuto(index + 1);
+  });
 }
 
 function stopQuranAudio() {
@@ -3172,6 +3226,8 @@ function stopQuranAudio() {
   }
   const np = document.getElementById('quranNowPlaying');
   if (np) np.innerText = '🎵 Ready to play';
+  const lb = document.getElementById('quranLoadingBar');
+  if (lb) lb.classList.add('hidden');
 }
 
 async function quranNextSurah(autoPlay) {
@@ -3184,23 +3240,49 @@ async function quranNextSurah(autoPlay) {
   }
 }
 
-function downloadQuranAyah(globalNum, surahNum, ayahNumInSurah) {
+// MP3 download - fetch + blob (cross-origin fix)
+async function downloadAudioAsBlob(url, filename, btn) {
+  const origText = btn ? btn.innerText : '';
+  if (btn) { btn.disabled = true; btn.innerText = '⏳...'; }
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Fetch fail');
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 3000);
+  } catch (e) {
+    // fallback: direct link
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerText = origText; }
+  }
+}
+
+function downloadQuranAyahFile(globalNum, surahNum, ayahNumInSurah) {
   const url = `https://cdn.islamic.network/quran/audio/128/${quranReciterChoice}/${globalNum}.mp3`;
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `Surah-${surahNum}-Ayah-${ayahNumInSurah}.mp3`;
-  a.target = '_blank';
-  document.body.appendChild(a); a.click(); a.remove();
+  const filename = `Surah-${surahNum}-Ayah-${ayahNumInSurah}.mp3`;
+  const btn = event && event.target ? event.target : null;
+  downloadAudioAsBlob(url, filename, btn);
 }
 
 function downloadFullSurahAudio() {
   if (!currentQuranSurahNumber) return;
   const url = `https://cdn.islamic.network/quran/audio-surah/128/${quranReciterChoice}/${currentQuranSurahNumber}.mp3`;
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `Surah-${currentQuranSurahNumber}.mp3`;
-  a.target = '_blank';
-  document.body.appendChild(a); a.click(); a.remove();
+  const filename = `Surah-${currentQuranSurahNumber}.mp3`;
+  const btn = event && event.target ? event.target : null;
+  downloadAudioAsBlob(url, filename, btn);
 }
 
 async function downloadFullQuranSurahPdf() {
@@ -3214,6 +3296,7 @@ async function downloadFullQuranSurahPdf() {
       <div style="text-align:center; color:#666; font-size:12px; margin-bottom:6px;">Ayat ${a.numberInSurah}</div>
       <div style="font-size:24px; direction:rtl; text-align:center; font-family:'Noto Naskh Arabic',serif; line-height:2.4; margin:8px 0;">${a.arabic}</div>
       <div style="direction:rtl; font-family:'Noto Nastaliq Urdu',serif; line-height:2.2; margin-top:10px;"><b>کنز الایمان:</b> ${a.urduKanz}</div>
+      <div style="direction:ltr; font-family:Arial,sans-serif; line-height:1.6; margin-top:8px; color:#333;"><b>English:</b> ${a.english}</div>
     </div>`;
   });
   container.innerHTML = html;
