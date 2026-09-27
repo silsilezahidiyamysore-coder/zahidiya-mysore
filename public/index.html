@@ -575,11 +575,12 @@ a { color: #ffd700; }
       <h3 id="quranSurahTitle" style="margin:10px 0 4px;"></h3>
       <div class="row">
         <button class="secondary" id="quranPlaySurahBtn" style="flex:1;" data-i18n="quran_listen_surah_btn">🔊 Poori Surah Suno</button>
-        <button class="secondary" id="quranDownloadSurahBtn" style="flex:1; margin-left:6px;" data-i18n="quran_download_surah_btn">⬇️ Download Full Surah (Audio)</button>
+        <button class="secondary" id="quranStopSurahBtn" style="flex:1; margin-left:6px;" onclick="stopQuranAudio()" data-i18n="quran_stop_btn">⏹️ Band Karo</button>
       </div>
+      <button class="secondary" id="quranDownloadSurahBtn" style="width:100%; margin-top:6px;" data-i18n="quran_download_surah_btn">⬇️ Download Full Surah (Audio)</button>
       <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#cde; margin:8px 0;">
         <input type="checkbox" id="quranAutoNextCheckbox">
-        <span data-i18n="quran_auto_next_label">Khatam hote hi agli Surah khud-ba-khud chalu ho jaaye</span>
+        <span data-i18n="quran_auto_next_label">Is Surah ke khatam hote hi, agli Surah khud-ba-khud shuru ho jaaye (lagataar sunte rehne ke liye)</span>
       </label>
       <div id="quranAyahsBox"></div>
     </div>
@@ -719,7 +720,8 @@ const TRANSLATIONS = {
     quran_download_surah_btn: "⬇️ Download Full Surah (Audio)",
     quran_loading: "Loading...", quran_ayahs_of: " Ayahs",
     global_quran_label: "🌐 Quran Tab for All Mureeds",
-    quran_listen_surah_btn: "🔊 Listen Full Surah", quran_auto_next_label: "Auto-play next Surah when this ends",
+    quran_listen_surah_btn: "🔊 Listen Full Surah", quran_auto_next_label: "When this Surah ends, next Surah auto-starts (for continuous listening)",
+    quran_stop_btn: "⏹️ Stop",
   },
   ur: {
     login_title: "لاگ ان", new_user_register: "نئے صارف؟ یہاں رجسٹر کریں",
@@ -837,7 +839,8 @@ const TRANSLATIONS = {
     quran_download_surah_btn: "⬇️ پوری سورت ڈاؤن لوڈ کریں (آڈیو)",
     quran_loading: "لوڈ ہو رہا ہے...", quran_ayahs_of: " آیات",
     global_quran_label: "🌐 تمام مریدوں کے لیے قرآن ٹیب",
-    quran_listen_surah_btn: "🔊 پوری سورت سنیں", quran_auto_next_label: "ختم ہوتے ہی اگلی سورت خود بخود چلے",
+    quran_listen_surah_btn: "🔊 پوری سورت سنیں", quran_auto_next_label: "یہ سورت ختم ہوتے ہی اگلی سورت خود بخود شروع ہو جائے (لگاتار سننے کے لیے)",
+    quran_stop_btn: "⏹️ روکیں",
   }
 };
 let currentLang = localStorage.getItem('zahidiya_lang') || 'ur';
@@ -2282,9 +2285,20 @@ async function openQuranSurah(number) {
 
 function playQuranAyah(globalNum, btn) {
   const url = `https://cdn.islamic.network/quran/audio/128/${QURAN_RECITER}/${globalNum}.mp3`;
-  if (quranAudioPlayer) { quranAudioPlayer.pause(); quranAudioPlayer = null; }
+  if (quranAudioPlayer) { quranAudioPlayer.pause(); quranAudioPlayer.onended = null; quranAudioPlayer = null; }
   quranAudioPlayer = new Audio(url);
   quranAudioPlayer.play();
+}
+
+// "⏹️ Band Karo" button — chahe ek ayat baj rahi ho ya poori Surah, sab ruk
+// jaata hai. onended ko bhi hata dete hain taaki agli Surah khud-ba-khud na
+// khul jaaye (jaisa auto-next checkbox ON hone par hota).
+function stopQuranAudio() {
+  if (quranAudioPlayer) {
+    quranAudioPlayer.onended = null;
+    quranAudioPlayer.pause();
+    quranAudioPlayer = null;
+  }
 }
 
 // Poori Surah lagataar (ek MP3 file, sab ayaton ki recording ek saath) bajata hai.
