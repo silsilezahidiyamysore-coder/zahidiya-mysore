@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Amiri+Quran&display=swap" rel="stylesheet">
 <title>Silsila-e-Zahidiya Mysore</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -15,6 +15,7 @@
     line-height: 2.1;
   }
   #langToggleBtn, #langToggleBtnLogin { font-family: 'Noto Nastaliq Urdu', 'Segoe UI', Tahoma, sans-serif; }
+  .quran-arabic { font-family: 'Amiri Quran', 'Noto Nastaliq Urdu', serif; font-size: 28px; line-height: 2.3; direction: rtl; }
   .container { max-width: 480px; margin: 0 auto; padding: 16px; }
   .card { background: #14503b; border-radius: 14px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
   h1, h2, h3 { margin-bottom: 10px; }
@@ -572,7 +573,14 @@ a { color: #ffd700; }
     <div id="quranSurahView" class="hidden">
       <button class="secondary" onclick="backToQuranList()" data-i18n="quran_back_to_list_btn">← All Surahs</button>
       <h3 id="quranSurahTitle" style="margin:10px 0 4px;"></h3>
-      <button class="secondary" id="quranDownloadSurahBtn" style="width:100%; margin-bottom:10px;" data-i18n="quran_download_surah_btn">⬇️ Download Full Surah (Audio)</button>
+      <div class="row">
+        <button class="secondary" id="quranPlaySurahBtn" style="flex:1;" data-i18n="quran_listen_surah_btn">🔊 Poori Surah Suno</button>
+        <button class="secondary" id="quranDownloadSurahBtn" style="flex:1; margin-left:6px;" data-i18n="quran_download_surah_btn">⬇️ Download Full Surah (Audio)</button>
+      </div>
+      <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#cde; margin:8px 0;">
+        <input type="checkbox" id="quranAutoNextCheckbox">
+        <span data-i18n="quran_auto_next_label">Khatam hote hi agli Surah khud-ba-khud chalu ho jaaye</span>
+      </label>
       <div id="quranAyahsBox"></div>
     </div>
   </div>
@@ -711,6 +719,7 @@ const TRANSLATIONS = {
     quran_download_surah_btn: "⬇️ Download Full Surah (Audio)",
     quran_loading: "Loading...", quran_ayahs_of: " Ayahs",
     global_quran_label: "🌐 Quran Tab for All Mureeds",
+    quran_listen_surah_btn: "🔊 Listen Full Surah", quran_auto_next_label: "Auto-play next Surah when this ends",
   },
   ur: {
     login_title: "لاگ ان", new_user_register: "نئے صارف؟ یہاں رجسٹر کریں",
@@ -828,6 +837,7 @@ const TRANSLATIONS = {
     quran_download_surah_btn: "⬇️ پوری سورت ڈاؤن لوڈ کریں (آڈیو)",
     quran_loading: "لوڈ ہو رہا ہے...", quran_ayahs_of: " آیات",
     global_quran_label: "🌐 تمام مریدوں کے لیے قرآن ٹیب",
+    quran_listen_surah_btn: "🔊 پوری سورت سنیں", quran_auto_next_label: "ختم ہوتے ہی اگلی سورت خود بخود چلے",
   }
 };
 let currentLang = localStorage.getItem('zahidiya_lang') || 'ur';
@@ -2165,7 +2175,7 @@ function renderQuranSurahList(list) {
           <b>${s.number}. ${s.englishName}</b>
           <div style="font-size:12px; color:#cde;">${s.englishNameTranslation} — ${s.numberOfAyahs}${t('quran_ayahs_of')}</div>
         </div>
-        <div style="font-size:20px; direction:rtl;">${s.name}</div>
+        <div style="font-family:'Amiri Quran','Noto Nastaliq Urdu',serif; font-size:20px; direction:rtl;">${s.name}</div>
       </div>
     </div>
   `).join('');
@@ -2238,6 +2248,8 @@ async function openQuranSurah(number) {
     document.body.appendChild(a); a.click(); a.remove();
   };
 
+  document.getElementById('quranPlaySurahBtn').onclick = () => playFullSurahAudio(number);
+
   try {
     const translationEdition = currentLang === 'ur' ? QURAN_URDU_EDITION : QURAN_ENGLISH_EDITION;
     const [arabicRes, transRes] = await Promise.all([
@@ -2253,7 +2265,7 @@ async function openQuranSurah(number) {
       return `
         <div class="card" style="padding:12px; margin-bottom:8px;">
           <div style="font-size:12px; color:#ffd700;">${ayah.numberInSurah}</div>
-          <div style="font-size:22px; direction:rtl; line-height:1.8; margin:4px 0;">${ayah.text}</div>
+          <div class="quran-arabic" style="margin:4px 0;">${ayah.text}</div>
           <div style="font-size:14px; color:#cde; direction:${currentLang === 'ur' ? 'rtl' : 'ltr'};">${transText}</div>
           <div class="row" style="margin-top:8px;">
             <button class="secondary" style="width:auto; padding:6px 12px;" onclick="playQuranAyah(${globalNum}, this)">🔊 ${t('listen_btn')}</button>
@@ -2271,6 +2283,25 @@ function playQuranAyah(globalNum, btn) {
   const url = `https://cdn.islamic.network/quran/audio/128/${QURAN_RECITER}/${globalNum}.mp3`;
   if (quranAudioPlayer) { quranAudioPlayer.pause(); quranAudioPlayer = null; }
   quranAudioPlayer = new Audio(url);
+  quranAudioPlayer.play();
+}
+
+// Poori Surah lagataar (ek MP3 file, sab ayaton ki recording ek saath) bajata hai.
+// Agar "auto-next" checkbox ON hai, to Surah khatam hote hi agli Surah khud-ba-khud
+// khulti aur bajti hai — poore Quran ko lagataar sunne jaisa experience.
+function playFullSurahAudio(number) {
+  if (quranAudioPlayer) { quranAudioPlayer.pause(); quranAudioPlayer = null; }
+  const url = `https://cdn.islamic.network/quran/audio-surah/128/${QURAN_RECITER}/${number}.mp3`;
+  quranAudioPlayer = new Audio(url);
+  quranAudioPlayer.onended = () => {
+    const autoNext = document.getElementById('quranAutoNextCheckbox');
+    const isLast = number >= 114;
+    if (autoNext && autoNext.checked && !isLast) {
+      openQuranSurah(number + 1).then(() => {
+        playFullSurahAudio(number + 1);
+      });
+    }
+  };
   quranAudioPlayer.play();
 }
 
