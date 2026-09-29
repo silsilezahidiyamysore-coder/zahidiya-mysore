@@ -1274,6 +1274,17 @@ function highlightQuranAyah(numberInSurah) {
 
 function stopQuranAudio() {
   if (quranAudioPlayer) { quranAudioPlayer.onended = null; quranAudioPlayer.pause(); quranAudioPlayer = null; }
+  hideQuranFloating();
+}
+
+function showQuranFloating() {
+  const btn = document.getElementById('quranFloatingStop');
+  if (btn) btn.classList.remove('hidden');
+}
+
+function hideQuranFloating() {
+  const btn = document.getElementById('quranFloatingStop');
+  if (btn) btn.classList.add('hidden');
 }
 
 function playFullSurahAudio(number) {
