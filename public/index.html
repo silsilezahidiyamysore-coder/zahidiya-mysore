@@ -36,7 +36,9 @@
   .stat-box { flex: 1; background: #1c6b4f; border-radius: 10px; padding: 14px; text-align: center; }
   .stat-box .num { font-size: 24px; font-weight: bold; color: #ffd700; }
   #notifBadge { background: red; border-radius: 50%; padding: 2px 7px; font-size: 11px; margin-left: 6px; }
-  .content-area { padding-bottom: 70px; }
+  .content-area { padding-bottom: 120px; }
+  .quran-ayah-card { transition: all 0.3s; }
+  .quran-ayah-card.highlight { background: #1f5a1f !important; box-shadow: 0 0 15px rgba(255,215,0,0.7) !important; }
 a { color: #ffd700; }
 
   /* Laptop/bade screen par wide layout aur boxes wali grid */
@@ -174,11 +176,6 @@ a { color: #ffd700; }
         <div id="notifList"></div>
       </div>
     </div>
-
-    <!-- ============ NOTES SAWAL-JAWAB (Admin + Mureed dono) ============ -->
-    <!-- purani duplicate "notesScreen" yahan se hata di gayi (dead code thi, kabhi navigate nahi hoti thi,
-         lekin uske duplicate IDs (qaQuestionInput, qaAskBtn, qaAnswerBox, qaAnswerText) asli Q&A screen
-         (qaScreen) ke sawal-jawab ko todh rahe the) -->
 
     <!-- ============ ADMIN PANEL ============ -->
    <div id="adminScreen" class="hidden">
@@ -819,7 +816,7 @@ const TRANSLATIONS = {
     or_record_note: "— یا براہ راست ریکارڈ کریں —", record_karo_btn: "🎙️ ریکارڈ کریں",
     global_qa_label: "🌐 سب مریدوں کے لیے سوال و جواب", on_off_label: "آن/آف",
     edit_class_prefix: "✏️ کلاس میں ترمیم: ",
-    notes_qa_heading2: "📖 نوٹس سوال و جواب", notes_pdf_upload_heading: "📄 نوٹس پی ڈی ایف اپلوڈ کریں (اردو)",
+    notes_qa_heading2: "📖 نوٹس سوال جواب", notes_pdf_upload_heading: "📄 نوٹس پی ڈی ایف اپلوڈ کریں (اردو)",
     sawal_poochho_heading: "❓ سوال پوچھیں", question_ph2: "اپنا سوال یہاں لکھیں...",
     listen_btn2: "🔊 سنیں", stop_btn2: "⏹️ روکیں", naam_ph: "نام", mobile_ph2: "موبائل",
     live_tone_label: "🔴 لائیو کلاس الارم ٹون",
@@ -855,7 +852,6 @@ function applyLang() {
   if (btn) btn.textContent = currentLang === 'ur' ? '🌐 English' : '🌐 اردو';
   const btnLogin = document.getElementById('langToggleBtnLogin');
   if (btnLogin) btnLogin.textContent = currentLang === 'ur' ? '🌐 English' : '🌐 اردو';
-  // login/register buttons ka text register-mode ke hisaab se dobara set karo
   if (typeof isRegisterMode !== 'undefined') {
     document.getElementById('loginActionBtn').textContent = isRegisterMode ? t('register_btn_alt') || (currentLang==='ur' ? 'رجسٹر کریں' : 'Register') : t('login_title');
     document.getElementById('loginTitle').textContent = isRegisterMode ? (currentLang==='ur' ? 'رجسٹر کریں' : 'Register') : t('login_title');
@@ -882,7 +878,7 @@ function toggleLang() {
 }
 
 if ('speechSynthesis' in window) {
-  speechSynthesis.getVoices(); // kuch browsers mein pehli baar khaali aata hai, isliye jaldi call kar ke "warm up" kar dete hain
+  speechSynthesis.getVoices();
   speechSynthesis.onvoiceschanged = () => { speechSynthesis.getVoices(); };
 }
 
@@ -909,7 +905,6 @@ async function setupPushNotifications() {
   try {
     const reg = await navigator.serviceWorker.register('/sw.js');
     await navigator.serviceWorker.ready;
-
     if (Notification.permission === 'granted') {
       await subscribeToPush(reg);
       if (btn) { btn.innerText = '✅ Notification ON hai'; btn.disabled = true; }
@@ -1017,8 +1012,6 @@ function loginSuccess() {
     loadAdminData();
     loadQaNotes();
   }
-  // Mureed ke liye Sawal-Jawab tab tabhi dikhega jab Admin ne global switch ON kiya ho.
-  // OFF hone par tab bilkul hide rahega — mureed ko pata bhi nahi chalega ki yeh page hai.
   updateQaTabVisibility();
   updateQuranTabVisibility();
  loadClasses();
@@ -1083,7 +1076,6 @@ function openClassFromNotification(classId) {
   if (!classId) return;
   showScreen('home');
   document.getElementById('tabHome').classList.add('active');
-  // Classes section khula hona chahiye
   const listEl = document.getElementById('classList');
   if (listEl.classList.contains('hidden')) { toggleClassList(); }
   setTimeout(() => {
@@ -1107,33 +1099,21 @@ async function loadClasses() {
     const data = await res.json();
     const newClasses = data.classes || [];
     const snapshot = JSON.stringify(newClasses);
-    if (snapshot === lastClassesSnapshot) return; // kuch naya nahi aaya, screen ko chhedo mat
+    if (snapshot === lastClassesSnapshot) return;
     lastClassesSnapshot = snapshot;
     allClasses = newClasses;
     renderClasses(allClasses);
   } catch(e) { console.error(e); }
 }
 
-// Kisi bhi jawab (English ho ya Urdu) ke andar agar kahin Arabic/Urdu ka
-// tukda aaye (jaise Kalma), usko sahi direction (RTL) aur Nastaliq font mein
-// dikhata hai — baaki jawab jis language mein hai usi mein rehta hai.
 const ARABIC_RUN_RE = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF\u200C\u200D]+(?:[\s،۔]+[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF\u200C\u200D]+)*/g;
 function renderMixedText(text, alreadyNastaliq) {
   try {
-    // Purane ya naye jawab mein reh gaye markdown nishaan (**bold**, # heading,
-    // - bullet) hata do — website unhe format nahi karti, isliye ye sirf
-    // "**" aur "#" jaisa bekar dikhte hain
     let clean = String(text || '')
       .replace(/^#{1,6}\s*/gm, '')
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/^[-*]\s+/gm, '• ');
     const escaped = escapeHtml(clean);
-    // Agar poora jawab pehle se hi Urdu view mein hai (parent par RTL +
-    // Nastaliq font pehle se laga hua hai), to andar ke Arabic/Quraani
-    // tukdo ko dobara ek alag <span> mein mat lapeto. Wrapping se Nastaliq
-    // ke jude hue (cursive) letters beech mein toot jaate the aur wahi
-    // tukda (jaise "لا الہ الا اللہ" ya "صلی اللہ علیہ وسلم") ek alag,
-    // bemel font jaisa dikhta tha jabki baaki jawab sahi Nastaliq mein tha.
     if (alreadyNastaliq) return escaped;
     return escaped.replace(ARABIC_RUN_RE, (m) =>
       '<span dir="rtl" style="font-family:\'Noto Nastaliq Urdu\',\'Segoe UI\',sans-serif; unicode-bidi:embed;">' + m + '</span>'
@@ -1259,8 +1239,6 @@ function formatDate(dt) {
   if (isNaN(d)) return dt;
   return d.toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
 }
-// Online/Offline (Mureed Stats) feature hata diya gaya hai (user ki request par) —
-// browser lock hone par yeh anyway sahi se kaam nahi karta tha.
 function filterClasses() {
   const q = document.getElementById('searchBox').value.toLowerCase();
   renderClasses(allClasses.filter(c => c.title.toLowerCase().includes(q)));
@@ -1284,10 +1262,6 @@ function speakPdf(url) {
   window.open(url, '_blank');
 }
 
-// PDF class ka jo Urdu tarjuma (auto-translate se) bana hua hai, usse Google
-// TTS (achhi, saaf awaaz) se sunata hai — Sawal-Jawab wale "Suno" jaisa hi.
-// Awaaz ki speed (Dheemi/Normal/Tez) - ek baar select karo to yaad rehta hai
-// (localStorage mein save hota hai), Sawal-Jawab aur PDF "Suno" dono mein use hota hai.
 function getTtsSpeed() {
   const saved = localStorage.getItem('ttsSpeed');
   return saved ? parseFloat(saved) : 0.9;
@@ -1305,9 +1279,6 @@ function setTtsSpeed(val) {
   }
 })();
 
-// Mobile data slow/weak ho to audio download beech mein fail ho sakti hai -
-// isliye pehli koshish fail ho to 1 baar automatically dobara try karta hai,
-// tabhi jaake phone ki default (robotic) awaaz par jaata hai.
 async function fetchTtsAudio(text, speed) {
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
@@ -1318,7 +1289,6 @@ async function fetchTtsAudio(text, speed) {
       const data = await res.json();
       if (data.success && data.audio_base64) return { audio_base64: data.audio_base64, format: data.format || 'mp3' };
     } catch (e) {
-      // network hiccup - agar pehli koshish thi to thoda ruk ke dobara try karo
     }
     if (attempt === 1) await new Promise(r => setTimeout(r, 1500));
   }
@@ -1343,11 +1313,6 @@ async function speakTranslatedPdf(classId) {
   }
 }
 
-// Backend se aane wale notification messages fixed pattern mein hote hain
-// (jaise 'Nayi class upload hui: "Title"'). Urdu mode mein yahin translate karte hain.
-// Custom Event/Alarm title agar "English | اردو" format mein likha ho,
-// to sirf usi language ka hissa dikhao jo abhi chuni hui hai
-// (English mode mein English, Urdu mode mein Urdu) — dono mix nahi hote.
 function bilingualTitle(raw) {
   if (!raw) return raw;
   const parts = raw.split('|').map(p => p.trim()).filter(Boolean);
@@ -1370,10 +1335,9 @@ function translateNotifMsg(msg) {
   if (m) return `کلاس اپڈیٹ ہوئی: "${m[1]}"`;
   if (msg === '🎉 Aapko access mil gaya! Ab aap saari classes dekh sakte hain.')
     return '🎉 آپ کو رسائی مل گئی! اب آپ ساری کلاسیں دیکھ سکتے ہیں۔';
-  return msg; // custom/unknown message, waise hi rehne do
+  return msg;
 }
 
-// ---------- NOTIFICATIONS ----------
 async function loadNotifications() {
   try {
    const res = await fetch(API + '/api/state?notifications=1&role=' + currentUser.role + '&mobile=' + currentUser.mobile);
@@ -1415,7 +1379,6 @@ async function markNotificationsRead() {
   } catch(e) { console.error(e); }
 }
 
-// ---------- PRAYER TIMES ----------
 function to12Hour(hhmm) {
   if (!hhmm) return '';
   let [h, m] = hhmm.split(':').map(Number);
@@ -1435,10 +1398,6 @@ function isPrayerActive(startHHMM, endHHMM) {
 }
 
 async function getNamazApiUrl(forceAsk) {
-  // Pehle phone ki GPS location try karo, na mile to Mysore default use karo.
-  // Kai mobile browsers/webview khud-ba-khud (bina tap kiye) location maangne
-  // par chup-chaap "na" kar dete hain — isliye "📍 Apni Location Use Karo"
-  // button se seedha tap karke maangna zyada reliably chalta hai.
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
       document.getElementById('useMyLocationBtn').style.display = 'none';
@@ -1454,8 +1413,6 @@ async function getNamazApiUrl(forceAsk) {
         resolve(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=2`);
       },
       () => {
-        // permission nahi mila ya error aaya -> Mysore default. Button dikha do
-        // taaki mureed khud tap karke dobara try kar sake.
         document.getElementById('useMyLocationBtn').style.display = 'block';
         resolve('https://api.aladhan.com/v1/timingsByCity?city=Mysore&country=India&method=2');
       },
@@ -1471,19 +1428,15 @@ async function loadPrayerTimes(fromButton) {
     const res = await fetch(url);
     const data = await res.json();
     const timings = data.data.timings;
-    const clean = s => (s || '').split(' ')[0]; // timezone suffix hata do
+    const clean = s => (s || '').split(' ')[0];
     const usedGps = url.includes('latitude');
 
     window.namazTimesToday = {
       Fajr: clean(timings.Fajr), Dhuhr: clean(timings.Dhuhr), Asr: clean(timings.Asr),
       Maghrib: clean(timings.Maghrib), Isha: clean(timings.Isha)
     };
-    // Aaj ke time save kar lo, taaki agar aage internet chala jaaye to bhi
-    // yehi cached time se alarm chalta rahe (jab tak app khuli hai)
     try {
       localStorage.setItem(todayKey, JSON.stringify(window.namazTimesToday));
-      // "Last known good" bhi save karo — agar kabhi "aaj" ka data kabhi load hi na
-      // ho paaye (jaise raat bhar internet na ho), to yehi (kal ka) fallback ban jaata hai
       localStorage.setItem('zahidiya_namaz_last', JSON.stringify({ date: new Date().toDateString(), times: window.namazTimesToday }));
     } catch(e) {}
 
@@ -1512,7 +1465,6 @@ async function loadPrayerTimes(fromButton) {
       `;
     }).join('');
   } catch(e) {
-    // Internet nahi mila — pehle "aaj" ka cache check karo
     try {
       const cached = localStorage.getItem(todayKey);
       if (cached) {
@@ -1523,9 +1475,6 @@ async function loadPrayerTimes(fromButton) {
         return;
       }
     } catch(e2) {}
-    // "Aaj" ka data kabhi mila hi nahi (jaise raat bhar internet na ho) —
-    // ab jo bhi last-known time hai (chahe kal ka ho) wahi use karo, taaki
-    // alarm bilkul na chuke — namaz ke time roz sirf 1-2 min hi badalte hain
     try {
       const lastRaw = localStorage.getItem('zahidiya_namaz_last');
       if (lastRaw) {
@@ -1807,9 +1756,9 @@ function addBulkRow() {
     <button class="secondary" style="width:auto; margin:0; padding:8px 12px;" onclick="document.getElementById('${rowId}').remove()">✖</button>
   `;
   container.appendChild(div);
-  applyLang(); // naya row bhi turant current language mein dikhe
+  applyLang();
 }
-addBulkRow(); // shuru mein ek row dikhe
+addBulkRow();
 
 async function bulkAddMureeds() {
   const rows = document.querySelectorAll('#bulkRowsContainer > div');
@@ -1839,7 +1788,7 @@ function autoFillTitle() {
   const titleBox = document.getElementById('classTitle');
   if (fileInput.files[0] && !titleBox.value.trim()) {
     let name = fileInput.files[0].name;
-    name = name.replace(/\.[^/.]+$/, ''); // extension hata do
+    name = name.replace(/\.[^/.]+$/, '');
     titleBox.value = name;
   }
 }function toggleClassUrlOrFile() {
@@ -1856,7 +1805,6 @@ function autoFillTitle() {
     fileBox.style.display = '';
     liveRow.style.display = 'none';
     document.getElementById('classIsLive').checked = false;
-    // Sahi file type chunne mein madad (galti se PDF wali jagah video chunna, waghera)
     fileBox.accept = type === 'video' ? 'video/*' : (type === 'audio' ? 'audio/*' : (type === 'pdf' ? 'application/pdf' : ''));
   }
 }
@@ -1869,7 +1817,7 @@ async function uploadClass() {
   let file_url = document.getElementById('classUrl').value.trim();
   const fileInput = document.getElementById('classFile');
   const is_live = type === 'link' && document.getElementById('classIsLive').checked;
-  let translated_text; // sirf PDF ke liye set hoga
+  let translated_text;
 
   if (!title) { alert("Title bharo"); return; }
 
@@ -1885,9 +1833,6 @@ async function uploadClass() {
       if (!uploadData.url) { alert(uploadData.error || "File upload fail ho gaya"); return; }
       file_url = uploadData.url;
 
-      // PDF hai to uska text nikal ke Urdu mein auto-translate kar dete hain,
-      // taaki mureeds "🌐 Urdu mein Suno" se sun sakein — chahe original PDF
-      // kisi bhi language mein ho.
       if (type === 'pdf') {
         try {
           const uploadBtn = document.getElementById('uploadClassBtn');
@@ -1904,7 +1849,6 @@ async function uploadClass() {
           if (uploadBtn) uploadBtn.innerText = uploadBtn.dataset.origText;
         } catch (e) {
           console.error('PDF auto-translate fail:', e);
-          // fail ho jaaye to bhi class upload rukni nahi chahiye, translated_text bas khaali rahega
         }
       }
     } else if (editingId) {
@@ -1958,7 +1902,6 @@ function populate12HourDropdowns() {
 }
 
 function set12HourFields(prefix, time24) {
-  // time24 jaisa "14:30" -> Hour=2, Min=30, AmPm=PM
   if (!time24) return;
   const [h, m] = time24.split(':').map(Number);
   let hour12 = h % 12; if (hour12 === 0) hour12 = 12;
@@ -2054,19 +1997,15 @@ async function loadAlarmSettings() {
 
       checkCustomAlarm();
 
-      // Hijri calendar adjustment apply karo aur admin input box bhi bhar do
       hijriAdjustmentDays = parseInt(alarmSettings.hijri_adjustment_days, 10) || 0;
       const hijriInput = document.getElementById('hijriAdjustmentInput');
       if (hijriInput && document.activeElement !== hijriInput) hijriInput.value = hijriAdjustmentDays;
       showIslamicDate();
 
-      // Settings ko save kar lo, taaki internet chala jaaye to bhi
-      // sahi (admin ne jo set kiya wahi) settings se alarm chale, hardcoded default se nahi
       try { localStorage.setItem('zahidiya_alarm_settings', JSON.stringify(alarmSettings)); } catch(e2) {}
     }
   } catch (e) {
     console.error(e);
-    // Internet nahi mila — agar pehle se settings cache mein hain to wahi use karo
     try {
       const cached = localStorage.getItem('zahidiya_alarm_settings');
       if (cached) alarmSettings = JSON.parse(cached);
@@ -2077,7 +2016,6 @@ async function loadAlarmSettings() {
   updateQaTabVisibility();
 }
 
-// Sirf ek hi global switch se sab mureedon ke liye "Sawal-Jawab" tab dikhta/gayab hota hai.
 function updateQaTabVisibility() {
   const qaTabBtn = document.getElementById('tabQA');
   if (!qaTabBtn || !currentUser) return;
@@ -2110,23 +2048,18 @@ async function toggleGlobalQaAccess() {
 }
 
 let quranAudioPlayer = null;
-let currentQuranSurahNumber = null; // jo Surah abhi khuli hai uska number (language switch par dobara load karne ke liye)
+let currentQuranSurahNumber = null;
 
 // ---------- QURAN (Holy Quran) ----------
-// Data (Arabic/Urdu/English text + audio) free "alquran.cloud" service se aati hai —
-// isliye humein khud koi bhaari PDF/MP3 file apne server pe store nahi karni padti.
-let allQuranSurahs = null; // ek baar fetch karke cache kar lete hain
+let allQuranSurahs = null;
 let quranRecognition = null;
-const QURAN_URDU_EDITION = 'ur.kanzuliman'; // Ahmed Raza Khan (Kanzul Iman) tarjuma
+const QURAN_URDU_EDITION = 'ur.kanzuliman';
 const QURAN_ENGLISH_EDITION = 'en.sahih';
-const QURAN_RECITER = 'ar.alafasy'; // Mishary Rashid Alafasy
+const QURAN_RECITER = 'ar.alafasy';
 
-// Sirf ek hi global switch se sab mureedon ke liye "Quran" tab dikhta/gayab hota hai.
 function updateQuranTabVisibility() {
   const quranTabBtn = document.getElementById('tabQuran');
   if (!quranTabBtn || !currentUser) return;
-  // qa_global_access ulta hai (default ON), Quran naya feature hai isliye
-  // safe default OFF rakha hai — jab tak admin khud ek baar ON na kare.
   const globalOn = Number(alarmSettings.quran_global_access) === 1;
   if (currentUser.role === 'admin' || globalOn) {
     quranTabBtn.classList.remove('hidden');
@@ -2155,7 +2088,6 @@ async function toggleGlobalQuranAccess() {
   } catch (e) { alert('Kuch galat ho gaya'); }
 }
 
-// 114 Surahon ki list ek hi baar laate hain (chhota, halka data — text/audio nahi)
 async function loadQuranSurahList() {
   const box = document.getElementById('quranSurahListBox');
   if (allQuranSurahs) { renderQuranSurahList(allQuranSurahs); return; }
@@ -2197,9 +2129,6 @@ function filterQuranSurahList() {
   renderQuranSurahList(filtered);
 }
 
-// Mic se Surah dhoondhna — Q&A wale mic jaisa hi 'en-IN' use karte hain, taaki
-// bola hua naam Roman letters mein aaye aur upar wali filterQuranSurahList()
-// ke saath seedha match ho jaaye.
 function toggleQuranVoiceSearch() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { alert('Is browser mein bol kar dhoondne ki suvidha nahi hai. Chrome try karo.'); return; }
@@ -2225,8 +2154,6 @@ function backToQuranList() {
   document.getElementById('quranListView').classList.remove('hidden');
 }
 
-// Jab global 🌐 language button dabaya jaaye aur koi Surah khuli ho, to uska
-// tarjuma (Urdu/English) turant nayi language mein dobara load ho.
 function reloadQuranSurahIfOpen() {
   const view = document.getElementById('quranSurahView');
   if (view && !view.classList.contains('hidden') && currentQuranSurahNumber) {
@@ -2264,15 +2191,15 @@ async function openQuranSurah(number) {
     const transData = (await transRes.json()).data;
 
     ayahsBox.innerHTML = arabicData.ayahs.map((ayah, i) => {
-      const globalNum = ayah.number; // 1-6236, CDN audio isi number se milta hai
+      const globalNum = ayah.number;
       const transText = (transData.ayahs[i] && transData.ayahs[i].text) || '';
       return `
-        <div class="card" style="padding:12px; margin-bottom:8px;">
+        <div class="card quran-ayah-card" id="ayah-card-${ayah.numberInSurah}" style="padding:12px; margin-bottom:8px;">
           <div style="font-size:12px; color:#ffd700;">${ayah.numberInSurah}</div>
           <div class="quran-arabic" style="margin:4px 0;">${ayah.text}</div>
-          <div style="font-size:14px; color:#cde; direction:${currentLang === 'ur' ? 'rtl' : 'ltr'};">${transText}</div>
+          <div style="font-size:18px; color:#cde; direction:${currentLang === 'ur' ? 'rtl' : 'ltr'}; line-height:2;">${transText}</div>
           <div class="row" style="margin-top:8px;">
-            <button class="secondary" style="width:auto; padding:6px 12px;" onclick="playQuranAyah(${globalNum}, this)">🔊 ${t('listen_btn')}</button>
+            <button class="secondary" style="width:auto; padding:6px 12px;" onclick="playQuranAyah(${globalNum}, ${ayah.numberInSurah}, this)">🔊 ${t('listen_btn')}</button>
             <button class="secondary" style="width:auto; padding:6px 12px; margin-left:6px;" onclick="downloadQuranAyah(${globalNum}, ${number}, ${ayah.numberInSurah})">${t('download_btn')}</button>
           </div>
         </div>
@@ -2283,16 +2210,30 @@ async function openQuranSurah(number) {
   }
 }
 
-function playQuranAyah(globalNum, btn) {
+function playQuranAyah(globalNum, numberInSurah, btn) {
   const url = `https://cdn.islamic.network/quran/audio/128/${QURAN_RECITER}/${globalNum}.mp3`;
   if (quranAudioPlayer) { quranAudioPlayer.pause(); quranAudioPlayer.onended = null; quranAudioPlayer = null; }
   quranAudioPlayer = new Audio(url);
   quranAudioPlayer.play();
+  if (numberInSurah) {
+    scrollToQuranAyah(numberInSurah);
+    highlightQuranAyah(numberInSurah);
+  }
 }
 
-// "⏹️ Band Karo" button — chahe ek ayat baj rahi ho ya poori Surah, sab ruk
-// jaata hai. onended ko bhi hata dete hain taaki agli Surah khud-ba-khud na
-// khul jaaye (jaisa auto-next checkbox ON hone par hota).
+function scrollToQuranAyah(numberInSurah) {
+  setTimeout(() => {
+    const el = document.getElementById('ayah-card-' + numberInSurah);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+}
+
+function highlightQuranAyah(numberInSurah) {
+  document.querySelectorAll('.quran-ayah-card').forEach(c => c.classList.remove('highlight'));
+  const el = document.getElementById('ayah-card-' + numberInSurah);
+  if (el) el.classList.add('highlight');
+}
+
 function stopQuranAudio() {
   if (quranAudioPlayer) {
     quranAudioPlayer.onended = null;
@@ -2301,9 +2242,6 @@ function stopQuranAudio() {
   }
 }
 
-// Poori Surah lagataar (ek MP3 file, sab ayaton ki recording ek saath) bajata hai.
-// Agar "auto-next" checkbox ON hai, to Surah khatam hote hi agli Surah khud-ba-khud
-// khulti aur bajti hai — poore Quran ko lagataar sunne jaisa experience.
 function playFullSurahAudio(number) {
   if (quranAudioPlayer) { quranAudioPlayer.pause(); quranAudioPlayer = null; }
   const url = `https://cdn.islamic.network/quran/audio-surah/128/${QURAN_RECITER}/${number}.mp3`;
@@ -2348,7 +2286,6 @@ async function saveHijriAdjustment() {
   } catch (e) { alert('Kuch galat ho gaya'); }
 }
 
-// English box ka text uthake AI se Urdu tarjuma karwata hai aur doosre box mein bhar deta hai.
 async function autoTranslateField(enFieldId, urFieldId, btn) {
   const enVal = document.getElementById(enFieldId).value.trim();
   if (!enVal) { alert('Pehle English naam likho'); return; }
@@ -2372,10 +2309,6 @@ async function autoTranslateField(enFieldId, urFieldId, btn) {
   }
 }
 
-// Event ke andar ka text (lamba, kai line ka) — English aur Urdu alag box mein
-// likhte hain, ek hi jagah "[[UR]]" nishaan laga kar save hota hai. Dikhate
-// waqt sirf chuni hui language ka hissa dikhta hai. Purana (bina nishaan ka)
-// text waise hi dikhta rahega.
 const UR_TEXT_MARK = '\n[[UR]]\n';
 function combineBilingualText(enVal, urVal) {
   enVal = (enVal || '').trim();
@@ -2389,7 +2322,6 @@ function splitBilingualText(raw) {
   if (i >= 0) {
     return { en: raw.slice(0, i).trim(), ur: raw.slice(i + UR_TEXT_MARK.length).trim() };
   }
-  // Purana text: Urdu akshar hon to Urdu box mein, warna English box mein
   if (/[\u0600-\u06FF]/.test(raw)) return { en: '', ur: raw.trim() };
   return { en: raw.trim(), ur: '' };
 }
@@ -2400,15 +2332,12 @@ function bilingualText(raw) {
   return currentLang === 'ur' ? p.ur : p.en;
 }
 
-// English aur Urdu wale alag box ka content jodkar "English | Urdu" format
-// bana deta hai (taaki admin ko khud '|' likhne ki zaroorat na pade).
 function combineBilingualName(enVal, urVal) {
   enVal = (enVal || '').trim();
   urVal = (urVal || '').trim();
   if (enVal && urVal) return enVal + ' | ' + urVal;
   return enVal || urVal;
 }
-// "English | Urdu" format wapas dono alag box mein bhar deta hai (edit karte waqt).
 function splitBilingualName(raw) {
   if (!raw) return { en: '', ur: '' };
   const parts = raw.split('|');
@@ -2417,7 +2346,6 @@ function splitBilingualName(raw) {
 }
 
 async function saveCustomAlarm() {
-  // Alarm ke saath dikhane wala content (text / image / audio / PDF)
   const cType = document.getElementById('customAlarmContentType').value;
   let cText = '';
   let cUrl = '';
@@ -2472,7 +2400,6 @@ async function saveCustomAlarm() {
   } catch (e) { alert('Custom alarm save karne mein error aayi'); }
 }
 
-// ---------- CUSTOM ALARM KE SAATH CONTENT (text / image / audio / PDF) ----------
 window.customContentDirty = false;
 window.customAlarmRecordedBlob = null;
 let customAlarmMediaRecorder = null;
@@ -2503,7 +2430,7 @@ function onCustomAudioFileChosen(input) {
   document.getElementById('customAlarmSavedAudio').style.display = 'none';
   const f = input.files && input.files[0];
   if (f) {
-    window.customAlarmRecordedBlob = null; // chuni hui file hi save hogi
+    window.customAlarmRecordedBlob = null;
     document.getElementById('customAlarmRecordStatus').innerText = '';
     setEventAudioPreview(URL.createObjectURL(f), 'customAlarmAudioPreview');
   } else {
@@ -2523,7 +2450,7 @@ async function startCustomRecording() {
       window.customContentDirty = true;
       document.getElementById('customAlarmSavedAudio').style.display = 'none';
       document.getElementById('customAlarmRecordStatus').innerText = '✅ Recording taiyar hai (' + Math.round(window.customAlarmRecordedBlob.size / 1024) + ' KB) — neeche play karke suno, theek ho to "Save Custom Alarm" dabao';
-      document.getElementById('customAlarmAudioFileInput').value = ''; // ab yahi recording save hogi
+      document.getElementById('customAlarmAudioFileInput').value = '';
       setEventAudioPreview(URL.createObjectURL(window.customAlarmRecordedBlob), 'customAlarmAudioPreview');
       const btn = document.getElementById('customAlarmRecordBtn');
       btn.innerText = '🎙️ Dobara Record Karo';
@@ -2566,7 +2493,6 @@ function checkCustomAlarm() {
     card.classList.add('hidden');
     return;
   }
-  // Ye alarm sirf chune hue group ko dikhe (admin ko hamesha)
   const cGroup = alarmSettings.custom_alarm_group || 'both';
   if (cGroup !== 'both' && currentUser && currentUser.role !== 'admin' && currentUser.group_type !== cGroup) {
     card.classList.add('hidden');
@@ -2580,7 +2506,7 @@ function checkCustomAlarm() {
   const endMinutes = eh * 60 + em2;
   const active = startMinutes <= endMinutes
     ? (nowMinutes >= startMinutes && nowMinutes <= endMinutes)
-    : (nowMinutes >= startMinutes || nowMinutes <= endMinutes); // raat paar hone wala case
+    : (nowMinutes >= startMinutes || nowMinutes <= endMinutes);
   if (active) {
     const titleText = '🔔 ' + bilingualTitle(alarmSettings.custom_alarm_title || 'Alarm') + ' — abhi chal raha hai';
     titleEl.innerText = titleText;
@@ -2588,7 +2514,6 @@ function checkCustomAlarm() {
     const viewBtn = document.getElementById('customAlarmViewBtn');
     if (viewBtn) viewBtn.style.display = customAlarmHasContent() ? 'inline-block' : 'none';
 
-    // Sound bhi bajayenge - din mein ek baar (jab tak silence na kiya ho)
     const key = 'custom-' + alarmSettings.custom_alarm_start + '-' + now.toDateString();
     if (!alarmSilenced[key]) {
       raiseAlarmKey(key);
@@ -2602,8 +2527,6 @@ function checkCustomAlarm() {
 
 const HIJRI_MONTHS = ['Muharram','Safar',"Rabi' al-Awwal","Rabi' al-Thani","Jumada al-Awwal","Jumada al-Thani","Rajab","Sha'ban","Ramadan","Shawwal","Dhu al-Qi'dah","Dhu al-Hijjah"];
 
-// Hijri calendar mein kabhi-kabhi 1-2 din ka farak aata hai (chaand dikhne ki wajah se,
-// yeh jagah-jagah alag hoti hai). Admin isko yahan se match kara sakta hai.
 let hijriAdjustmentDays = 0;
 
 function getHijriParts(date) {
@@ -2640,7 +2563,6 @@ function getIslamicMonthYear(date) {
   return { month: h.month, year: h.year };
 }
 
-// Hijri calendar ke zaroori din (month-day ke hisaab se, har saal wahi rehte hain)
 const HIJRI_EVENTS = {
   '1-1': 'Islamic New Year (Muharram)',
   '1-10': 'Ashura',
@@ -2654,7 +2576,6 @@ const HIJRI_EVENTS = {
   '12-10': 'Eid-ul-Adha'
 };
 
-// Gregorian calendar ke National holidays
 const GREGORIAN_EVENTS = {
   '0-26': 'Republic Day',
   '7-15': 'Independence Day',
@@ -2693,7 +2614,6 @@ function buildGregorianMonthDates(anchor) {
 let calendarType = 'gregorian';
 let calendarAnchorDate = new Date();
 
-// Har khaas din ka thoda tafseeli (detail) matn — box par click karne par dikhega
 const EVENT_DESCRIPTIONS = {
   'Islamic New Year (Muharram)': 'Hijri saal ka pehla din — Islamic calendar ka aaghaz.',
   'Ashura': '10 Muharram — Karbala mein Imam Hussain (RA) ki shahadat ka din, roza rakhna mustahab hai.',
@@ -2749,7 +2669,6 @@ function openCalendarGrid(type, anchor) {
   let html = '<div id="calGridContainer" style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; font-size:12px;">';
   dayNames.forEach(dn => html += `<div style="color:#ffd700; font-weight:bold;">${dn}</div>`);
 
-  // pehle date ke din se pehle khaali boxes
   const firstDow = dates[0].getDay();
   for (let i = 0; i < firstDow; i++) html += '<div></div>';
 
@@ -2760,7 +2679,6 @@ function openCalendarGrid(type, anchor) {
     const isToday = d.toDateString() === today.toDateString();
     const primaryDayNum = type === 'islamic' ? (idx + 1) : d.getDate();
 
-    // Doosra (secondary) calendar ka date bhi nikaal lo, taaki ek hi box mein dono dikhein
     let secondaryLabel;
     if (type === 'islamic') {
       secondaryLabel = d.getDate() + ' ' + gregShortMonths[d.getMonth()];
@@ -2808,7 +2726,6 @@ function openCalendarGrid(type, anchor) {
   setupCalendarKeyboardNav(cellEventMap);
 }
 
-// Ek hi button se dusra calendar (Hijri/English) primary bana do — anchor date wahi rehta hai
 function switchCalendarPrimary() {
   const otherType = calendarType === 'islamic' ? 'gregorian' : 'islamic';
   openCalendarGrid(otherType, calendarAnchorDate);
@@ -2839,7 +2756,6 @@ function setupCalendarKeyboardNav(cellEventMap) {
     const nextCell = document.getElementById('calCell-' + newPos);
     if (nextCell) nextCell.focus();
   };
-  // Pehla din focus mein le aao taaki turant arrow keys se chal sake
   const firstCell = container.querySelector('[id^="calCell-"]');
   if (firstCell) firstCell.focus();
 }
@@ -2853,10 +2769,10 @@ function changeCalendarMonth(direction) {
     let newAnchor;
     if (direction > 0) {
       newAnchor = new Date(built.dates[built.dates.length - 1]);
-      newAnchor.setDate(newAnchor.getDate() + 1); // agle Hijri month ka pehla din
+      newAnchor.setDate(newAnchor.getDate() + 1);
     } else {
       newAnchor = new Date(built.dates[0]);
-      newAnchor.setDate(newAnchor.getDate() - 1); // pichhle Hijri month ka aakhri din
+      newAnchor.setDate(newAnchor.getDate() - 1);
     }
     openCalendarGrid('islamic', newAnchor);
   }
@@ -2897,8 +2813,6 @@ function getAudioCtx() {
   return sharedAudioCtx;
 }
 function unlockAudio() {
-  // Login jaise real click par AudioContext ko "unlock" kar dete hain,
-  // taaki baad mein timer se (bina click ke) bhi alarm sound baj sake.
   try { getAudioCtx(); } catch (e) {}
 }
 
@@ -2926,23 +2840,20 @@ function beep(durationMs) {
     const ctx = getAudioCtx();
     const now = ctx.currentTime;
     const totalSec = Math.max(durationMs / 1000, 0.6);
-    // "Ding-dong" jaisa do-tone chime
-    playTone(ctx, 880, now, totalSec / 2);       // Ding (upar wala sur)
-    playTone(ctx, 659, now + totalSec / 2, totalSec / 2); // Dong (neeche wala sur)
+    playTone(ctx, 880, now, totalSec / 2);
+    playTone(ctx, 659, now + totalSec / 2, totalSec / 2);
   } catch (e) { console.error('Beep error', e); }
 }
 
 window.currentAlarmAudio = null;
 
 function playAlarmSound(durationMs) {
-  stopAlarmSound(); // pehle se koi baj raha ho to pehle usse rok do, do sound ek sath na bajein
-  // Agar admin ne apni ringtone upload ki hai, wahi bajao. Warna default ding-dong.
+  stopAlarmSound();
   if (alarmSettings && alarmSettings.alarm_tone_url) {
     try {
       const audio = new Audio(alarmSettings.alarm_tone_url);
       window.currentAlarmAudio = audio;
       audio.play().catch(() => { beep(durationMs); });
-      // durationMs ke baad khud rok do, taaki lambi audio file bhi hamesha na bajti rahe
       if (durationMs && durationMs > 0 && durationMs < 3600000) {
         window.currentAlarmAudioTimeout = setTimeout(() => {
           if (window.currentAlarmAudio === audio) stopAlarmSound();
@@ -2962,7 +2873,6 @@ function playAlarmSound(durationMs) {
     }
   });
 
-// Chahe custom tone bajay ho ya default beep — ek hi function se turant rok deta hai
 function stopAlarmSound() {
   if (window.currentAlarmAudioTimeout) { clearTimeout(window.currentAlarmAudioTimeout); window.currentAlarmAudioTimeout = null; }
   if (window.repeatBeepInterval) { clearInterval(window.repeatBeepInterval); window.repeatBeepInterval = null; }
@@ -2975,7 +2885,6 @@ function stopAlarmSound() {
     window.activeOscillators.forEach(osc => { try { osc.stop(); } catch (e) {} });
     window.activeOscillators = [];
   }
-  // Jo bhi "Suno" button abhi "Roko" dikha raha tha, use wapas normal kar do
   ['testToneBtn', 'testToneBtn2'].forEach(id => {
     const btn = document.getElementById(id);
     if (btn && btn.dataset.playing === '1') {
@@ -2985,14 +2894,13 @@ function stopAlarmSound() {
   });
 }
 
-// Ek hi button — pehli baar dabao to bajta rahega (loop), dobara dabao to turant ruk jaayega
 function toggleTestTone(btnId) {
   const btn = document.getElementById(btnId);
   if (btn && btn.dataset.playing === '1') {
     stopAlarmSound();
     return;
   }
-  stopAlarmSound(); // koi aur test/alarm baj raha ho to pehle usse rok do
+  stopAlarmSound();
   if (btn) {
     btn.dataset.label = btn.innerText;
     btn.dataset.playing = '1';
@@ -3001,7 +2909,7 @@ function toggleTestTone(btnId) {
   if (alarmSettings && alarmSettings.alarm_tone_url) {
     try {
       const audio = new Audio(alarmSettings.alarm_tone_url);
-      audio.loop = true; // jab tak "Roko" na dabao, bajta rahe
+      audio.loop = true;
       window.currentAlarmAudio = audio;
       audio.play().catch(() => { startLoopingBeep(); });
     } catch (e) { startLoopingBeep(); }
@@ -3049,7 +2957,6 @@ async function deleteAlarmTone() {
   } catch (e) { console.error(e); alert('Kuch galat ho gaya'); }
 }
 
-// ---------- Event Tone aur Live Class Tone (alag-alag ringtone) ----------
 async function uploadToneGeneric(fieldName, fileInputId) {
   const fileInput = document.getElementById(fileInputId);
   const file = fileInput.files[0];
@@ -3116,7 +3023,6 @@ function testCustomTone() { toggleTestToneGeneric('testCustomToneBtn', alarmSett
 
 let alarmSilenced = {};
 
-// ---------- ADMIN PANEL ACCORDION (ek box khulega, baaki sab band ho jaayenge) ----------
 function setupAdminAccordion() {
   const cards = document.querySelectorAll('#adminScreen > .card');
   cards.forEach((card) => {
@@ -3125,15 +3031,12 @@ function setupAdminAccordion() {
     if (!header) return;
     card.dataset.accordionInit = '1';
 
-    // h3 ke alawa card ke andar jo bhi hai, usko ek collapsible body mein daal do
     const body = document.createElement('div');
     body.className = 'accordion-body hidden';
     Array.from(card.children).forEach(child => {
       if (child !== header) body.appendChild(child);
     });
 
-    // h3 ko ek clickable header-row mein rakhte hain, arrow ko alag rakha hai taaki
-    // baad mein kahin h3.innerText badle to arrow mit na jaaye
     const headerRow = document.createElement('div');
     headerRow.className = 'accordion-header-row';
     headerRow.style.cssText = 'display:flex; justify-content:space-between; align-items:center; cursor:pointer;';
@@ -3167,7 +3070,6 @@ function toggleAdminAccordion(openCard) {
   });
 }
 
-// Kisi khaas card ko zabardasti khol do (jaise "Edit" dabane par), baaki sab band karke
 function openAdminAccordionCard(cardId) {
   const card = document.getElementById(cardId);
   if (!card) return;
@@ -3183,11 +3085,9 @@ function openAdminAccordionCard(cardId) {
 
 function silenceAlarm(key) {
   alarmSilenced[key] = true;
-  // Ek saath kai alarm (event + custom alarm + namaz) chal rahe hon to sabko
-  // chup karo, warna ek band karte hi doosra turant dobara aa jaata tha.
   activeAlarmKeys.forEach(k => { alarmSilenced[k] = true; });
   activeAlarmKeys.clear();
-  stopAlarmSound(); // sound turant band — banner hide karne se pehle hi
+  stopAlarmSound();
   const bar = document.getElementById('alarmBanner');
   if (bar) bar.classList.add('hidden');
 }
@@ -3197,9 +3097,6 @@ function showAlarmBanner(text, withView) {
   if (!bar) {
     bar = document.createElement('div');
     bar.id = 'alarmBanner';
-    // Ab yeh sirf chhota upar wala patti nahi, balki poori screen cover
-    // karne wala alarm hai — bilkul waisa hi jaisa app band hone par
-    // (full-screen notification/alarm) aata hai.
     bar.style.cssText = 'position:fixed; inset:0; background:#0f3d2e; color:#ffd700; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; z-index:99999; padding:24px;';
     document.body.prepend(bar);
   }
@@ -3223,7 +3120,6 @@ function raiseAlarmKey(key) {
 }
 let lastCheckedMinute = -1;
 
-// "HH:MM" ko minute-number mein badalte hain, taaki string-match ki gadbad (space/format) na ho
 function toMinutes(hhmm) {
   if (!hhmm) return null;
   const parts = String(hhmm).trim().split(':');
@@ -3233,8 +3129,6 @@ function toMinutes(hhmm) {
   return h * 60 + m;
 }
 
-// D1/DB se kabhi-kabhi 1/0 ki jagah null/undefined aa sakta hai — usko bhi "enabled" hi maano
-// jab tak explicitly 0/false na ho
 function isAlarmOn(val) {
   return !(val === 0 || val === false || val === '0');
 }
@@ -3244,8 +3138,6 @@ function checkNamazAlarms() {
   const nowMin = now.getHours() * 60 + now.getMinutes();
 
   if (!window.namazTimesToday) {
-    // Abhi Namaz auqaat load hi ho rahe hain (page abhi khula hai) —
-    // isse galat "internet check karo" wala message na dikhe, chup-chaap wait karo.
     return;
   }
   if (nowMin === lastCheckedMinute) return;
@@ -3267,11 +3159,17 @@ function checkNamazAlarms() {
       }
     }
 
-   const nextName = names[idx + 1];
-const nextTMin = nextName ? toMinutes(window.namazTimesToday[nextName]) : (tMin + 45);
+   let nextTMin = null;
+   if (idx < names.length - 1) {
+     nextTMin = toMinutes(window.namazTimesToday[names[idx + 1]]);
+   } else {
+     // Isha ke baad agla waqt = kal ka Fajr (bug fix: pehle galti se tMin+45 hota tha)
+     const fajrMin = toMinutes(window.namazTimesToday['Fajr']);
+     if (fajrMin !== null) nextTMin = fajrMin + 1440;
+   }
     if (isAlarmOn(alarmSettings.end_reminder_enabled) && nextTMin !== null) {
       const reminderMin = nextTMin - (alarmSettings.end_reminder_minutes_before || 0);
-      if (reminderMin === nowMin) {
+      if (((reminderMin % 1440) + 1440) % 1440 === nowMin) {
         const key = 'end-' + name + '-' + now.toDateString();
         if (!alarmSilenced[key]) {
           raiseAlarmKey(key);
@@ -3298,7 +3196,7 @@ function updateAlarmStatusLine(msg) {
 setInterval(checkNamazAlarms, 15000);
 checkNamazAlarms();
 
-// ---------- EVENTS (Weekly / Monthly / Ek-baar, content ke saath) ----------
+// ---------- EVENTS ----------
 window.eventsList = [];
 window.eventRecordedBlob = null;
 let eventMediaRecorder = null;
@@ -3321,13 +3219,12 @@ function toggleEventContentFields() {
   fileInput.style.display = (type === 'image' || type === 'pdf' || type === 'video') ? 'block' : 'none';
   fileInput.accept = type === 'pdf' ? 'application/pdf' : (type === 'video' ? 'video/*' : 'image/*');
   document.getElementById('eventAudioBox').style.display = type === 'audio' ? 'block' : 'none';
-  setEventFilePreview('', ''); // type badalne par purana preview hata do
+  setEventFilePreview('', '');
   const hasSavedContent = !!(window.eventSavedAudioUrl || window.eventEditingHasContent);
   document.getElementById('eventRemoveContentBtn').style.display = (type !== 'none' && hasSavedContent) ? 'block' : 'none';
   if (type !== 'audio') document.getElementById('eventSavedAudio').style.display = 'none';
 }
 
-// Image / PDF save karne se pehle dekhkar check karne ke liye preview
 function setEventFilePreview(url, type, boxId) {
   const box = document.getElementById(boxId || 'eventFilePreview');
   if (!box) return;
@@ -3354,9 +3251,6 @@ function onEventFileChosen(input) {
   setEventFilePreview(URL.createObjectURL(f), type);
 }
 
-// Audio (record ki hui, chuni hui ya purani) save karne se pehle sunkar check karne ke liye
-// Browser ki recording (webm) mein length likhi nahi hoti, isliye player "0:00 / 0:00"
-// dikhata tha. Ye usse sahi length dikhane layak bana deta hai.
 function fixAudioDuration(a) {
   if (a.dataset.durFix) return;
   a.dataset.durFix = '1';
@@ -3380,11 +3274,6 @@ function playSavedEventAudio() {
   if (window.eventSavedAudioUrl) setEventAudioPreview(window.eventSavedAudioUrl);
 }
 
-// "Content Hatao" — is event/alarm se text/image/audio/PDF hata deta hai (agli
-// baar Save karne par khud-ba-khud "kuch nahi" ho jayega)
-// Kisi bhi YouTube link (video ya /live/...) se uski ID nikalta hai, taaki
-// use seedha isi page ke andar (embed) dikhaya ja sake — YouTube app ya
-// naya tab kholne ki zaroorat nahi padti
 function youtubeVideoId(url) {
   if (!url) return '';
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|live\/|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/);
@@ -3431,7 +3320,7 @@ function onEventAudioFileChosen(input) {
   document.getElementById('eventSavedAudio').style.display = 'none';
   const f = input.files && input.files[0];
   if (f) {
-    window.eventRecordedBlob = null; // chuni hui file hi save hogi
+    window.eventRecordedBlob = null;
     document.getElementById('eventRecordStatus').innerText = '';
     setEventAudioPreview(URL.createObjectURL(f));
   } else {
@@ -3450,7 +3339,7 @@ async function startEventRecording() {
       window.eventRecordedBlob = new Blob(eventRecordedChunks, { type: 'audio/webm' });
       document.getElementById('eventRecordStatus').innerText = '✅ Recording taiyar hai (' + Math.round(window.eventRecordedBlob.size / 1024) + ' KB) — neeche play karke suno, theek ho to "Event Save Karo" dabao';
       document.getElementById('eventSavedAudio').style.display = 'none';
-      document.getElementById('eventAudioFileInput').value = ''; // ab yahi recording save hogi
+      document.getElementById('eventAudioFileInput').value = '';
       setEventAudioPreview(URL.createObjectURL(window.eventRecordedBlob));
       const btn = document.getElementById('eventRecordBtn');
       btn.innerText = '🎙️ Dobara Record Karo';
@@ -3706,7 +3595,6 @@ function openEventContent(id) {
   showContentModal(ev.title, ev.content_type, ev.content_text, ev.file_url);
 }
 
-// Event ya Custom Alarm ka content (text / image / PDF / audio) popup mein dikhata hai
 function showContentModal(title, contentType, contentText, fileUrl) {
   let modal = document.getElementById('eventContentModal');
   if (!modal) {
@@ -3737,7 +3625,6 @@ function showContentModal(title, contentType, contentText, fileUrl) {
   modal.innerHTML = inner;
 }
 
-// ---------- AUTO LOGIN (dobara refresh karne par login yaad rahe) ----------
 async function tryAutoLogin() {
   const savedMobile = localStorage.getItem('zahidiya_mobile');
   const savedPassword = localStorage.getItem('zahidiya_password');
@@ -3757,13 +3644,10 @@ async function tryAutoLogin() {
 window.addEventListener('DOMContentLoaded', tryAutoLogin);
 window.addEventListener('DOMContentLoaded', showIslamicDate);
 
-// Auto-login se bina button dabaye seedha andar aa jaate hain, isliye Login click ke bharose
-// audio unlock nahi ho pata. Isliye page par jahan bhi pehla click/tap/key ho, wahin audio unlock kar do.
 ['click', 'touchstart', 'keydown'].forEach(evt => {
   document.addEventListener(evt, unlockAudio);
 });
 
-// ---------- POORI WEBSITE KEYBOARD SE CHALE (arrow keys + Enter, mouse ki zaroorat nahi) ----------
 function getPageFocusableElements() {
   const selector = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
   return Array.from(document.querySelectorAll(selector)).filter(el => {
@@ -3789,12 +3673,10 @@ document.addEventListener('keydown', function(e) {
   const tag = (active.tagName || '').toLowerCase();
   const isTypingField = (tag === 'input' && !['checkbox','radio','button','submit'].includes(active.type)) || tag === 'textarea' || tag === 'select';
 
-  // Text/number fields ke andar Left/Right ko chhedna nahi (cursor move karne dena)
   if (isTypingField && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) return;
 
   if (e.key === 'Enter') {
     if (isTypingField) {
-      // Text/number field mein Enter dabane par agle box mein chale jao
       const focusables = getPageFocusableElements();
       const idx = focusables.indexOf(active);
       if (idx !== -1 && focusables[idx + 1]) {
@@ -3828,7 +3710,6 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-// ---------- AUTO REFRESH (bina refresh kiye naya class/notification dikhna) ----------
 let autoRefreshTimer = null;
 let fastRefreshTimer = null;
 let slowRefreshTimer = null;
@@ -3837,10 +3718,9 @@ function startAutoRefresh() {
   if (fastRefreshTimer) clearInterval(fastRefreshTimer);
   if (slowRefreshTimer) clearInterval(slowRefreshTimer);
 
-  // Online/Offline status turant (fast) update ho, isliye alag chhota timer
   fastRefreshTimer = setInterval(() => {
     if (currentUser && currentUser.role === 'admin') { loadAdminData(); }
-  }, 5000); // har 5 second (admin data refresh)
+  }, 5000);
 
   autoRefreshTimer = setInterval(() => {
     if (currentUser) {
@@ -3848,10 +3728,8 @@ function startAutoRefresh() {
       loadNotifications();
       checkCustomAlarm();
     }
-  }, 15000); // baaki cheezein har 15 second mein
+  }, 15000);
 
-  // Namaz auqaat baar-baar (15 sec) load karna zaroori nahi tha aur GPS/network
-  // ko bewajah load kar raha tha — ab har 5 minute mein ek baar refresh hoga
   if (slowRefreshTimer) clearInterval(slowRefreshTimer);
   slowRefreshTimer = setInterval(() => {
     if (currentUser) { loadPrayerTimes(); loadEvents(); }
@@ -3863,7 +3741,6 @@ function stopAutoRefresh() {
   if (slowRefreshTimer) { clearInterval(slowRefreshTimer); slowRefreshTimer = null; }
 }
 
-// ---------- NOTES SE SAWAL-JAWAB ----------
 if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 }
@@ -3955,11 +3832,6 @@ function deleteQaNote(id) {
   }).catch(() => alert('Notes delete karne mein error aayi'));
 }
 
-// Sawal likhne ke bajaye BOL kar puchne ke liye (browser ka apna speech-to-text,
-// koi extra setup ya API key nahi chahiye). Jo bola jayega text mein aa jayega,
-// mureed use bhejne se pehle theek bhi kar sakta hai.
-// Live jawab (jo abhi mila) ko Urdu mein dikhata hai, dobara dabane par English
-// wapas — tarjuma ek baar hi hota hai, phir yaad rakh liya jaata hai.
 window.qaAnswerShowingUrdu = false;
 async function toggleQaAnswerUrdu() {
   const btn = document.getElementById('qaUrduToggleBtn');
@@ -4017,13 +3889,6 @@ function toggleQaVoiceInput() {
     return;
   }
   qaRecognition = new SR();
-  // Pehle 'hi-IN' set tha, jo awaaz ko Devanagari (Hindi) script mein
-  // likhta tha (jaise "कलमा तैयब") — jabki puri website aur AI Roman/Hinglish
-  // mein sawal expect karte hain (jaise typed sawal "Kalma taiyyab mai...").
-  // 'en-IN' (English-India) use karne se Chrome/Android wahi bole gaye
-  // Hindi/Urdu lafz Roman letters mein likhta hai, jo typed sawal jaisa
-  // hi format hai — isse AI ko sawal samajhne aur sahi jawab dene mein
-  // aasani hoti hai.
   qaRecognition.lang = currentLang === 'ur' ? 'ur-PK' : 'en-IN';
   qaRecognition.interimResults = false;
   qaRecognition.onstart = () => { btn.innerText = '🔴 Sun raha hoon...'; };
@@ -4055,10 +3920,6 @@ async function askQaQuestion() {
       body: JSON.stringify({ question, mobile: currentUser.mobile })
     });
 
-    // Naya server: jawab ek saath nahi, dheere-dheere (streaming) aata hai — isliye
-    // jawab AANA turant shuru ho jaata hai, poora jawab banne ka intezaar nahi karna
-    // padta (jaise Claude chat mein hota hai). Purane/error wale response abhi bhi
-    // ek saath JSON mein aate hain, unhe pehle jaisa hi handle karte hain.
     const isStream = res.headers.get('X-Qa-Stream') === '1';
     window.qaLastAnswerUr = null;
     window.qaAnswerShowingUrdu = false;
@@ -4107,9 +3968,6 @@ async function askQaQuestion() {
   btn.innerText = 'Sawal Poocho';
 }
 
-// Jawab mein agar kabhi bullet (•, -, *), numbering (1. 2.) ya ** jaisa
-// formatting symbol reh jaaye, to awaaz (text-to-speech) usko ajeeb tarah se
-// bol deta hai (jaise "dot dot dot"). Bolne se pehle yeh sab clean kar dete hain.
 function cleanTextForSpeech(text) {
   if (!text) return '';
   return text
@@ -4124,10 +3982,6 @@ function cleanTextForSpeech(text) {
     .trim();
 }
 
-// Phone mein jo bhi awazein (voices) installed hain unme se sabse behtar
-// Urdu/Hindi wali dhoondta hai. Bahut se phones mein "Urdu" voice nahi hoti
-// (isliye robotic/ajeeb awaaz aati thi) lekin "Hindi" voice achhi hoti hai —
-// aur Hindi bolne wala Urdu ke jumle bhi saaf samajh mein aa jaate hain.
 function pickBestUrduHindiVoice() {
   const voices = speechSynthesis.getVoices() || [];
   if (!voices.length) return null;
@@ -4161,9 +4015,6 @@ async function speakQaAnswer() {
   }
 }
 
-// Agar Google TTS kabhi fail ho jaaye (internet issue ya key na ho), to
-// purani free browser awaaz par wapas chala jaata hai — taaki button hamesha
-// kuch na kuch bole, bilkul chup na rahe.
 function speakQaAnswerBrowserFallback(cleanText) {
   if (!('speechSynthesis' in window)) { alert('Is browser mein awaaz (text-to-speech) support nahi hai'); return; }
   speechSynthesis.cancel();
@@ -4223,8 +4074,6 @@ async function deleteCurrentQa() {
   } catch (e) { alert('Delete karne mein error aayi'); }
 }
 
-// "📜 History" button dabane par history list dikhti/chhupti hai (pehle
-// hamesha chhupi rehti thi, PDF button ke bilkul niche, isliye milti nahi thi)
 function toggleQaHistorySection() {
   const box = document.getElementById('qaHistoryList');
   if (!box) return;
@@ -4268,9 +4117,6 @@ async function loadQaHistory() {
     itemsHtml;
 }
 
-// History ke ek purane jawab ko awaaz mein sunata hai (abhi ka jawab jis
-// button se sunte hain, wahi kaam yahan bhi — jo bhi language (Urdu/English)
-// abhi dikh rahi ho, wahi bolega)
 async function speakHistoryQa(id) {
   const qa = (window.qaHistoryList || []).find(x => x.id === id);
   if (!qa) return;
@@ -4295,7 +4141,6 @@ async function speakHistoryQa(id) {
   }
 }
 
-// History ke ek item ka answer Urdu mein dikhata hai (dobara dabane par English wapas)
 async function toggleHistoryUrdu(id) {
   const qa = (window.qaHistoryList || []).find(x => x.id === id);
   if (!qa) return;
@@ -4346,7 +4191,6 @@ async function toggleHistoryUrdu(id) {
   }
 }
 
-// Sirf ek Q&A ko delete karta hai
 async function downloadHistoryQaAudio(id, btn) {
   const qa = (window.qaHistoryList || []).find(x => x.id === id);
   if (!qa) return;
@@ -4366,7 +4210,6 @@ async function deleteOneQa(id) {
   } catch (e) { alert('Delete karne mein error aayi'); }
 }
 
-// Saare purane Q&A ek saath delete karta hai
 async function clearQaHistory() {
   if (!confirm('Aapke saare purane sawal-jawab delete ho jayenge. Pakka?')) return;
   try {
@@ -4379,9 +4222,6 @@ async function clearQaHistory() {
   } catch (e) { alert('Delete karne mein error aayi'); }
 }
 
-// Abhi jo jawab mila hai (history mein save hone se pehle) usko PDF banakar
-// download karta hai — jo bhi language (Urdu/English) abhi screen par dikh
-// rahi ho, wahi PDF mein jayegi.
 async function downloadCurrentQaPdf() {
   const shownAnswer = window.qaAnswerShowingUrdu && window.qaLastAnswerUr ? window.qaLastAnswerUr : window.qaLastAnswer;
   if (!shownAnswer) return;
@@ -4408,7 +4248,6 @@ async function downloadCurrentQaPdf() {
   }
 }
 
-// Sirf ek Q&A ko PDF banakar download karta hai (poori history ka pehle se hai)
 async function downloadOneQaPdf(id) {
   const qa = (window.qaHistoryList || []).find(x => x.id === id);
   if (!qa) return;
