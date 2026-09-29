@@ -1955,7 +1955,16 @@ async function loadQaNotes() {
   try { const res = await fetch(API + '/api/notes'); const data = await res.json(); window.qaNotesList = data.notes || []; } catch (e) { window.qaNotesList = []; }
   const box = document.getElementById('qaNotesAdminList'); if (!box) return;
   if (!window.qaNotesList.length) { box.innerHTML = '<p style="font-size:12px; color:#cde;">' + t('no_notes_uploaded_msg') + '</p>'; return; }
-  box.innerHTML = '<p style="font-size:12px; color:#ffd700;">' + t('uploaded_notes_label') + '</p>' + window.qaNotesList.map(n => `<div style="font-size:12px; display:flex; justify-content:space-between; align-items:center; border:1px solid #2a6b2a; border-radius:6px; padding:6px 8px; margin-top:6px;"><span>📄 ${n.title}</span><button class="secondary" style="width:auto; padding:4px 10px;" onclick="deleteQaNote(${n.id})">🗑️</button></div>`).join('');
+  box.innerHTML = '<p style="font-size:12px; color:#ffd700;">' + t('uploaded_notes_label') + '</p>' + window.qaNotesList.map(n => {
+    const fileUrl = n.file_url || '';
+    const fullUrl = fileUrl && fileUrl.startsWith('/') ? 'https://zahidiya-mysore.pages.dev' + fileUrl : fileUrl;
+    return `<div style="font-size:12px; display:flex; justify-content:space-between; align-items:center; border:1px solid #2a6b2a; border-radius:6px; padding:6px 8px; margin-top:6px; gap:6px;">
+      <span style="flex:1; word-break:break-word;">📄 ${n.title}</span>
+      ${fullUrl ? `<a href="${fullUrl}" target="_blank" style="background:#2a6b2a; color:#fff; padding:4px 10px; border-radius:6px; text-decoration:none; font-weight:bold;">👁️ Kholo</a>` : ''}
+      ${fullUrl ? `<a href="${fullUrl}" download style="background:#1c6b4f; color:#fff; padding:4px 10px; border-radius:6px; text-decoration:none; font-weight:bold;">⬇️</a>` : ''}
+      <button class="secondary" style="width:auto; padding:4px 10px;" onclick="deleteQaNote(${n.id})">🗑️</button>
+    </div>`;
+  }).join('');
 }
 function deleteQaNote(id) { if (!confirm('Delete this note?')) return; fetch(API + '/api/delete-note', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id }) }).then(r => r.json()).then(data => { if (data.success) loadQaNotes(); }).catch(() => {}); }
 
