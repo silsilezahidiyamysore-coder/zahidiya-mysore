@@ -1296,9 +1296,14 @@ function playFullSurahAudio(number) {
   quranAudioPlayer.onended = () => {
     const autoNext = document.getElementById('quranAutoNextCheckbox');
     const isLast = number >= 114;
-    if (autoNext && autoNext.checked && !isLast) openQuranSurah(number + 1).then(() => playFullSurahAudio(number + 1));
+    if (autoNext && autoNext.checked && !isLast) {
+      openQuranSurah(number + 1).then(() => playFullSurahAudio(number + 1));
+    } else {
+      hideQuranFloating();
+    }
   };
   quranAudioPlayer.play();
+  showQuranFloating();
 }
 
 function downloadQuranAyah(globalNum, surahNum, ayahNumInSurah) {
