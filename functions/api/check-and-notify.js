@@ -165,7 +165,12 @@ async function handle(context) {
         for (let i = 0; i < names.length; i++) {
           const tMin = toMinutes(times[i]);
           if (tMin === null) continue;
-          let nextTMin = (i + 1 < names.length) ? toMinutes(times[i + 1]) : (tMin + 45);
+         let nextTMin;
+          if (i + 1 < names.length) {
+            nextTMin = toMinutes(times[i + 1]);
+          } else {
+            nextTMin = toMinutes(prayerTimes.fajr);
+          }
           if (nextTMin === null) continue;
           // Fajr ka "End" = Sunrise (Dhuhr nahi) — admin panel/app jaisa
           if (i === 0) {
