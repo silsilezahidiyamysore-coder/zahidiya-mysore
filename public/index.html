@@ -1252,7 +1252,9 @@ function playQuranAyah(globalNum, numberInSurah, btn) {
   const url = `https://cdn.islamic.network/quran/audio/128/${QURAN_RECITER}/${globalNum}.mp3`;
   if (quranAudioPlayer) { quranAudioPlayer.pause(); quranAudioPlayer.onended = null; quranAudioPlayer = null; }
   quranAudioPlayer = new Audio(url);
+  quranAudioPlayer.onended = () => { hideQuranFloating(); };
   quranAudioPlayer.play();
+  showQuranFloating();
   if (numberInSurah) {
     scrollToQuranAyah(numberInSurah);
     highlightQuranAyah(numberInSurah);
