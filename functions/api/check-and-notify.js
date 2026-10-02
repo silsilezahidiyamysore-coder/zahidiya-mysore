@@ -145,10 +145,12 @@ async function handle(context) {
           if (isDueNow(tMin, nowMin)) {
             const key = 'namaz-' + name + '-' + todayISO;
             if (await shouldSend(db, key)) {
+              // Website notification — app ke alarm screen jaisa hi message
               await sendToSubscriptions(context.env, db, allSubs, {
-                title: '🕌 ' + name + ' ki namaz ka waqt ho gaya hai',
+                title: '🕌 ' + name + ' ki namaz ka waqt ab shuru ho gaya hai',
                 body: 'Silsila-e-Zahidiya Mysore', tag: 'namaz-' + name
               });
+              // App ke liye raw title (app khud sundar message banata hai) — isme change nahi
               await sendAlarmRingPush(context.env, name + ' ki namaz ka waqt ho gaya hai', alarmSettings.start_alarm_duration_seconds || 60, 'both', 'namaz');
               sentCount++;
             }
@@ -181,10 +183,13 @@ async function handle(context) {
           if (isDueNow(reminderMin, nowMin)) {
             const key = 'endreminder-' + names[i] + '-' + todayISO;
             if (await shouldSend(db, key)) {
+              const mins = alarmSettings.end_reminder_minutes_before || 10;
+              // Website notification — app ke alarm screen jaisa hi message
               await sendToSubscriptions(context.env, db, allSubs, {
-                title: '⏳ ' + names[i] + ' ki namaz khatam hone wali hai (' + alarmSettings.end_reminder_minutes_before + ' min)',
+                title: '⏳ ' + names[i] + ' ki namaz ka waqt khatam hone wala hai (' + mins + ' minute baaki hai)',
                 body: 'Silsila-e-Zahidiya Mysore', tag: 'end-reminder-' + names[i]
               });
+              // App ke liye raw title — isme change nahi
               await sendAlarmRingPush(context.env, names[i] + ' ki namaz khatam hone wali hai', alarmSettings.end_reminder_beep_seconds || 20, 'both', 'namaz');
               sentCount++;
             }
