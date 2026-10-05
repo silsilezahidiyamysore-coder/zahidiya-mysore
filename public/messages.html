@@ -35,14 +35,8 @@
     flex-wrap: wrap;
     gap: 10px;
   }
-  .header h1 {
-    font-size: 22px;
-    font-weight: 700;
-  }
-  .header h1.nastaliq {
-    font-size: 24px;
-    line-height: 2.8;
-  }
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .header h1.nastaliq { font-size: 24px; line-height: 2.8; }
   .lang-toggle { display: flex; gap: 8px; }
   .lang-btn {
     padding: 8px 16px;
@@ -160,17 +154,38 @@
     text-align: center;
     font-size: 18px;
     font-weight: bold;
-    min-height: 90px;
+    min-height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
     line-height: 2.4;
+    word-wrap: break-word;
   }
-  .preview-box.nastaliq {
+  .preview-box.urdu-preview-box {
+    font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
+    direction: rtl;
     font-size: 24px;
     line-height: 3.2;
     padding: 28px 16px;
     font-weight: 700;
+  }
+  .preview-box.en-preview-box {
+    background: #2e7d32;
+    font-family: -apple-system, sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.8;
+    padding: 20px 16px;
+    margin-top: 6px;
+  }
+  .preview-label-small {
+    font-size: 12px;
+    color: #666;
+    font-weight: 600;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
   .save-btn {
     background: #1b5e20;
@@ -240,10 +255,7 @@
     margin-bottom: 16px;
   }
   .refresh-btn:hover { background: #e8f5e9; }
-  .top-nav {
-    text-align: center;
-    margin-bottom: 16px;
-  }
+  .top-nav { text-align: center; margin-bottom: 16px; }
   .top-nav a {
     color: #1b5e20;
     text-decoration: none;
@@ -314,7 +326,6 @@ function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('msg_admin_lang', lang);
 
-  // "اردو" button — HAMESHA Nastaliq + active
   const btnUr = document.getElementById('btn-ur');
   btnUr.classList.add('nastaliq');
   if (lang === 'ur') {
@@ -323,7 +334,6 @@ function setLang(lang) {
     btnUr.classList.remove('active');
   }
 
-  // "EN" button
   const btnEn = document.getElementById('btn-en');
   if (lang === 'en') {
     btnEn.classList.add('active');
@@ -431,7 +441,10 @@ function renderMessages() {
         </div>
         <div class="field-group">
           <div class="field-label urdu-label" id="label_preview_${key}">پیش نظارہ:</div>
-          <div class="preview-box nastaliq" id="preview_${key}">${escapeHtml(msg.ur) || '...'}</div>
+          <div class="preview-label-small">URDU PREVIEW</div>
+          <div class="preview-box urdu-preview-box" id="preview_ur_${key}">${escapeHtml(msg.ur) || '...'}</div>
+          <div class="preview-label-small">ENGLISH PREVIEW</div>
+          <div class="preview-box en-preview-box" id="preview_en_${key}">${escapeHtml(msg.en) || '...'}</div>
         </div>
         <button class="save-btn" id="btn_${key}" onclick="saveMessage('${prayer.key}', '${type.key}')">
           <span class="btn-urdu">💾 محفوظ کریں</span> <span class="btn-en">/ Save</span>
@@ -442,9 +455,16 @@ function renderMessages() {
 
       setTimeout(() => {
         const urInput = document.getElementById('ur_' + key);
+        const enInput = document.getElementById('en_' + key);
+
         if (urInput) {
           urInput.addEventListener('input', e => {
-            document.getElementById('preview_' + key).textContent = e.target.value || '...';
+            document.getElementById('preview_ur_' + key).textContent = e.target.value || '...';
+          });
+        }
+        if (enInput) {
+          enInput.addEventListener('input', e => {
+            document.getElementById('preview_en_' + key).textContent = e.target.value || '...';
           });
         }
       }, 0);
