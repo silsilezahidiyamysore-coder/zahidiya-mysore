@@ -6,8 +6,8 @@
 <title>Namaz Messages — Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" as="style">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap" as="style">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -17,7 +17,6 @@
     padding: 16px;
     line-height: 1.5;
   }
-  /* URDU FONT — ALWAYS NASTALIQ */
   .urdu-font, .urdu-input, .urdu-preview, .urdu-label, .ur-part {
     font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
     direction: rtl;
@@ -35,7 +34,17 @@
     flex-wrap: wrap;
     gap: 10px;
   }
-  .header h1 { font-size: 20px; }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 2.4;
+  }
+  .header h1.urdu-title {
+    font-family: 'Noto Nastaliq Urdu', serif;
+    font-size: 24px;
+    line-height: 2.8;
+    font-weight: 700;
+  }
   .lang-toggle { display: flex; gap: 8px; }
   .lang-btn {
     padding: 8px 16px;
@@ -51,26 +60,43 @@
   .card {
     background: white;
     border-radius: 12px;
-    padding: 16px;
+    padding: 18px;
     margin-bottom: 14px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.06);
     border-left: 4px solid #1b5e20;
   }
   .prayer-title {
-    font-size: 17px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 700;
     color: #1b5e20;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     line-height: 2;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
   }
-  .prayer-title .ur-part {
-    font-size: 15px;
-    color: #666;
-    font-weight: normal;
+  .prayer-title .ur-name {
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 2.6;
+    direction: rtl;
+  }
+  .prayer-title .en-part {
+    font-family: -apple-system, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1b5e20;
+  }
+  .prayer-title .other-part {
+    font-family: 'Noto Nastaliq Urdu', serif;
+    font-size: 16px;
+    color: #888;
+    font-weight: 400;
     line-height: 2.4;
-    margin: 0 4px;
   }
-  .field-group { margin-bottom: 14px; }
+  .field-group { margin-bottom: 16px; }
   .field-label {
     font-size: 13px;
     color: #555;
@@ -78,9 +104,13 @@
     font-weight: 600;
   }
   .field-label.urdu-label {
-    font-size: 16px;
-    line-height: 2.2;
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    font-size: 18px;
+    line-height: 2.6;
     color: #1b5e20;
+    font-weight: 600;
+    direction: rtl;
+    text-align: right;
     padding-bottom: 4px;
   }
   textarea {
@@ -92,13 +122,22 @@
     font-family: inherit;
     resize: vertical;
     min-height: 70px;
+    color: #1a1a1a;
   }
   textarea:focus { outline: none; border-color: #1b5e20; }
   textarea.urdu-input {
-    font-size: 20px;
-    line-height: 2.8;
-    min-height: 110px;
-    padding: 14px 16px;
+    font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
+    font-size: 22px;
+    line-height: 3;
+    min-height: 130px;
+    padding: 16px 18px;
+    font-weight: 600;
+    direction: rtl;
+    text-align: right;
+    color: #1a1a1a;
+  }
+  textarea.urdu-input::placeholder {
+    color: #aaa;
     font-weight: 400;
   }
   .preview-box {
@@ -119,17 +158,18 @@
   .preview-box.urdu-preview {
     font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
     direction: rtl;
-    font-size: 22px;
-    line-height: 3;
-    padding: 24px 16px;
+    font-size: 24px;
+    line-height: 3.2;
+    padding: 28px 16px;
+    font-weight: 700;
   }
   .save-btn {
     background: #1b5e20;
     color: white;
     border: none;
-    padding: 12px 24px;
+    padding: 14px 24px;
     border-radius: 8px;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     width: 100%;
@@ -140,24 +180,31 @@
   .save-btn.saved { background: #2e7d32; }
   .status-msg {
     text-align: center;
-    font-size: 13px;
-    margin-top: 8px;
-    min-height: 18px;
+    font-size: 14px;
+    margin-top: 10px;
+    min-height: 20px;
+    font-weight: 600;
   }
   .status-msg.success { color: #1b5e20; }
   .status-msg.error { color: #c62828; }
-  .loading { text-align: center; padding: 40px; color: #666; }
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-size: 16px;
+  }
   .refresh-btn {
     background: white;
     color: #1b5e20;
     border: 2px solid #1b5e20;
-    padding: 8px 20px;
+    padding: 10px 24px;
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 15px;
     margin-bottom: 16px;
   }
+  .refresh-btn:hover { background: #e8f5e9; }
   .top-nav {
     text-align: center;
     margin-bottom: 16px;
@@ -166,18 +213,20 @@
     color: #1b5e20;
     text-decoration: none;
     font-weight: bold;
-    padding: 8px 16px;
+    padding: 10px 20px;
     border: 2px solid #1b5e20;
     border-radius: 8px;
     display: inline-block;
     background: white;
+    font-size: 14px;
   }
+  .top-nav a:hover { background: #e8f5e9; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1 id="pageTitle">📿 نماز کے پیغامات</h1>
+  <h1 id="pageTitle" class="urdu-title">📿 نماز کے پیغامات</h1>
   <div class="lang-toggle">
     <button class="lang-btn active" id="btn-ur" onclick="setLang('ur')">اردو</button>
     <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
@@ -217,8 +266,9 @@ let messagesData = {};
 // Force Nastaliq font load
 if (document.fonts) {
   Promise.all([
-    document.fonts.load('400 20px "Noto Nastaliq Urdu"'),
-    document.fonts.load('700 20px "Noto Nastaliq Urdu"')
+    document.fonts.load('400 22px "Noto Nastaliq Urdu"'),
+    document.fonts.load('600 22px "Noto Nastaliq Urdu"'),
+    document.fonts.load('700 24px "Noto Nastaliq Urdu"')
   ]).then(() => {
     if (document.getElementById('messages-container')) {
       updateLabels();
@@ -235,23 +285,29 @@ function setLang(lang) {
 }
 
 function updateLabels() {
-  document.getElementById('pageTitle').textContent =
-    currentLang === 'ur' ? '📿 نماز کے پیغامات' : '📿 Namaz Messages';
+  const titleEl = document.getElementById('pageTitle');
+  if (currentLang === 'ur') {
+    titleEl.textContent = '📿 نماز کے پیغامات';
+    titleEl.classList.add('urdu-title');
+  } else {
+    titleEl.textContent = '📿 Namaz Messages';
+    titleEl.classList.remove('urdu-title');
+  }
 
   PRAYERS.forEach(p => {
     TYPES.forEach(t => {
       const key = p.key + '_' + t.key;
-      const titleEl = document.getElementById('title_' + key);
+      const titleCard = document.getElementById('title_' + key);
       const urLabel = document.getElementById('label_ur_' + key);
       const enLabel = document.getElementById('label_en_' + key);
       const previewLabel = document.getElementById('label_preview_' + key);
 
-      if (titleEl) {
-        const prayerName = currentLang === 'ur' ? p.ur : p.en;
-        const typeName = currentLang === 'ur' ? t.ur : t.en;
-        const otherName = currentLang === 'ur' ? p.en : p.ur;
-        const otherType = currentLang === 'ur' ? t.en : t.ur;
-        titleEl.innerHTML = `🕌 <span class="ur-part" style="font-family:inherit;direction:inherit;font-size:inherit;font-weight:bold;color:inherit;">${prayerName}</span> — <span style="font-family:inherit;direction:inherit;">${typeName}</span> <span class="ur-part" style="font-size:14px;color:#888;font-weight:normal;">(${otherName} — ${otherType})</span>`;
+      if (titleCard) {
+        if (currentLang === 'ur') {
+          titleCard.innerHTML = `🕌 <span class="ur-name">${p.ur} — ${t.ur}</span> <span class="other-part">(${p.en} — ${t.en})</span>`;
+        } else {
+          titleCard.innerHTML = `🕌 <span class="en-part">${p.en} — ${t.en}</span> <span class="other-part">(${p.ur} — ${t.ur})</span>`;
+        }
       }
       if (urLabel) urLabel.textContent = currentLang === 'ur' ? 'اردو پیغام:' : 'Urdu message:';
       if (enLabel) enLabel.textContent = currentLang === 'ur' ? 'انگریزی / رومن اردو:' : 'English / Roman Urdu:';
@@ -299,7 +355,7 @@ function renderMessages() {
       card.className = 'card';
       card.innerHTML = `
         <div class="prayer-title" id="title_${key}">
-          🕌 ${prayer.ur} — ${type.ur}
+          🕌 <span class="ur-name">${prayer.ur} — ${type.ur}</span> <span class="other-part">(${prayer.en} — ${type.en})</span>
         </div>
         <div class="field-group">
           <div class="field-label urdu-label" id="label_ur_${key}">اردو پیغام:</div>
@@ -313,7 +369,7 @@ function renderMessages() {
           <div class="field-label" id="label_preview_${key}">پیش نظارہ:</div>
           <div class="preview-box urdu-preview" id="preview_${key}">${escapeHtml(msg.ur) || '...'}</div>
         </div>
-        <button class="save-btn" id="btn_${key}" onclick="saveMessage('${prayer.key}', '${type.key}')">💾 محفوظ کریں</button>
+        <button class="save-btn" id="btn_${key}" onclick="saveMessage('${prayer.key}', '${type.key}')">💾 محفوظ کریں / Save</button>
         <div class="status-msg" id="status_${key}"></div>
       `;
       container.appendChild(card);
@@ -356,7 +412,7 @@ async function saveMessage(prayer, msgType) {
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Save failed');
 
-    status.textContent = '✅ Saved successfully';
+    status.textContent = currentLang === 'ur' ? '✅ کامیابی سے محفوظ ہو گیا' : '✅ Saved successfully';
     status.className = 'status-msg success';
     btn.classList.add('saved');
     setTimeout(() => {
@@ -368,7 +424,7 @@ async function saveMessage(prayer, msgType) {
     status.className = 'status-msg error';
   } finally {
     btn.disabled = false;
-    btn.textContent = '💾 محفوظ کریں';
+    btn.textContent = '💾 محفوظ کریں / Save';
   }
 }
 
