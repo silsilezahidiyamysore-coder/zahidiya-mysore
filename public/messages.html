@@ -145,6 +145,30 @@
     color: #aaa;
     font-weight: 400;
   }
+  /* Transliterate button */
+  .transliterate-btn {
+    background: #ff9800;
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .transliterate-btn:hover { background: #f57c00; }
+  .transliterate-btn:disabled { background: #bbb; cursor: not-allowed; }
+  .transliterate-btn .ur-text {
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    font-size: 15px;
+    line-height: 2;
+    direction: rtl;
+    unicode-bidi: embed;
+  }
   .preview-box {
     background: #1b5e20;
     color: white;
@@ -363,6 +387,7 @@ function updateLabels() {
       const previewLabel = document.getElementById('label_preview_' + key);
       const saveBtn = document.getElementById('btn_' + key);
       const statusEl = document.getElementById('status_' + key);
+      const transBtn = document.getElementById('trans_btn_' + key);
 
       if (titleCard) {
         if (currentLang === 'ur') {
@@ -385,6 +410,9 @@ function updateLabels() {
       }
       if (statusEl) {
         statusEl.classList.toggle('nastaliq', currentLang === 'ur');
+      }
+      if (transBtn) {
+        transBtn.innerHTML = `<span class="ur-text">✨ اردو میں تبدیل کریں</span>`;
       }
     });
   });
@@ -437,7 +465,10 @@ function renderMessages() {
         </div>
         <div class="field-group">
           <div class="field-label urdu-label" id="label_en_${key}">انگریزی / رومن اردو:</div>
-          <textarea id="en_${key}" placeholder="Enter English / Roman message...">${escapeHtml(msg.en)}</textarea>
+          <textarea id="en_${key}" placeholder="Type in English / Roman Urdu...">${escapeHtml(msg.en)}</textarea>
+          <button class="transliterate-btn" id="trans_btn_${key}" onclick="transliterate('${key}')">
+            <span class="ur-text">✨ اردو میں تبدیل کریں</span>
+          </button>
         </div>
         <div class="field-group">
           <div class="field-label urdu-label" id="label_preview_${key}">پیش نظارہ:</div>
@@ -470,6 +501,52 @@ function renderMessages() {
       }, 0);
     });
   });
+}
+
+// ====== AUTO TRANSLITERATE English → Urdu ======
+async function transliterate(key) {
+  const enText = document.getElementById('en_' + key).value.trim();
+  const urTextarea = document.getElementById('ur_' + key);
+  const btn = document.getElementById('trans_btn_' + key);
+
+  if (!enText) {
+    alert('پہلے انگریزی / رومن اردو میں کچھ لکھیں');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<span class="ur-text">⏳ تبدیل ہو رہا ہے...</span>`;
+
+  try {
+    // Google Input Tools API — Roman → Urdu
+    const url = `https://inputtools.google.com/request?text=${encodeURIComponent(enText)}&itc=ur-t-i0-und&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data && data[0] === 'SUCCESS') {
+      const suggestions = data[1][0][1];
+      if (suggestions && suggestions.length > 0) {
+        const urduText = suggestions[0];
+        urTextarea.value = urduText;
+        document.getElementById('preview_ur_' + key).textContent = urduText;
+        btn.innerHTML = `<span class="ur-text">✅ ہو گیا</span>`;
+        setTimeout(() => {
+          btn.innerHTML = `<span class="ur-text">✨ اردو میں تبدیل کریں</span>`;
+        }, 1500);
+      } else {
+        btn.innerHTML = `<span class="ur-text">❌ نہیں ہو سکا</span>`;
+      }
+    } else {
+      btn.innerHTML = `<span class="ur-text">❌ نہیں ہو سکا</span>`;
+    }
+  } catch (e) {
+    btn.innerHTML = `<span class="ur-text">❌ نیٹ ورک مسئلہ</span>`;
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => {
+      btn.innerHTML = `<span class="ur-text">✨ اردو میں تبدیل کریں</span>`;
+    }, 2500);
+  }
 }
 
 async function saveMessage(prayer, msgType) {
