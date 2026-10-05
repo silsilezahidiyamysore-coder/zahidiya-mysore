@@ -56,9 +56,12 @@
   }
   .lang-btn.active { background: white; color: #1b5e20; }
   .lang-btn.nastaliq {
+    font-family: 'Noto Nastaliq Urdu', serif !important;
     font-size: 16px;
     line-height: 2;
-    padding: 4px 20px;
+    padding: 6px 22px;
+    direction: rtl;
+    unicode-bidi: embed;
   }
   .card {
     background: white;
@@ -260,7 +263,7 @@
 <div class="header">
   <h1 id="pageTitle" class="nastaliq">📿 نماز کے پیغامات</h1>
   <div class="lang-toggle">
-    <button class="lang-btn active nastaliq" id="btn-ur" onclick="setLang('ur')">اردو</button>
+    <button class="lang-btn nastaliq active" id="btn-ur" onclick="setLang('ur')">اردو</button>
     <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
   </div>
 </div>
@@ -310,9 +313,24 @@ if (document.fonts) {
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('msg_admin_lang', lang);
-  document.getElementById('btn-ur').classList.toggle('active', lang === 'ur');
-  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-  document.getElementById('btn-ur').classList.toggle('nastaliq', lang === 'ur');
+
+  // "اردو" button — HAMESHA Nastaliq + active
+  const btnUr = document.getElementById('btn-ur');
+  btnUr.classList.add('nastaliq');
+  if (lang === 'ur') {
+    btnUr.classList.add('active');
+  } else {
+    btnUr.classList.remove('active');
+  }
+
+  // "EN" button
+  const btnEn = document.getElementById('btn-en');
+  if (lang === 'en') {
+    btnEn.classList.add('active');
+  } else {
+    btnEn.classList.remove('active');
+  }
+
   updateLabels();
 }
 
