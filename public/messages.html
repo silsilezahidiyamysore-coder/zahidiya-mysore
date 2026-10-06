@@ -21,95 +21,108 @@
     font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
     direction: rtl;
     unicode-bidi: embed;
-    line-height: 2.6;
+    line-height: 2.2;
   }
   .header {
     background: #1b5e20;
     color: white;
-    padding: 16px;
+    padding: 14px;
     border-radius: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 10px;
   }
-  .header h1 { font-size: 22px; font-weight: 700; }
-  .header h1.nastaliq { font-size: 24px; line-height: 2.8; }
+  .header h1 { font-size: 18px; font-weight: 700; }
+  .header h1.nastaliq { font-size: 20px; line-height: 2.4; }
   .lang-toggle { display: flex; gap: 8px; }
   .lang-btn {
-    padding: 8px 16px;
+    padding: 6px 14px;
     border: 2px solid white;
     background: transparent;
     color: white;
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 13px;
   }
   .lang-btn.active { background: white; color: #1b5e20; }
   .lang-btn.nastaliq {
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 2;
-    padding: 6px 22px;
+    padding: 4px 18px;
     direction: rtl;
     unicode-bidi: embed;
   }
+  .top-nav { text-align: center; margin-bottom: 14px; }
+  .top-nav a {
+    color: #1b5e20;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 18px;
+    border: 2px solid #1b5e20;
+    border-radius: 8px;
+    display: inline-block;
+    background: white;
+    font-size: 13px;
+  }
+  .top-nav a:hover { background: #e8f5e9; }
   .card {
     background: white;
     border-radius: 12px;
-    padding: 18px;
-    margin-bottom: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.06);
     border-left: 4px solid #1b5e20;
   }
   .prayer-title {
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 700;
     color: #1b5e20;
-    margin-bottom: 14px;
-    line-height: 2;
+    margin-bottom: 10px;
+    line-height: 1.8;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
   }
   .prayer-title .ur-name {
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 22px;
+    font-size: 17px;
     font-weight: 700;
-    line-height: 2.6;
+    line-height: 2.2;
     direction: rtl;
     unicode-bidi: embed;
   }
   .prayer-title .en-part {
     font-family: -apple-system, sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     color: #1b5e20;
   }
   .prayer-title .other-part {
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 16px;
+    font-size: 13px;
     color: #888;
     font-weight: 400;
-    line-height: 2.4;
+    line-height: 2;
     direction: rtl;
     unicode-bidi: embed;
   }
-  .field-group { margin-bottom: 16px; }
+  .field-group { margin-bottom: 12px; }
   .field-label {
-    font-size: 13px;
+    font-size: 12px;
     color: #555;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     font-weight: 600;
   }
   .field-label.urdu-label {
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 18px;
-    line-height: 2.6;
+    font-size: 15px;
+    line-height: 2.2;
     color: #1b5e20;
     font-weight: 600;
     direction: rtl;
@@ -119,22 +132,22 @@
   }
   textarea {
     width: 100%;
-    padding: 10px 12px;
+    padding: 8px 10px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
-    font-size: 15px;
+    font-size: 14px;
     font-family: inherit;
     resize: vertical;
-    min-height: 70px;
+    min-height: 50px;
     color: #1a1a1a;
   }
   textarea:focus { outline: none; border-color: #1b5e20; }
   textarea.urdu-input {
     font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
-    font-size: 22px;
-    line-height: 3;
-    min-height: 130px;
-    padding: 16px 18px;
+    font-size: 17px;
+    line-height: 2.2;
+    min-height: 70px;
+    padding: 10px 14px;
     font-weight: 600;
     direction: rtl;
     text-align: right;
@@ -149,12 +162,12 @@
     background: #ff9800;
     color: white;
     border: none;
-    padding: 8px 18px;
+    padding: 6px 14px;
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
-    font-size: 14px;
-    margin-top: 8px;
+    font-size: 13px;
+    margin-top: 6px;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -163,50 +176,50 @@
   .transliterate-btn:disabled { background: #bbb; cursor: not-allowed; }
   .transliterate-btn .ur-text {
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 15px;
-    line-height: 2;
+    font-size: 14px;
+    line-height: 1.8;
     direction: rtl;
     unicode-bidi: embed;
   }
   .preview-box {
     background: #1b5e20;
     color: white;
-    padding: 20px;
+    padding: 14px;
     border-radius: 8px;
-    margin-top: 8px;
+    margin-top: 6px;
     text-align: center;
-    font-size: 18px;
+    font-size: 15px;
     font-weight: bold;
-    min-height: 80px;
+    min-height: 55px;
     display: flex;
     align-items: center;
     justify-content: center;
-    line-height: 2.4;
+    line-height: 2;
     word-wrap: break-word;
   }
   .preview-box.urdu-preview-box {
     font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
     direction: rtl;
-    font-size: 24px;
-    line-height: 3.2;
-    padding: 28px 16px;
+    font-size: 17px;
+    line-height: 2.6;
+    padding: 18px 12px;
     font-weight: 700;
   }
   .preview-box.en-preview-box {
     background: #2e7d32;
     font-family: -apple-system, sans-serif;
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 600;
-    line-height: 1.8;
-    padding: 20px 16px;
-    margin-top: 6px;
+    line-height: 1.6;
+    padding: 14px 12px;
+    margin-top: 4px;
   }
   .preview-label-small {
-    font-size: 12px;
+    font-size: 11px;
     color: #666;
     font-weight: 600;
-    margin-top: 8px;
-    margin-bottom: 4px;
+    margin-top: 6px;
+    margin-bottom: 3px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
@@ -214,9 +227,9 @@
     background: #1b5e20;
     color: white;
     border: none;
-    padding: 14px 24px;
+    padding: 11px 20px;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
     cursor: pointer;
     width: 100%;
@@ -224,7 +237,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
   }
   .save-btn:hover { background: #2e7d32; }
@@ -232,29 +245,29 @@
   .save-btn.saved { background: #2e7d32; }
   .save-btn .btn-urdu {
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 18px;
-    line-height: 2.2;
+    font-size: 15px;
+    line-height: 1.9;
     direction: rtl;
     unicode-bidi: embed;
     display: inline-block;
   }
   .save-btn .btn-en {
     font-family: -apple-system, sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
   }
   .status-msg {
     text-align: center;
-    font-size: 14px;
-    margin-top: 10px;
-    min-height: 22px;
+    font-size: 13px;
+    margin-top: 8px;
+    min-height: 18px;
     font-weight: 600;
-    line-height: 2;
+    line-height: 1.8;
   }
   .status-msg.nastaliq {
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 16px;
-    line-height: 2.4;
+    font-size: 14px;
+    line-height: 2.2;
     direction: rtl;
     unicode-bidi: embed;
   }
@@ -262,76 +275,118 @@
   .status-msg.error { color: #c62828; }
   .loading {
     text-align: center;
-    padding: 40px;
+    padding: 30px;
     color: #666;
-    font-size: 16px;
+    font-size: 14px;
   }
   .refresh-btn {
     background: white;
     color: #1b5e20;
     border: 2px solid #1b5e20;
-    padding: 10px 24px;
+    padding: 8px 18px;
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
-    font-size: 15px;
-    margin-bottom: 16px;
+    font-size: 13px;
+    margin-bottom: 14px;
   }
   .refresh-btn:hover { background: #e8f5e9; }
-  .top-nav { text-align: center; margin-bottom: 16px; }
-  .top-nav a {
-    color: #1b5e20;
-    text-decoration: none;
-    font-weight: bold;
-    padding: 10px 20px;
-    border: 2px solid #1b5e20;
-    border-radius: 8px;
-    display: inline-block;
-    background: white;
-    font-size: 14px;
-  }
-  .top-nav a:hover { background: #e8f5e9; }
 
-  /* ===== Prayer Names Editor ===== */
-  .names-row {
-    display: flex;
-    gap: 10px;
+  /* ============ NAMES SECTION ============ */
+  .names-section {
+    background: white;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 14px;
+    border-left: 4px solid #ff9800;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+  .names-section h2 {
+    color: #e65100;
     margin-bottom: 12px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .names-section h2 .ur-heading {
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    font-size: 17px;
+    line-height: 2.2;
+    direction: rtl;
+    unicode-bidi: embed;
+    color: #e65100;
+  }
+  .name-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
     flex-wrap: wrap;
     align-items: center;
-    padding: 10px;
-    background: #fff8e1;
-    border-radius: 8px;
   }
-  .names-row .prayer-key {
-    flex: 0 0 90px;
+  .name-row .prayer-label {
+    flex: 1;
+    min-width: 70px;
     font-weight: bold;
-    color: #e65100;
-    font-size: 15px;
+    color: #333;
+    font-size: 13px;
   }
-  .names-row input.ur-name-input {
+  .name-row input.name-ur {
     flex: 2;
-    min-width: 130px;
-    padding: 10px 14px;
-    border: 2px solid #ffcc80;
+    min-width: 110px;
+    padding: 8px 10px;
+    border: 2px solid #e0e0e0;
     border-radius: 8px;
-    font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
-    font-size: 20px;
-    line-height: 2.6;
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    font-size: 16px;
     direction: rtl;
     text-align: right;
-    background: white;
+    line-height: 2;
+    unicode-bidi: embed;
   }
-  .names-row input.en-name-input {
+  .name-row input.name-ur:focus { outline: none; border-color: #e65100; }
+  .name-row input.name-en {
     flex: 2;
-    min-width: 130px;
-    padding: 10px 14px;
-    border: 2px solid #ffcc80;
+    min-width: 110px;
+    padding: 8px 10px;
+    border: 2px solid #e0e0e0;
     border-radius: 8px;
-    font-size: 15px;
-    background: white;
+    font-size: 14px;
   }
-  .names-row input:focus { outline: none; border-color: #e65100; }
+  .name-row input.name-en:focus { outline: none; border-color: #e65100; }
+  .names-save-btn {
+    background: #e65100;
+    color: white;
+    border: none;
+    padding: 11px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .names-save-btn:hover { background: #ef6c00; }
+  .names-save-btn .btn-urdu {
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    font-size: 15px;
+    line-height: 1.9;
+    direction: rtl;
+    unicode-bidi: embed;
+  }
+  .names-status {
+    text-align: center;
+    font-size: 13px;
+    margin-top: 8px;
+    min-height: 18px;
+    font-weight: 600;
+  }
 </style>
 </head>
 <body>
@@ -348,18 +403,20 @@
   <a href="/admin.html">← Admin Panel</a>
 </div>
 
-<!-- ============ PRAYER NAMES EDITOR ============ -->
-<div id="names-section" style="background:white; border-radius:12px; padding:18px; margin-bottom:18px; border-left:4px solid #ff9800; box-shadow:0 2px 6px rgba(0,0,0,0.06);">
-  <h2 style="color:#e65100; margin-bottom:14px; font-size:18px;">🕌 Prayer Names (Edit / نام تبدیل کریں)</h2>
-  <div id="names-container">
-    <div style="text-align:center; padding:20px; color:#999;">Loading names...</div>
-  </div>
-  <button onclick="saveAllNames()" style="background:#e65100; color:white; border:none; padding:14px 24px; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer; width:100%; margin-top:14px;">💾 Save All Names / تمام نام محفوظ کریں</button>
-  <div id="names-status" style="text-align:center; font-size:14px; margin-top:10px; min-height:22px; font-weight:600;"></div>
-</div>
-
 <div style="text-align:center;">
   <button class="refresh-btn" onclick="loadMessages(); loadPrayerNames();">🔄 Reload</button>
+</div>
+
+<!-- ============ PRAYER NAMES EDITOR ============ -->
+<div class="names-section">
+  <h2>
+    🕌 Prayer Names / <span class="ur-heading">نام تبدیل کریں</span>
+  </h2>
+  <div id="names-container"></div>
+  <button class="names-save-btn" onclick="saveAllNames()">
+    💾 Save All Names / <span class="btn-urdu">تمام نام محفوظ کریں</span>
+  </button>
+  <div class="names-status" id="names-status"></div>
 </div>
 
 <div id="loading" class="loading">Loading messages...</div>
@@ -383,13 +440,12 @@ const TYPES = [
 
 let currentLang = 'ur';
 let messagesData = {};
-let prayerNamesCache = {};
 
 if (document.fonts) {
   Promise.all([
-    document.fonts.load('400 22px "Noto Nastaliq Urdu"'),
-    document.fonts.load('600 22px "Noto Nastaliq Urdu"'),
-    document.fonts.load('700 24px "Noto Nastaliq Urdu"')
+    document.fonts.load('400 17px "Noto Nastaliq Urdu"'),
+    document.fonts.load('600 17px "Noto Nastaliq Urdu"'),
+    document.fonts.load('700 17px "Noto Nastaliq Urdu"')
   ]).then(() => {
     if (document.getElementById('messages-container')) {
       updateLabels();
@@ -438,7 +494,6 @@ function updateLabels() {
       const previewLabel = document.getElementById('label_preview_' + key);
       const saveBtn = document.getElementById('btn_' + key);
       const statusEl = document.getElementById('status_' + key);
-      const transBtn = document.getElementById('trans_btn_' + key);
 
       if (titleCard) {
         if (currentLang === 'ur') {
@@ -462,67 +517,8 @@ function updateLabels() {
       if (statusEl) {
         statusEl.classList.toggle('nastaliq', currentLang === 'ur');
       }
-      if (transBtn) {
-        transBtn.innerHTML = `<span class="ur-text">✨ اردو میں تبدیل کریں</span>`;
-      }
     });
   });
-}
-
-// ============ PRAYER NAMES EDITOR ============
-async function loadPrayerNames() {
-  const container = document.getElementById('names-container');
-  if (!container) return;
-
-  try {
-    const res = await fetch(API_BASE + '/api/get-prayer-names');
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Failed');
-
-    prayerNamesCache = {};
-    container.innerHTML = '';
-    data.names.forEach(n => {
-      prayerNamesCache[n.prayer] = { ur: n.name_ur, en: n.name_en };
-      const row = document.createElement('div');
-      row.className = 'names-row';
-      row.innerHTML = `
-        <div class="prayer-key">${n.prayer}</div>
-        <input id="name_ur_${n.prayer}" class="ur-name-input" value="${escapeHtml(n.name_ur)}" placeholder="اردو نام">
-        <input id="name_en_${n.prayer}" class="en-name-input" value="${escapeHtml(n.name_en)}" placeholder="English name">
-      `;
-      container.appendChild(row);
-    });
-  } catch (e) {
-    container.innerHTML = '<div style="color:#c62828; text-align:center;">❌ ' + e.message + '</div>';
-  }
-}
-
-async function saveAllNames() {
-  const status = document.getElementById('names-status');
-  const prayers = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
-  status.textContent = '⏳ Saving... / محفوظ ہو رہا ہے...';
-  status.style.color = '#e65100';
-
-  try {
-    let saved = 0;
-    for (const p of prayers) {
-      const ur = document.getElementById('name_ur_' + p).value;
-      const en = document.getElementById('name_en_' + p).value;
-      const res = await fetch(API_BASE + '/api/save-prayer-name', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prayer: p, name_ur: ur, name_en: en })
-      });
-      const d = await res.json();
-      if (d.success) saved++;
-    }
-    status.textContent = '✅ ' + saved + ' names saved successfully / کامیابی سے محفوظ';
-    status.style.color = '#1b5e20';
-    setTimeout(() => { status.textContent = ''; }, 4000);
-  } catch (e) {
-    status.textContent = '❌ ' + e.message;
-    status.style.color = '#c62828';
-  }
 }
 
 async function loadMessages() {
@@ -610,7 +606,6 @@ function renderMessages() {
   });
 }
 
-// ====== AUTO TRANSLITERATE English → Urdu ======
 async function transliterate(key) {
   const enText = document.getElementById('en_' + key).value.trim();
   const urTextarea = document.getElementById('ur_' + key);
@@ -636,6 +631,9 @@ async function transliterate(key) {
         urTextarea.value = urduText;
         document.getElementById('preview_ur_' + key).textContent = urduText;
         btn.innerHTML = `<span class="ur-text">✅ ہو گیا</span>`;
+        setTimeout(() => {
+          btn.innerHTML = `<span class="ur-text">✨ اردو میں تبدیل کریں</span>`;
+        }, 1500);
       } else {
         btn.innerHTML = `<span class="ur-text">❌ نہیں ہو سکا</span>`;
       }
@@ -694,9 +692,60 @@ async function saveMessage(prayer, msgType) {
   }
 }
 
+// ============ PRAYER NAMES EDITOR ============
+async function loadPrayerNames() {
+  const container = document.getElementById('names-container');
+  if (!container) return;
+
+  try {
+    const res = await fetch(API_BASE + '/api/get-prayer-names');
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    container.innerHTML = '';
+    data.names.forEach(n => {
+      const row = document.createElement('div');
+      row.className = 'name-row';
+      row.innerHTML = `
+        <div class="prayer-label">${n.prayer}</div>
+        <input class="name-ur" id="name_ur_${n.prayer}" value="${escapeHtml(n.name_ur)}" placeholder="اردو نام">
+        <input class="name-en" id="name_en_${n.prayer}" value="${escapeHtml(n.name_en)}" placeholder="English name">
+      `;
+      container.appendChild(row);
+    });
+  } catch (e) {
+    container.innerHTML = '<div style="color:#c62828;">❌ ' + e.message + '</div>';
+  }
+}
+
+async function saveAllNames() {
+  const status = document.getElementById('names-status');
+  const prayers = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+  status.textContent = '⏳ Saving...';
+  status.style.color = '#e65100';
+
+  try {
+    for (const p of prayers) {
+      const ur = document.getElementById('name_ur_' + p).value;
+      const en = document.getElementById('name_en_' + p).value;
+      await fetch(API_BASE + '/api/save-prayer-name', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prayer: p, name_ur: ur, name_en: en })
+      });
+    }
+    status.textContent = '✅ All names saved successfully';
+    status.style.color = '#1b5e20';
+    setTimeout(() => { status.textContent = ''; }, 3000);
+  } catch (e) {
+    status.textContent = '❌ ' + e.message;
+    status.style.color = '#c62828';
+  }
+}
+
 function escapeHtml(text) {
   const div = document.createElement('div');
-  div.textContent = text == null ? '' : text;
+  div.textContent = text;
   return div.innerHTML;
 }
 
