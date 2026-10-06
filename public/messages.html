@@ -145,7 +145,6 @@
     color: #aaa;
     font-weight: 400;
   }
-  /* Transliterate button */
   .transliterate-btn {
     background: #ff9800;
     color: white;
@@ -292,6 +291,47 @@
     font-size: 14px;
   }
   .top-nav a:hover { background: #e8f5e9; }
+
+  /* ===== Prayer Names Editor ===== */
+  .names-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 10px;
+    background: #fff8e1;
+    border-radius: 8px;
+  }
+  .names-row .prayer-key {
+    flex: 0 0 90px;
+    font-weight: bold;
+    color: #e65100;
+    font-size: 15px;
+  }
+  .names-row input.ur-name-input {
+    flex: 2;
+    min-width: 130px;
+    padding: 10px 14px;
+    border: 2px solid #ffcc80;
+    border-radius: 8px;
+    font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
+    font-size: 20px;
+    line-height: 2.6;
+    direction: rtl;
+    text-align: right;
+    background: white;
+  }
+  .names-row input.en-name-input {
+    flex: 2;
+    min-width: 130px;
+    padding: 10px 14px;
+    border: 2px solid #ffcc80;
+    border-radius: 8px;
+    font-size: 15px;
+    background: white;
+  }
+  .names-row input:focus { outline: none; border-color: #e65100; }
 </style>
 </head>
 <body>
@@ -308,8 +348,18 @@
   <a href="/admin.html">← Admin Panel</a>
 </div>
 
+<!-- ============ PRAYER NAMES EDITOR ============ -->
+<div id="names-section" style="background:white; border-radius:12px; padding:18px; margin-bottom:18px; border-left:4px solid #ff9800; box-shadow:0 2px 6px rgba(0,0,0,0.06);">
+  <h2 style="color:#e65100; margin-bottom:14px; font-size:18px;">🕌 Prayer Names (Edit / نام تبدیل کریں)</h2>
+  <div id="names-container">
+    <div style="text-align:center; padding:20px; color:#999;">Loading names...</div>
+  </div>
+  <button onclick="saveAllNames()" style="background:#e65100; color:white; border:none; padding:14px 24px; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer; width:100%; margin-top:14px;">💾 Save All Names / تمام نام محفوظ کریں</button>
+  <div id="names-status" style="text-align:center; font-size:14px; margin-top:10px; min-height:22px; font-weight:600;"></div>
+</div>
+
 <div style="text-align:center;">
-  <button class="refresh-btn" onclick="loadMessages()">🔄 Reload</button>
+  <button class="refresh-btn" onclick="loadMessages(); loadPrayerNames();">🔄 Reload</button>
 </div>
 
 <div id="loading" class="loading">Loading messages...</div>
@@ -333,6 +383,7 @@ const TYPES = [
 
 let currentLang = 'ur';
 let messagesData = {};
+let prayerNamesCache = {};
 
 if (document.fonts) {
   Promise.all([
@@ -416,6 +467,62 @@ function updateLabels() {
       }
     });
   });
+}
+
+// ============ PRAYER NAMES EDITOR ============
+async function loadPrayerNames() {
+  const container = document.getElementById('names-container');
+  if (!container) return;
+
+  try {
+    const res = await fetch(API_BASE + '/api/get-prayer-names');
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed');
+
+    prayerNamesCache = {};
+    container.innerHTML = '';
+    data.names.forEach(n => {
+      prayerNamesCache[n.prayer] = { ur: n.name_ur, en: n.name_en };
+      const row = document.createElement('div');
+      row.className = 'names-row';
+      row.innerHTML = `
+        <div class="prayer-key">${n.prayer}</div>
+        <input id="name_ur_${n.prayer}" class="ur-name-input" value="${escapeHtml(n.name_ur)}" placeholder="اردو نام">
+        <input id="name_en_${n.prayer}" class="en-name-input" value="${escapeHtml(n.name_en)}" placeholder="English name">
+      `;
+      container.appendChild(row);
+    });
+  } catch (e) {
+    container.innerHTML = '<div style="color:#c62828; text-align:center;">❌ ' + e.message + '</div>';
+  }
+}
+
+async function saveAllNames() {
+  const status = document.getElementById('names-status');
+  const prayers = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+  status.textContent = '⏳ Saving... / محفوظ ہو رہا ہے...';
+  status.style.color = '#e65100';
+
+  try {
+    let saved = 0;
+    for (const p of prayers) {
+      const ur = document.getElementById('name_ur_' + p).value;
+      const en = document.getElementById('name_en_' + p).value;
+      const res = await fetch(API_BASE + '/api/save-prayer-name', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prayer: p, name_ur: ur, name_en: en })
+      });
+      const d = await res.json();
+      if (d.success) saved++;
+    }
+    status.textContent = '✅ ' + saved + ' names saved successfully / کامیابی سے محفوظ';
+    status.style.color = '#1b5e20';
+    setTimeout(() => { status.textContent = ''; }, 4000);
+  } catch (e) {
+    status.textContent = '❌ ' + e.message;
+    status.style.color = '#c62828';
+  }
 }
 
 async function loadMessages() {
@@ -518,7 +625,6 @@ async function transliterate(key) {
   btn.innerHTML = `<span class="ur-text">⏳ تبدیل ہو رہا ہے...</span>`;
 
   try {
-    // Google Input Tools API — Roman → Urdu
     const url = `https://inputtools.google.com/request?text=${encodeURIComponent(enText)}&itc=ur-t-i0-und&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8`;
     const res = await fetch(url);
     const data = await res.json();
@@ -530,9 +636,6 @@ async function transliterate(key) {
         urTextarea.value = urduText;
         document.getElementById('preview_ur_' + key).textContent = urduText;
         btn.innerHTML = `<span class="ur-text">✅ ہو گیا</span>`;
-        setTimeout(() => {
-          btn.innerHTML = `<span class="ur-text">✨ اردو میں تبدیل کریں</span>`;
-        }, 1500);
       } else {
         btn.innerHTML = `<span class="ur-text">❌ نہیں ہو سکا</span>`;
       }
@@ -593,7 +696,7 @@ async function saveMessage(prayer, msgType) {
 
 function escapeHtml(text) {
   const div = document.createElement('div');
-  div.textContent = text;
+  div.textContent = text == null ? '' : text;
   return div.innerHTML;
 }
 
@@ -601,6 +704,7 @@ window.onload = () => {
   const savedLang = localStorage.getItem('msg_admin_lang') || 'ur';
   setLang(savedLang);
   loadMessages();
+  loadPrayerNames();
 };
 </script>
 
