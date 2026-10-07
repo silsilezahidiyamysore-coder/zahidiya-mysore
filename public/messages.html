@@ -30,14 +30,14 @@
   .field-label.urdu-label { font-size: 15px; line-height: 2.4; color: #1b5e20; font-weight: 600; text-align: right; padding-bottom: 4px; }
   textarea { width: 100%; padding: 8px 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 50px; }
   textarea:focus { outline: none; border-color: #1b5e20; }
-  textarea.urdu-input { font-size: 17px; line-height: 2.4; min-height: 70px; padding: 10px 14px; font-weight: 600; text-align: right; }
+  textarea.urdu-input { font-family: 'Noto Nastaliq Urdu', serif !important; font-size: 17px; line-height: 2.4; min-height: 70px; padding: 10px 14px; font-weight: 600; text-align: right; direction: rtl; }
   textarea.urdu-input.auto-filled { background: #f1f8e9; border-color: #66bb6a; }
   .auto-hint { font-size: 11px; color: #2e7d32; margin-top: 4px; font-style: italic; display: none; padding: 4px 8px; background: #e8f5e9; border-radius: 4px; }
   .auto-hint.show { display: block; }
   .auto-hint.loading { color: #e65100; background: #fff3e0; }
   .auto-hint.error { color: #c62828; background: #ffebee; }
   .preview-box { background: #1b5e20; color: white; padding: 14px; border-radius: 8px; margin-top: 6px; text-align: center; font-size: 15px; font-weight: bold; min-height: 55px; display: flex; align-items: center; justify-content: center; line-height: 2; word-wrap: break-word; }
-  .preview-box.urdu-preview-box { font-size: 17px; line-height: 2.8; padding: 18px 12px; font-weight: 700; }
+  .preview-box.urdu-preview-box { font-family: 'Noto Nastaliq Urdu', serif !important; font-size: 17px; line-height: 2.8; padding: 18px 12px; font-weight: 700; direction: rtl; }
   .preview-box.en-preview-box { background: #2e7d32; font-size: 15px; font-weight: 600; line-height: 1.6; padding: 14px 12px; margin-top: 4px; }
   .preview-label-small { font-size: 11px; color: #666; font-weight: 600; margin-top: 6px; margin-bottom: 3px; text-transform: uppercase; }
   .save-btn { background: #1b5e20; color: white; border: none; padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; }
@@ -45,6 +45,7 @@
   .save-btn.saved { background: #2e7d32; }
   .refresh-btn { background: white; color: #1b5e20; border: 2px solid #1b5e20; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; margin-bottom: 14px; }
   .status-msg { text-align: center; font-size: 13px; margin-top: 8px; min-height: 18px; font-weight: 600; }
+  .status-msg.nastaliq { font-family: 'Noto Nastaliq Urdu', serif !important; font-size: 15px; line-height: 2.4; direction: rtl; }
   .status-msg.success { color: #1b5e20; }
   .status-msg.error { color: #c62828; }
   .loading { text-align: center; padding: 30px; color: #666; font-size: 14px; }
@@ -56,10 +57,10 @@
   .settings-section .section-heading { color: #0d47a1; }
   .name-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
   .name-row .prayer-label { flex: 1; min-width: 70px; font-weight: bold; color: #333; font-size: 13px; }
-  .name-row input.name-ur { flex: 2; min-width: 110px; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; font-weight: 600; text-align: right; line-height: 2.2; }
+  .name-row input.name-ur { flex: 2; min-width: 110px; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Noto Nastaliq Urdu', serif !important; font-size: 16px; font-weight: 600; text-align: right; line-height: 2.2; direction: rtl; }
   .name-row input.name-ur.auto-filled { background: #f1f8e9; border-color: #66bb6a; }
   .name-row input.name-en { flex: 2; min-width: 110px; padding: 8px 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
-  .name-hint { font-size: 10px; color: #2e7d32; display: none; margin-left: 4px; }
+  .name-hint { font-size: 14px; color: #2e7d32; display: none; margin-left: 4px; }
   .name-hint.show { display: inline; }
   .settings-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
   .settings-row label { flex: 1; min-width: 180px; font-size: 14px; font-weight: 600; color: #333; line-height: 1.8; }
@@ -69,7 +70,7 @@
   .names-save-btn, .settings-save-btn { color: white; border: none; padding: 11px 20px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
   .names-save-btn { background: #e65100; }
   .settings-save-btn { background: #0d47a1; }
-  .names-status, .settings-status { text-align: center; font-size: 13px; margin-top: 8px; min-height: 18px; font-weight: 600; }
+  .names-status, .settings-status { text-align: center; font-size: 15px; margin-top: 8px; min-height: 22px; font-weight: 600; font-family: 'Noto Nastaliq Urdu', serif !important; direction: rtl; line-height: 2.4; }
 </style>
 </head>
 <body>
@@ -123,35 +124,11 @@ const TYPES = [
   { key: 'end',   ur: 'ختم',   en: 'End' },
 ];
 
-// Alarm settings fields — Har field ke 3 naam:
-// en: English label
-// ru: Roman Urdu label
-// ur: Urdu Nastaliq label
 const SETTINGS_FIELDS = [
-  {
-    key: 'start_alarm_duration_seconds',
-    en: 'Start Alarm Duration (seconds)',
-    ru: 'Namaz shuru hone par alarm kitne second bajega',
-    ur: 'نماز شروع ہونے پر الارم کتنے سیکنڈ بجے گا',
-  },
-  {
-    key: 'end_reminder_minutes_before',
-    en: 'End Reminder Minutes Before',
-    ru: 'Namaz khatam hone se kitne minute pehle reminder',
-    ur: 'نماز ختم ہونے سے کتنے منٹ پہلے یاد دہانی',
-  },
-  {
-    key: 'end_reminder_beep_seconds',
-    en: 'Beep Duration (seconds)',
-    ru: 'Har beep kitne second',
-    ur: 'ہر بلیپ کتنے سیکنڈ',
-  },
-  {
-    key: 'end_reminder_beep_count',
-    en: 'Number of Beeps',
-    ru: 'Kitni baar beep bajegi',
-    ur: 'کتنی بار بلیپ بجے گی',
-  },
+  { key: 'start_alarm_duration_seconds', en: 'Start Alarm Duration (seconds)', ru: 'Namaz shuru hone par alarm kitne second bajega', ur: 'نماز شروع ہونے پر الارم کتنے سیکنڈ بجے گا', type: 'number' },
+  { key: 'end_reminder_minutes_before',  en: 'End Reminder Minutes Before',    ru: 'Namaz khatam hone se kitne minute pehle reminder', ur: 'نماز ختم ہونے سے کتنے منٹ پہلے یاد دہانی', type: 'number' },
+  { key: 'end_reminder_beep_seconds',    en: 'Beep Duration (seconds)',        ru: 'Har beep kitne second', ur: 'ہر بلیپ کتنے سیکنڈ', type: 'number' },
+  { key: 'end_reminder_beep_count',      en: 'Number of Beeps',                ru: 'Kitni baar beep bajegi', ur: 'کتنی بار بلیپ بجے گی', type: 'number' },
 ];
 
 let currentLang = 'ur';
@@ -192,21 +169,14 @@ function updateAllLabels() {
   document.getElementById('saveSettingsBtn').innerHTML = ur
     ? `💾 ${urduSpan('ترتیبات محفوظ کریں')}` : '💾 Save Settings';
 
-  // Settings labels — 3 languages
   SETTINGS_FIELDS.forEach(f => {
     const label = document.getElementById('label_' + f.key);
     if (label) {
-      if (ur) {
-        label.textContent = f.ur;
-        label.classList.add('urdu-label', 'nastaliq');
-      } else {
-        label.textContent = f.ru;   // Roman Urdu for EN mode
-        label.classList.remove('urdu-label', 'nastaliq');
-      }
+      if (ur) { label.textContent = f.ur; label.classList.add('urdu-label', 'nastaliq'); }
+      else { label.textContent = f.ru; label.classList.remove('urdu-label', 'nastaliq'); }
     }
   });
 
-  // Message cards
   PRAYERS.forEach(p => {
     TYPES.forEach(t => {
       const key = p.key + '_' + t.key;
@@ -229,7 +199,6 @@ function updateAllLabels() {
   });
 }
 
-// ============ TRANSLITERATE ============
 async function callTransliterate(text) {
   const proxyUrl = `${API_BASE}/api/transliterate?text=${encodeURIComponent(text)}`;
   const res = await fetch(proxyUrl);
@@ -242,6 +211,7 @@ async function callTransliterate(text) {
   return null;
 }
 
+// ============ MESSAGES AUTO-TRANSLATE ============
 function onEnglishInput(key) {
   const enVal = document.getElementById('en_' + key).value;
   const previewEn = document.getElementById('preview_en_' + key);
@@ -280,12 +250,15 @@ function onUrduInput(key) {
   document.getElementById('ur_' + key).classList.remove('auto-filled');
 }
 
-// ============ PRAYER NAMES AUTO-TRANSLATE ============
+// ============ PRAYER NAMES AUTO-TRANSLATE — INLINE ONINPUT ============
 function onNameEnInput(prayer) {
   const enVal = document.getElementById('name_en_' + prayer).value;
   const hint = document.getElementById('name_hint_' + prayer);
   if (nameAutoTransTimers[prayer]) clearTimeout(nameAutoTransTimers[prayer]);
-  if (!enVal.trim()) { if (hint) { hint.textContent = ''; hint.classList.remove('show'); } return; }
+  if (!enVal.trim()) {
+    if (hint) { hint.textContent = ''; hint.classList.remove('show'); }
+    return;
+  }
   if (hint) { hint.textContent = '✍️'; hint.classList.add('show'); }
   nameAutoTransTimers[prayer] = setTimeout(() => autoTranslateName(prayer), 1500);
 }
@@ -301,18 +274,19 @@ async function autoTranslateName(prayer) {
     if (urduText) {
       urBox.value = urduText;
       urBox.classList.add('auto-filled');
-      if (hint) { hint.textContent = '✅'; }
+      if (hint) hint.textContent = '✅';
       setTimeout(() => { if (hint) { hint.textContent = ''; hint.classList.remove('show'); } }, 2000);
     } else {
-      if (hint) { hint.textContent = '⚠️'; }
+      if (hint) hint.textContent = '⚠️';
     }
   } catch (e) {
-    if (hint) { hint.textContent = '❌'; }
+    if (hint) hint.textContent = '❌';
   }
 }
 
 function onNameUrInput(prayer) {
-  document.getElementById('name_ur_' + prayer).classList.remove('auto-filled');
+  const urInput = document.getElementById('name_ur_' + prayer);
+  if (urInput) urInput.classList.remove('auto-filled');
 }
 
 // ============ LOAD ============
@@ -354,7 +328,7 @@ function renderMessages() {
         <div class="prayer-title" id="title_${key}"></div>
         <div class="field-group">
           <div class="field-label" id="label_ur_${key}"></div>
-          <textarea class="urdu-input nastaliq" id="ur_${key}" placeholder="اردو پیغام..." spellcheck="false">${escapeHtml(msg.ur)}</textarea>
+          <textarea class="urdu-input" id="ur_${key}" placeholder="اردو پیغام..." spellcheck="false">${escapeHtml(msg.ur)}</textarea>
         </div>
         <div class="field-group">
           <div class="field-label" id="label_en_${key}"></div>
@@ -364,7 +338,7 @@ function renderMessages() {
         <div class="field-group">
           <div class="field-label" id="label_preview_${key}"></div>
           <div class="preview-label-small">URDU</div>
-          <div class="preview-box urdu-preview-box nastaliq" id="preview_ur_${key}">${escapeHtml(msg.ur) || '...'}</div>
+          <div class="preview-box urdu-preview-box" id="preview_ur_${key}">${escapeHtml(msg.ur) || '...'}</div>
           <div class="preview-label-small">ENGLISH</div>
           <div class="preview-box en-preview-box" id="preview_en_${key}">${escapeHtml(msg.en) || '...'}</div>
         </div>
@@ -404,7 +378,7 @@ async function saveMessage(prayer, msgType) {
   }
 }
 
-// ============ PRAYER NAMES ============
+// ============ PRAYER NAMES — INLINE ONINPUT ============
 async function loadPrayerNames() {
   const container = document.getElementById('names-container');
   if (!container) return;
@@ -419,21 +393,12 @@ async function loadPrayerNames() {
       row.className = 'name-row';
       row.innerHTML = `
         <div class="prayer-label">${n.prayer}</div>
-        <input class="name-ur nastaliq" id="name_ur_${n.prayer}" value="${escapeHtml(n.name_ur)}" placeholder="اردو نام">
-        <input class="name-en" id="name_en_${n.prayer}" value="${escapeHtml(n.name_en)}" placeholder="Type English → auto Urdu">
+        <input class="name-ur" id="name_ur_${n.prayer}" value="${escapeHtml(n.name_ur)}" placeholder="اردو نام" oninput="onNameUrInput('${n.prayer}')">
+        <input class="name-en" id="name_en_${n.prayer}" value="${escapeHtml(n.name_en)}" placeholder="Type English → auto Urdu" oninput="onNameEnInput('${n.prayer}')">
         <span class="name-hint" id="name_hint_${n.prayer}"></span>
       `;
       container.appendChild(row);
     });
-    // Attach listeners after DOM insert
-    setTimeout(() => {
-      data.names.forEach(n => {
-        const enInput = document.getElementById('name_en_' + n.prayer);
-        const urInput = document.getElementById('name_ur_' + n.prayer);
-        if (enInput) enInput.addEventListener('input', () => onNameEnInput(n.prayer));
-        if (urInput) urInput.addEventListener('input', () => onNameUrInput(n.prayer));
-      });
-    }, 0);
   } catch (e) {
     container.innerHTML = '<div style="color:#c62828;">❌ ' + e.message + '</div>';
   }
@@ -452,7 +417,7 @@ async function saveAllNames() {
         body: JSON.stringify({ prayer: p, name_ur: ur, name_en: en })
       });
     }
-    status.textContent = currentLang === 'ur' ? '✅ تمام نام محفوظ' : '✅ All names saved';
+    status.innerHTML = currentLang === 'ur' ? '✅ تمام نام محفوظ' : '✅ All names saved';
     status.style.color = '#1b5e20';
     setTimeout(() => { status.textContent = ''; }, 3000);
   } catch (e) {
@@ -499,7 +464,7 @@ async function saveAlarmSettings() {
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.error);
-    status.textContent = currentLang === 'ur' ? '✅ ترتیبات محفوظ' : '✅ Settings saved';
+    status.innerHTML = currentLang === 'ur' ? '✅ ترتیبات محفوظ' : '✅ Settings saved';
     status.style.color = '#1b5e20';
     setTimeout(() => { status.textContent = ''; }, 3000);
   } catch (e) {
