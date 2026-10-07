@@ -16,8 +16,6 @@
     padding: 16px;
     line-height: 1.5;
   }
-
-  /* ========== NASTALIQ FONT — GLOBAL CLASS ========== */
   .nastaliq,
   .urdu-text,
   [data-urdu] {
@@ -25,8 +23,6 @@
     direction: rtl;
     line-height: 2.4;
   }
-
-  /* ========== HEADER ========== */
   .header {
     background: #1b5e20;
     color: white;
@@ -41,7 +37,6 @@
   }
   .header h1 { font-size: 18px; font-weight: 700; }
   .header h1.nastaliq { font-size: 20px; line-height: 2.8; }
-
   .lang-toggle { display: flex; gap: 8px; }
   .lang-btn {
     padding: 6px 16px;
@@ -54,12 +49,7 @@
     font-size: 13px;
   }
   .lang-btn.active { background: white; color: #1b5e20; }
-  .lang-btn.nastaliq {
-    font-size: 15px;
-    padding: 6px 20px;
-  }
-
-  /* ========== TOP NAV ========== */
+  .lang-btn.nastaliq { font-size: 15px; padding: 6px 20px; }
   .top-nav { text-align: center; margin-bottom: 14px; }
   .top-nav a {
     color: #1b5e20;
@@ -72,8 +62,6 @@
     background: white;
     font-size: 13px;
   }
-
-  /* ========== CARDS ========== */
   .card {
     background: white;
     border-radius: 12px;
@@ -82,7 +70,6 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.06);
     border-left: 4px solid #1b5e20;
   }
-
   .prayer-title {
     font-size: 15px;
     font-weight: 700;
@@ -94,30 +81,11 @@
     gap: 6px;
     line-height: 1.8;
   }
-  .prayer-title .ur-name {
-    font-size: 17px;
-    font-weight: 700;
-    line-height: 2.4;
-  }
-  .prayer-title .en-part {
-    font-size: 14px;
-    font-weight: 600;
-  }
-  .prayer-title .other-part {
-    font-size: 13px;
-    color: #888;
-    font-weight: 400;
-    line-height: 2.2;
-  }
-
-  /* ========== FIELDS ========== */
+  .prayer-title .ur-name { font-size: 17px; font-weight: 700; line-height: 2.4; }
+  .prayer-title .en-part { font-size: 14px; font-weight: 600; }
+  .prayer-title .other-part { font-size: 13px; color: #888; font-weight: 400; line-height: 2.2; }
   .field-group { margin-bottom: 12px; }
-  .field-label {
-    font-size: 12px;
-    color: #555;
-    margin-bottom: 6px;
-    font-weight: 600;
-  }
+  .field-label { font-size: 12px; color: #555; margin-bottom: 6px; font-weight: 600; }
   .field-label.urdu-label {
     font-size: 15px;
     line-height: 2.4;
@@ -126,7 +94,6 @@
     text-align: right;
     padding-bottom: 4px;
   }
-
   textarea {
     width: 100%;
     padding: 8px 10px;
@@ -138,7 +105,6 @@
     min-height: 50px;
   }
   textarea:focus { outline: none; border-color: #1b5e20; }
-
   textarea.urdu-input {
     font-size: 17px;
     line-height: 2.4;
@@ -151,7 +117,6 @@
     background: #f1f8e9;
     border-color: #66bb6a;
   }
-
   .auto-hint {
     font-size: 11px;
     color: #2e7d32;
@@ -165,8 +130,6 @@
   .auto-hint.show { display: block; }
   .auto-hint.loading { color: #e65100; background: #fff3e0; }
   .auto-hint.error { color: #c62828; background: #ffebee; }
-
-  /* ========== PREVIEW ========== */
   .preview-box {
     background: #1b5e20;
     color: white;
@@ -183,12 +146,7 @@
     line-height: 2;
     word-wrap: break-word;
   }
-  .preview-box.urdu-preview-box {
-    font-size: 17px;
-    line-height: 2.8;
-    padding: 18px 12px;
-    font-weight: 700;
-  }
+  .preview-box.urdu-preview-box { font-size: 17px; line-height: 2.8; padding: 18px 12px; font-weight: 700; }
   .preview-box.en-preview-box {
     background: #2e7d32;
     font-size: 15px;
@@ -205,8 +163,6 @@
     margin-bottom: 3px;
     text-transform: uppercase;
   }
-
-  /* ========== BUTTONS ========== */
   .save-btn {
     background: #1b5e20;
     color: white;
@@ -221,7 +177,6 @@
   }
   .save-btn:disabled { background: #999; }
   .save-btn.saved { background: #2e7d32; }
-
   .refresh-btn {
     background: white;
     color: #1b5e20;
@@ -233,8 +188,6 @@
     font-size: 14px;
     margin-bottom: 14px;
   }
-
-  /* ========== STATUS ========== */
   .status-msg {
     text-align: center;
     font-size: 13px;
@@ -245,8 +198,6 @@
   .status-msg.success { color: #1b5e20; }
   .status-msg.error { color: #c62828; }
   .loading { text-align: center; padding: 30px; color: #666; font-size: 14px; }
-
-  /* ========== NAMES SECTION ========== */
   .names-section {
     background: white;
     border-radius: 12px;
@@ -272,13 +223,7 @@
     flex-wrap: wrap;
     align-items: center;
   }
-  .name-row .prayer-label {
-    flex: 1;
-    min-width: 70px;
-    font-weight: bold;
-    color: #333;
-    font-size: 13px;
-  }
+  .name-row .prayer-label { flex: 1; min-width: 70px; font-weight: bold; color: #333; font-size: 13px; }
   .name-row input.name-ur {
     flex: 2;
     min-width: 110px;
@@ -367,16 +312,10 @@ let currentLang = 'ur';
 let messagesData = {};
 let autoTransTimers = {};
 
-// ============================================
-// NASTALIQ FONT HELPER
-// ============================================
 function urduSpan(text, extraClass) {
   return `<span class="nastaliq ${extraClass || ''}">${text}</span>`;
 }
 
-// ============================================
-// LANGUAGE
-// ============================================
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('msg_admin_lang', lang);
@@ -388,32 +327,27 @@ function setLang(lang) {
 function updateAllLabels() {
   const ur = currentLang === 'ur';
 
-  // Page title
   const titleEl = document.getElementById('pageTitle');
   if (ur) {
     titleEl.innerHTML = `📿 ${urduSpan('نماز کے پیغامات')}`;
+    titleEl.classList.add('nastaliq');
   } else {
     titleEl.textContent = '📿 Namaz Messages';
     titleEl.classList.remove('nastaliq');
   }
-  if (ur) titleEl.classList.add('nastaliq');
 
-  // Reload button
   document.getElementById('reloadBtn').innerHTML = ur
     ? `🔄 ${urduSpan('دوبارہ لوڈ کریں')}`
     : '🔄 Reload';
 
-  // Names section heading
   document.getElementById('namesHeading').innerHTML = ur
     ? `🕌 ${urduSpan('نماز کے نام تبدیل کریں')}`
     : '🕌 Prayer Names (Edit)';
 
-  // Save Names button
   document.getElementById('saveNamesBtn').innerHTML = ur
     ? `💾 ${urduSpan('تمام نام محفوظ کریں')}`
     : '💾 Save All Names';
 
-  // Message cards
   PRAYERS.forEach(p => {
     TYPES.forEach(t => {
       const key = p.key + '_' + t.key;
@@ -449,23 +383,17 @@ function updateAllLabels() {
           ? `💾 ${urduSpan('محفوظ کریں')}`
           : '💾 Save';
       }
-      if (statusEl) {
-        statusEl.classList.toggle('nastaliq', ur);
-      }
+      if (statusEl) statusEl.classList.toggle('nastaliq', ur);
     });
   });
 }
 
-// ============================================
-// AUTO TRANSLITERATE (English → Urdu)
-// ============================================
 function onEnglishInput(key) {
   const enVal = document.getElementById('en_' + key).value;
   const previewEn = document.getElementById('preview_en_' + key);
   if (previewEn) previewEn.textContent = enVal || '...';
 
   const hint = document.getElementById('hint_' + key);
-
   if (autoTransTimers[key]) clearTimeout(autoTransTimers[key]);
 
   if (!enVal.trim()) {
@@ -473,7 +401,6 @@ function onEnglishInput(key) {
     return;
   }
 
-  // Show "typing..." hint immediately
   if (hint) {
     hint.textContent = '✍️ Typing... (translating in 1.5s)';
     hint.classList.add('show');
@@ -483,6 +410,7 @@ function onEnglishInput(key) {
   autoTransTimers[key] = setTimeout(() => autoTransliterate(key), 1500);
 }
 
+// ============ AUTO TRANSLITERATE (via proxy) ============
 async function autoTransliterate(key) {
   const enVal = document.getElementById('en_' + key).value.trim();
   if (!enVal) return;
@@ -497,9 +425,12 @@ async function autoTransliterate(key) {
   }
 
   try {
-    const url = `https://inputtools.google.com/request?text=${encodeURIComponent(enVal)}&itc=ur-t-i0-und&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8`;
-    const res = await fetch(url);
-    const data = await res.json();
+    const proxyUrl = `${API_BASE}/api/transliterate?text=${encodeURIComponent(enVal)}`;
+    const res = await fetch(proxyUrl);
+    const proxyData = await res.json();
+
+    if (!proxyData.success) throw new Error('Proxy failed');
+    const data = proxyData.data;
 
     if (data && data[0] === 'SUCCESS' && data[1] && data[1][0] && data[1][0][1] && data[1][0][1].length > 0) {
       const urduText = data[1][0][1][0];
@@ -534,9 +465,6 @@ function onUrduInput(key) {
   document.getElementById('ur_' + key).classList.remove('auto-filled');
 }
 
-// ============================================
-// LOAD / RENDER MESSAGES
-// ============================================
 async function loadMessages() {
   const loading = document.getElementById('loading');
   const container = document.getElementById('messages-container');
@@ -605,9 +533,6 @@ function renderMessages() {
   });
 }
 
-// ============================================
-// SAVE MESSAGE
-// ============================================
 async function saveMessage(prayer, msgType) {
   const key = prayer + '_' + msgType;
   const ur = document.getElementById('ur_' + key).value;
@@ -640,9 +565,6 @@ async function saveMessage(prayer, msgType) {
   }
 }
 
-// ============================================
-// PRAYER NAMES
-// ============================================
 async function loadPrayerNames() {
   const container = document.getElementById('names-container');
   if (!container) return;
