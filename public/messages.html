@@ -10,7 +10,7 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f5f0; color: #1a1a1a; padding: 16px; line-height: 1.5; }
-  .nastaliq, .urdu-text { font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important; direction: rtl; line-height: 2.4; }
+  .nastaliq { font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important; direction: rtl; line-height: 2.4; }
   .header { background: #1b5e20; color: white; padding: 14px; border-radius: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
   .header h1 { font-size: 18px; font-weight: 700; }
   .header h1.nastaliq { font-size: 20px; line-height: 2.8; }
@@ -59,7 +59,7 @@
   .name-row input.name-ur { flex: 2; min-width: 110px; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; font-weight: 600; text-align: right; line-height: 2.2; }
   .name-row input.name-ur.auto-filled { background: #f1f8e9; border-color: #66bb6a; }
   .name-row input.name-en { flex: 2; min-width: 110px; padding: 8px 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
-  .name-hint { font-size: 10px; color: #2e7d32; margin-left: 8px; display: none; }
+  .name-hint { font-size: 10px; color: #2e7d32; display: none; margin-left: 4px; }
   .name-hint.show { display: inline; }
   .settings-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
   .settings-row label { flex: 1; min-width: 180px; font-size: 14px; font-weight: 600; color: #333; line-height: 1.8; }
@@ -123,11 +123,35 @@ const TYPES = [
   { key: 'end',   ur: 'ختم',   en: 'End' },
 ];
 
+// Alarm settings fields — Har field ke 3 naam:
+// en: English label
+// ru: Roman Urdu label
+// ur: Urdu Nastaliq label
 const SETTINGS_FIELDS = [
-  { key: 'start_alarm_duration_seconds', en: 'Start Alarm Duration (seconds)', ur: 'شروع الارم کتنے سیکنڈ', type: 'number' },
-  { key: 'end_reminder_minutes_before',  en: 'End Reminder Minutes Before',    ur: 'ختم سے کتنے منٹ پہلے', type: 'number' },
-  { key: 'end_reminder_beep_seconds',    en: 'Beep Duration (seconds)',        ur: 'ہر بلیپ کتنے سیکنڈ', type: 'number' },
-  { key: 'end_reminder_beep_count',      en: 'Number of Beeps',                ur: 'کتنی بار بلیپ',      type: 'number' },
+  {
+    key: 'start_alarm_duration_seconds',
+    en: 'Start Alarm Duration (seconds)',
+    ru: 'Namaz shuru hone par alarm kitne second bajega',
+    ur: 'نماز شروع ہونے پر الارم کتنے سیکنڈ بجے گا',
+  },
+  {
+    key: 'end_reminder_minutes_before',
+    en: 'End Reminder Minutes Before',
+    ru: 'Namaz khatam hone se kitne minute pehle reminder',
+    ur: 'نماز ختم ہونے سے کتنے منٹ پہلے یاد دہانی',
+  },
+  {
+    key: 'end_reminder_beep_seconds',
+    en: 'Beep Duration (seconds)',
+    ru: 'Har beep kitne second',
+    ur: 'ہر بلیپ کتنے سیکنڈ',
+  },
+  {
+    key: 'end_reminder_beep_count',
+    en: 'Number of Beeps',
+    ru: 'Kitni baar beep bajegi',
+    ur: 'کتنی بار بلیپ بجے گی',
+  },
 ];
 
 let currentLang = 'ur';
@@ -168,13 +192,17 @@ function updateAllLabels() {
   document.getElementById('saveSettingsBtn').innerHTML = ur
     ? `💾 ${urduSpan('ترتیبات محفوظ کریں')}` : '💾 Save Settings';
 
-  // Settings labels
+  // Settings labels — 3 languages
   SETTINGS_FIELDS.forEach(f => {
     const label = document.getElementById('label_' + f.key);
     if (label) {
-      label.textContent = ur ? f.ur : f.en;
-      label.classList.toggle('urdu-label', ur);
-      label.classList.toggle('nastaliq', ur);
+      if (ur) {
+        label.textContent = f.ur;
+        label.classList.add('urdu-label', 'nastaliq');
+      } else {
+        label.textContent = f.ru;   // Roman Urdu for EN mode
+        label.classList.remove('urdu-label', 'nastaliq');
+      }
     }
   });
 
@@ -201,7 +229,7 @@ function updateAllLabels() {
   });
 }
 
-// ============ AUTO TRANSLITERATE (generic) ============
+// ============ TRANSLITERATE ============
 async function callTransliterate(text) {
   const proxyUrl = `${API_BASE}/api/transliterate?text=${encodeURIComponent(text)}`;
   const res = await fetch(proxyUrl);
@@ -214,7 +242,6 @@ async function callTransliterate(text) {
   return null;
 }
 
-// Messages
 function onEnglishInput(key) {
   const enVal = document.getElementById('en_' + key).value;
   const previewEn = document.getElementById('preview_en_' + key);
@@ -258,7 +285,7 @@ function onNameEnInput(prayer) {
   const enVal = document.getElementById('name_en_' + prayer).value;
   const hint = document.getElementById('name_hint_' + prayer);
   if (nameAutoTransTimers[prayer]) clearTimeout(nameAutoTransTimers[prayer]);
-  if (!enVal.trim()) { if (hint) hint.classList.remove('show'); return; }
+  if (!enVal.trim()) { if (hint) { hint.textContent = ''; hint.classList.remove('show'); } return; }
   if (hint) { hint.textContent = '✍️'; hint.classList.add('show'); }
   nameAutoTransTimers[prayer] = setTimeout(() => autoTranslateName(prayer), 1500);
 }
@@ -274,12 +301,13 @@ async function autoTranslateName(prayer) {
     if (urduText) {
       urBox.value = urduText;
       urBox.classList.add('auto-filled');
-      if (hint) hint.textContent = '✅';
+      if (hint) { hint.textContent = '✅'; }
+      setTimeout(() => { if (hint) { hint.textContent = ''; hint.classList.remove('show'); } }, 2000);
     } else {
-      if (hint) hint.textContent = '⚠️';
+      if (hint) { hint.textContent = '⚠️'; }
     }
   } catch (e) {
-    if (hint) hint.textContent = '❌';
+    if (hint) { hint.textContent = '❌'; }
   }
 }
 
@@ -391,12 +419,21 @@ async function loadPrayerNames() {
       row.className = 'name-row';
       row.innerHTML = `
         <div class="prayer-label">${n.prayer}</div>
-        <input class="name-ur nastaliq" id="name_ur_${n.prayer}" value="${escapeHtml(n.name_ur)}" placeholder="اردو نام" oninput="onNameUrInput('${n.prayer}')">
-        <input class="name-en" id="name_en_${n.prayer}" value="${escapeHtml(n.name_en)}" placeholder="Type English → auto Urdu" oninput="onNameEnInput('${n.prayer}')">
+        <input class="name-ur nastaliq" id="name_ur_${n.prayer}" value="${escapeHtml(n.name_ur)}" placeholder="اردو نام">
+        <input class="name-en" id="name_en_${n.prayer}" value="${escapeHtml(n.name_en)}" placeholder="Type English → auto Urdu">
         <span class="name-hint" id="name_hint_${n.prayer}"></span>
       `;
       container.appendChild(row);
     });
+    // Attach listeners after DOM insert
+    setTimeout(() => {
+      data.names.forEach(n => {
+        const enInput = document.getElementById('name_en_' + n.prayer);
+        const urInput = document.getElementById('name_ur_' + n.prayer);
+        if (enInput) enInput.addEventListener('input', () => onNameEnInput(n.prayer));
+        if (urInput) urInput.addEventListener('input', () => onNameUrInput(n.prayer));
+      });
+    }, 0);
   } catch (e) {
     container.innerHTML = '<div style="color:#c62828;">❌ ' + e.message + '</div>';
   }
