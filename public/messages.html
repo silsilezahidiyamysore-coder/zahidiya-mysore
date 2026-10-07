@@ -9,259 +9,67 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #f0f5f0;
-    color: #1a1a1a;
-    padding: 16px;
-    line-height: 1.5;
-  }
-  .nastaliq,
-  .urdu-text,
-  [data-urdu] {
-    font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
-    direction: rtl;
-    line-height: 2.4;
-  }
-  .header {
-    background: #1b5e20;
-    color: white;
-    padding: 14px;
-    border-radius: 12px;
-    margin-bottom: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f5f0; color: #1a1a1a; padding: 16px; line-height: 1.5; }
+  .nastaliq, .urdu-text { font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important; direction: rtl; line-height: 2.4; }
+  .header { background: #1b5e20; color: white; padding: 14px; border-radius: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
   .header h1 { font-size: 18px; font-weight: 700; }
   .header h1.nastaliq { font-size: 20px; line-height: 2.8; }
   .lang-toggle { display: flex; gap: 8px; }
-  .lang-btn {
-    padding: 6px 16px;
-    border: 2px solid white;
-    background: transparent;
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 13px;
-  }
+  .lang-btn { padding: 6px 16px; border: 2px solid white; background: transparent; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
   .lang-btn.active { background: white; color: #1b5e20; }
   .lang-btn.nastaliq { font-size: 15px; padding: 6px 20px; }
   .top-nav { text-align: center; margin-bottom: 14px; }
-  .top-nav a {
-    color: #1b5e20;
-    text-decoration: none;
-    font-weight: bold;
-    padding: 8px 18px;
-    border: 2px solid #1b5e20;
-    border-radius: 8px;
-    display: inline-block;
-    background: white;
-    font-size: 13px;
-  }
-  .card {
-    background: white;
-    border-radius: 12px;
-    padding: 14px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-    border-left: 4px solid #1b5e20;
-  }
-  .prayer-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: #1b5e20;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
-    line-height: 1.8;
-  }
+  .top-nav a { color: #1b5e20; text-decoration: none; font-weight: bold; padding: 8px 18px; border: 2px solid #1b5e20; border-radius: 8px; display: inline-block; background: white; font-size: 13px; }
+  .card { background: white; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border-left: 4px solid #1b5e20; }
+  .prayer-title { font-size: 15px; font-weight: 700; color: #1b5e20; margin-bottom: 10px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; line-height: 1.8; }
   .prayer-title .ur-name { font-size: 17px; font-weight: 700; line-height: 2.4; }
   .prayer-title .en-part { font-size: 14px; font-weight: 600; }
   .prayer-title .other-part { font-size: 13px; color: #888; font-weight: 400; line-height: 2.2; }
   .field-group { margin-bottom: 12px; }
   .field-label { font-size: 12px; color: #555; margin-bottom: 6px; font-weight: 600; }
-  .field-label.urdu-label {
-    font-size: 15px;
-    line-height: 2.4;
-    color: #1b5e20;
-    font-weight: 600;
-    text-align: right;
-    padding-bottom: 4px;
-  }
-  textarea {
-    width: 100%;
-    padding: 8px 10px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: inherit;
-    resize: vertical;
-    min-height: 50px;
-  }
+  .field-label.urdu-label { font-size: 15px; line-height: 2.4; color: #1b5e20; font-weight: 600; text-align: right; padding-bottom: 4px; }
+  textarea { width: 100%; padding: 8px 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 50px; }
   textarea:focus { outline: none; border-color: #1b5e20; }
-  textarea.urdu-input {
-    font-size: 17px;
-    line-height: 2.4;
-    min-height: 70px;
-    padding: 10px 14px;
-    font-weight: 600;
-    text-align: right;
-  }
-  textarea.urdu-input.auto-filled {
-    background: #f1f8e9;
-    border-color: #66bb6a;
-  }
-  .auto-hint {
-    font-size: 11px;
-    color: #2e7d32;
-    margin-top: 4px;
-    font-style: italic;
-    display: none;
-    padding: 4px 8px;
-    background: #e8f5e9;
-    border-radius: 4px;
-  }
+  textarea.urdu-input { font-size: 17px; line-height: 2.4; min-height: 70px; padding: 10px 14px; font-weight: 600; text-align: right; }
+  textarea.urdu-input.auto-filled { background: #f1f8e9; border-color: #66bb6a; }
+  .auto-hint { font-size: 11px; color: #2e7d32; margin-top: 4px; font-style: italic; display: none; padding: 4px 8px; background: #e8f5e9; border-radius: 4px; }
   .auto-hint.show { display: block; }
   .auto-hint.loading { color: #e65100; background: #fff3e0; }
   .auto-hint.error { color: #c62828; background: #ffebee; }
-  .preview-box {
-    background: #1b5e20;
-    color: white;
-    padding: 14px;
-    border-radius: 8px;
-    margin-top: 6px;
-    text-align: center;
-    font-size: 15px;
-    font-weight: bold;
-    min-height: 55px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 2;
-    word-wrap: break-word;
-  }
+  .preview-box { background: #1b5e20; color: white; padding: 14px; border-radius: 8px; margin-top: 6px; text-align: center; font-size: 15px; font-weight: bold; min-height: 55px; display: flex; align-items: center; justify-content: center; line-height: 2; word-wrap: break-word; }
   .preview-box.urdu-preview-box { font-size: 17px; line-height: 2.8; padding: 18px 12px; font-weight: 700; }
-  .preview-box.en-preview-box {
-    background: #2e7d32;
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 1.6;
-    padding: 14px 12px;
-    margin-top: 4px;
-  }
-  .preview-label-small {
-    font-size: 11px;
-    color: #666;
-    font-weight: 600;
-    margin-top: 6px;
-    margin-bottom: 3px;
-    text-transform: uppercase;
-  }
-  .save-btn {
-    background: #1b5e20;
-    color: white;
-    border: none;
-    padding: 11px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 8px;
-  }
+  .preview-box.en-preview-box { background: #2e7d32; font-size: 15px; font-weight: 600; line-height: 1.6; padding: 14px 12px; margin-top: 4px; }
+  .preview-label-small { font-size: 11px; color: #666; font-weight: 600; margin-top: 6px; margin-bottom: 3px; text-transform: uppercase; }
+  .save-btn { background: #1b5e20; color: white; border: none; padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; }
   .save-btn:disabled { background: #999; }
   .save-btn.saved { background: #2e7d32; }
-  .refresh-btn {
-    background: white;
-    color: #1b5e20;
-    border: 2px solid #1b5e20;
-    padding: 8px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-    margin-bottom: 14px;
-  }
-  .status-msg {
-    text-align: center;
-    font-size: 13px;
-    margin-top: 8px;
-    min-height: 18px;
-    font-weight: 600;
-  }
+  .refresh-btn { background: white; color: #1b5e20; border: 2px solid #1b5e20; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; margin-bottom: 14px; }
+  .status-msg { text-align: center; font-size: 13px; margin-top: 8px; min-height: 18px; font-weight: 600; }
   .status-msg.success { color: #1b5e20; }
   .status-msg.error { color: #c62828; }
   .loading { text-align: center; padding: 30px; color: #666; font-size: 14px; }
-  .names-section {
-    background: white;
-    border-radius: 12px;
-    padding: 14px;
-    margin-bottom: 14px;
-    border-left: 4px solid #ff9800;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-  }
-  .names-section h2 {
-    color: #e65100;
-    margin-bottom: 12px;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    line-height: 2.2;
-  }
-  .name-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
+  .names-section, .settings-section { background: white; border-radius: 12px; padding: 14px; margin-bottom: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+  .names-section { border-left: 4px solid #ff9800; }
+  .settings-section { border-left: 4px solid #2196f3; }
+  .section-heading { margin-bottom: 12px; font-size: 16px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; line-height: 2.2; }
+  .names-section .section-heading { color: #e65100; }
+  .settings-section .section-heading { color: #0d47a1; }
+  .name-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
   .name-row .prayer-label { flex: 1; min-width: 70px; font-weight: bold; color: #333; font-size: 13px; }
-  .name-row input.name-ur {
-    flex: 2;
-    min-width: 110px;
-    padding: 8px 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    text-align: right;
-    line-height: 2.2;
-  }
-  .name-row input.name-en {
-    flex: 2;
-    min-width: 110px;
-    padding: 8px 10px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 14px;
-  }
-  .names-save-btn {
-    background: #e65100;
-    color: white;
-    border: none;
-    padding: 11px 20px;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 10px;
-  }
-  .names-status {
-    text-align: center;
-    font-size: 13px;
-    margin-top: 8px;
-    min-height: 18px;
-    font-weight: 600;
-  }
+  .name-row input.name-ur { flex: 2; min-width: 110px; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; font-weight: 600; text-align: right; line-height: 2.2; }
+  .name-row input.name-ur.auto-filled { background: #f1f8e9; border-color: #66bb6a; }
+  .name-row input.name-en { flex: 2; min-width: 110px; padding: 8px 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
+  .name-hint { font-size: 10px; color: #2e7d32; margin-left: 8px; display: none; }
+  .name-hint.show { display: inline; }
+  .settings-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .settings-row label { flex: 1; min-width: 180px; font-size: 14px; font-weight: 600; color: #333; line-height: 1.8; }
+  .settings-row label.urdu-label { font-size: 16px; text-align: right; }
+  .settings-row input { flex: 1; min-width: 100px; padding: 10px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; font-weight: 600; text-align: center; }
+  .settings-row input:focus { outline: none; border-color: #2196f3; }
+  .names-save-btn, .settings-save-btn { color: white; border: none; padding: 11px 20px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+  .names-save-btn { background: #e65100; }
+  .settings-save-btn { background: #0d47a1; }
+  .names-status, .settings-status { text-align: center; font-size: 13px; margin-top: 8px; min-height: 18px; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -275,18 +83,25 @@
 </div>
 
 <div class="top-nav">
-  <a href="/admin.html" id="adminLink">← Admin Panel</a>
+  <a href="/admin.html">← Admin Panel</a>
 </div>
 
 <div style="text-align:center;">
-  <button class="refresh-btn" onclick="loadMessages(); loadPrayerNames();" id="reloadBtn">🔄 Reload</button>
+  <button class="refresh-btn" onclick="loadAll()" id="reloadBtn">🔄 Reload</button>
 </div>
 
 <div class="names-section">
-  <h2 id="namesHeading"></h2>
+  <h2 class="section-heading" id="namesHeading"></h2>
   <div id="names-container"></div>
   <button class="names-save-btn" onclick="saveAllNames()" id="saveNamesBtn"></button>
   <div class="names-status" id="names-status"></div>
+</div>
+
+<div class="settings-section">
+  <h2 class="section-heading" id="settingsHeading"></h2>
+  <div id="settings-container"></div>
+  <button class="settings-save-btn" onclick="saveAlarmSettings()" id="saveSettingsBtn"></button>
+  <div class="settings-status" id="settings-status"></div>
 </div>
 
 <div id="loading" class="loading">Loading messages...</div>
@@ -308,9 +123,19 @@ const TYPES = [
   { key: 'end',   ur: 'ختم',   en: 'End' },
 ];
 
+const SETTINGS_FIELDS = [
+  { key: 'start_alarm_duration_seconds', en: 'Start Alarm Duration (seconds)', ur: 'شروع الارم کتنے سیکنڈ', type: 'number' },
+  { key: 'end_reminder_minutes_before',  en: 'End Reminder Minutes Before',    ur: 'ختم سے کتنے منٹ پہلے', type: 'number' },
+  { key: 'end_reminder_beep_seconds',    en: 'Beep Duration (seconds)',        ur: 'ہر بلیپ کتنے سیکنڈ', type: 'number' },
+  { key: 'end_reminder_beep_count',      en: 'Number of Beeps',                ur: 'کتنی بار بلیپ',      type: 'number' },
+];
+
 let currentLang = 'ur';
 let messagesData = {};
+let namesData = [];
+let settingsData = {};
 let autoTransTimers = {};
+let nameAutoTransTimers = {};
 
 function urduSpan(text, extraClass) {
   return `<span class="nastaliq ${extraClass || ''}">${text}</span>`;
@@ -328,26 +153,32 @@ function updateAllLabels() {
   const ur = currentLang === 'ur';
 
   const titleEl = document.getElementById('pageTitle');
-  if (ur) {
-    titleEl.innerHTML = `📿 ${urduSpan('نماز کے پیغامات')}`;
-    titleEl.classList.add('nastaliq');
-  } else {
-    titleEl.textContent = '📿 Namaz Messages';
-    titleEl.classList.remove('nastaliq');
-  }
+  if (ur) { titleEl.innerHTML = `📿 ${urduSpan('نماز کے پیغامات')}`; titleEl.classList.add('nastaliq'); }
+  else { titleEl.textContent = '📿 Namaz Messages'; titleEl.classList.remove('nastaliq'); }
 
-  document.getElementById('reloadBtn').innerHTML = ur
-    ? `🔄 ${urduSpan('دوبارہ لوڈ کریں')}`
-    : '🔄 Reload';
+  document.getElementById('reloadBtn').innerHTML = ur ? `🔄 ${urduSpan('دوبارہ لوڈ کریں')}` : '🔄 Reload';
 
   document.getElementById('namesHeading').innerHTML = ur
-    ? `🕌 ${urduSpan('نماز کے نام تبدیل کریں')}`
-    : '🕌 Prayer Names (Edit)';
-
+    ? `🕌 ${urduSpan('نماز کے نام تبدیل کریں')}` : '🕌 Prayer Names (Edit)';
   document.getElementById('saveNamesBtn').innerHTML = ur
-    ? `💾 ${urduSpan('تمام نام محفوظ کریں')}`
-    : '💾 Save All Names';
+    ? `💾 ${urduSpan('تمام نام محفوظ کریں')}` : '💾 Save All Names';
 
+  document.getElementById('settingsHeading').innerHTML = ur
+    ? `⚙️ ${urduSpan('الارم کی ترتیبات')}` : '⚙️ Alarm Settings';
+  document.getElementById('saveSettingsBtn').innerHTML = ur
+    ? `💾 ${urduSpan('ترتیبات محفوظ کریں')}` : '💾 Save Settings';
+
+  // Settings labels
+  SETTINGS_FIELDS.forEach(f => {
+    const label = document.getElementById('label_' + f.key);
+    if (label) {
+      label.textContent = ur ? f.ur : f.en;
+      label.classList.toggle('urdu-label', ur);
+      label.classList.toggle('nastaliq', ur);
+    }
+  });
+
+  // Message cards
   PRAYERS.forEach(p => {
     TYPES.forEach(t => {
       const key = p.key + '_' + t.key;
@@ -356,106 +187,63 @@ function updateAllLabels() {
       const enLabel = document.getElementById('label_en_' + key);
       const previewLabel = document.getElementById('label_preview_' + key);
       const saveBtn = document.getElementById('btn_' + key);
-      const statusEl = document.getElementById('status_' + key);
 
       if (titleCard) {
         titleCard.innerHTML = ur
           ? `🕌 ${urduSpan(p.ur + ' — ' + t.ur, 'ur-name')} <span class="other-part nastaliq">(${p.en} — ${t.en})</span>`
           : `🕌 <span class="en-part">${p.en} — ${t.en}</span> <span class="other-part nastaliq">(${p.ur} — ${t.ur})</span>`;
       }
-      if (urLabel) {
-        urLabel.textContent = ur ? 'اردو پیغام:' : 'Urdu message:';
-        urLabel.classList.toggle('urdu-label', ur);
-        urLabel.classList.toggle('nastaliq', ur);
-      }
-      if (enLabel) {
-        enLabel.textContent = ur ? 'انگریزی / رومن اردو → خودکار اردو:' : 'English / Roman Urdu → auto to Urdu:';
-        enLabel.classList.toggle('urdu-label', ur);
-        enLabel.classList.toggle('nastaliq', ur);
-      }
-      if (previewLabel) {
-        previewLabel.textContent = ur ? 'پیش نظارہ:' : 'Preview:';
-        previewLabel.classList.toggle('urdu-label', ur);
-        previewLabel.classList.toggle('nastaliq', ur);
-      }
-      if (saveBtn) {
-        saveBtn.innerHTML = ur
-          ? `💾 ${urduSpan('محفوظ کریں')}`
-          : '💾 Save';
-      }
-      if (statusEl) statusEl.classList.toggle('nastaliq', ur);
+      if (urLabel) { urLabel.textContent = ur ? 'اردو پیغام:' : 'Urdu message:'; urLabel.classList.toggle('urdu-label', ur); urLabel.classList.toggle('nastaliq', ur); }
+      if (enLabel) { enLabel.textContent = ur ? 'انگریزی / رومن اردو → خودکار اردو:' : 'English / Roman Urdu → auto to Urdu:'; enLabel.classList.toggle('urdu-label', ur); enLabel.classList.toggle('nastaliq', ur); }
+      if (previewLabel) { previewLabel.textContent = ur ? 'پیش نظارہ:' : 'Preview:'; previewLabel.classList.toggle('urdu-label', ur); previewLabel.classList.toggle('nastaliq', ur); }
+      if (saveBtn) saveBtn.innerHTML = ur ? `💾 ${urduSpan('محفوظ کریں')}` : '💾 Save';
     });
   });
 }
 
+// ============ AUTO TRANSLITERATE (generic) ============
+async function callTransliterate(text) {
+  const proxyUrl = `${API_BASE}/api/transliterate?text=${encodeURIComponent(text)}`;
+  const res = await fetch(proxyUrl);
+  const proxyData = await res.json();
+  if (!proxyData.success) throw new Error('Proxy failed');
+  const data = proxyData.data;
+  if (data && data[0] === 'SUCCESS' && data[1] && data[1][0] && data[1][0][1] && data[1][0][1].length > 0) {
+    return data[1][0][1][0];
+  }
+  return null;
+}
+
+// Messages
 function onEnglishInput(key) {
   const enVal = document.getElementById('en_' + key).value;
   const previewEn = document.getElementById('preview_en_' + key);
   if (previewEn) previewEn.textContent = enVal || '...';
-
   const hint = document.getElementById('hint_' + key);
   if (autoTransTimers[key]) clearTimeout(autoTransTimers[key]);
-
-  if (!enVal.trim()) {
-    if (hint) hint.classList.remove('show');
-    return;
-  }
-
-  if (hint) {
-    hint.textContent = '✍️ Typing... (translating in 1.5s)';
-    hint.classList.add('show');
-    hint.classList.remove('loading', 'error');
-  }
-
-  autoTransTimers[key] = setTimeout(() => autoTransliterate(key), 1500);
+  if (!enVal.trim()) { if (hint) hint.classList.remove('show'); return; }
+  if (hint) { hint.textContent = '✍️ Typing...'; hint.classList.add('show'); hint.classList.remove('loading', 'error'); }
+  autoTransTimers[key] = setTimeout(() => autoTransliterateMsg(key), 1500);
 }
 
-// ============ AUTO TRANSLITERATE (via proxy) ============
-async function autoTransliterate(key) {
+async function autoTransliterateMsg(key) {
   const enVal = document.getElementById('en_' + key).value.trim();
   if (!enVal) return;
-
   const urBox = document.getElementById('ur_' + key);
   const hint = document.getElementById('hint_' + key);
-
-  if (hint) {
-    hint.textContent = '⏳ Translating to Urdu...';
-    hint.classList.add('show', 'loading');
-    hint.classList.remove('error');
-  }
-
+  if (hint) { hint.textContent = '⏳ Translating...'; hint.classList.add('show', 'loading'); hint.classList.remove('error'); }
   try {
-    const proxyUrl = `${API_BASE}/api/transliterate?text=${encodeURIComponent(enVal)}`;
-    const res = await fetch(proxyUrl);
-    const proxyData = await res.json();
-
-    if (!proxyData.success) throw new Error('Proxy failed');
-    const data = proxyData.data;
-
-    if (data && data[0] === 'SUCCESS' && data[1] && data[1][0] && data[1][0][1] && data[1][0][1].length > 0) {
-      const urduText = data[1][0][1][0];
+    const urduText = await callTransliterate(enVal);
+    if (urduText) {
       urBox.value = urduText;
       urBox.classList.add('auto-filled');
       document.getElementById('preview_ur_' + key).textContent = urduText;
-
-      if (hint) {
-        hint.textContent = '✅ Auto-translated. You can edit Urdu if needed.';
-        hint.classList.add('show');
-        hint.classList.remove('loading', 'error');
-      }
+      if (hint) { hint.textContent = '✅ Auto-translated'; hint.classList.add('show'); hint.classList.remove('loading', 'error'); }
     } else {
-      if (hint) {
-        hint.textContent = '⚠️ Could not translate — please type Urdu manually.';
-        hint.classList.add('show', 'error');
-        hint.classList.remove('loading');
-      }
+      if (hint) { hint.textContent = '⚠️ Could not translate'; hint.classList.add('show', 'error'); hint.classList.remove('loading'); }
     }
   } catch (e) {
-    if (hint) {
-      hint.textContent = '❌ Network error — check internet.';
-      hint.classList.add('show', 'error');
-      hint.classList.remove('loading');
-    }
+    if (hint) { hint.textContent = '❌ Network error'; hint.classList.add('show', 'error'); hint.classList.remove('loading'); }
   }
 }
 
@@ -463,6 +251,45 @@ function onUrduInput(key) {
   const urVal = document.getElementById('ur_' + key).value;
   document.getElementById('preview_ur_' + key).textContent = urVal || '...';
   document.getElementById('ur_' + key).classList.remove('auto-filled');
+}
+
+// ============ PRAYER NAMES AUTO-TRANSLATE ============
+function onNameEnInput(prayer) {
+  const enVal = document.getElementById('name_en_' + prayer).value;
+  const hint = document.getElementById('name_hint_' + prayer);
+  if (nameAutoTransTimers[prayer]) clearTimeout(nameAutoTransTimers[prayer]);
+  if (!enVal.trim()) { if (hint) hint.classList.remove('show'); return; }
+  if (hint) { hint.textContent = '✍️'; hint.classList.add('show'); }
+  nameAutoTransTimers[prayer] = setTimeout(() => autoTranslateName(prayer), 1500);
+}
+
+async function autoTranslateName(prayer) {
+  const enVal = document.getElementById('name_en_' + prayer).value.trim();
+  if (!enVal) return;
+  const urBox = document.getElementById('name_ur_' + prayer);
+  const hint = document.getElementById('name_hint_' + prayer);
+  if (hint) hint.textContent = '⏳';
+  try {
+    const urduText = await callTransliterate(enVal);
+    if (urduText) {
+      urBox.value = urduText;
+      urBox.classList.add('auto-filled');
+      if (hint) hint.textContent = '✅';
+    } else {
+      if (hint) hint.textContent = '⚠️';
+    }
+  } catch (e) {
+    if (hint) hint.textContent = '❌';
+  }
+}
+
+function onNameUrInput(prayer) {
+  document.getElementById('name_ur_' + prayer).classList.remove('auto-filled');
+}
+
+// ============ LOAD ============
+async function loadAll() {
+  await Promise.all([loadMessages(), loadPrayerNames(), loadAlarmSettings()]);
 }
 
 async function loadMessages() {
@@ -476,14 +303,8 @@ async function loadMessages() {
     const res = await fetch(API_BASE + '/api/get-prayer-messages');
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Failed');
-
     messagesData = {};
-    data.messages.forEach(m => {
-      messagesData[m.prayer + '_' + m.msg_type] = {
-        ur: m.message_ur || '',
-        en: m.message_en || ''
-      };
-    });
+    data.messages.forEach(m => { messagesData[m.prayer + '_' + m.msg_type] = { ur: m.message_ur || '', en: m.message_en || '' }; });
     renderMessages();
     loading.style.display = 'none';
     updateAllLabels();
@@ -495,7 +316,6 @@ async function loadMessages() {
 function renderMessages() {
   const container = document.getElementById('messages-container');
   container.innerHTML = '';
-
   PRAYERS.forEach(prayer => {
     TYPES.forEach(type => {
       const key = prayer.key + '_' + type.key;
@@ -510,21 +330,20 @@ function renderMessages() {
         </div>
         <div class="field-group">
           <div class="field-label" id="label_en_${key}"></div>
-          <textarea id="en_${key}" placeholder="Type in English / Roman Urdu — auto converts to Urdu..." oninput="onEnglishInput('${key}')">${escapeHtml(msg.en)}</textarea>
+          <textarea id="en_${key}" placeholder="Type English — auto converts to Urdu..." oninput="onEnglishInput('${key}')">${escapeHtml(msg.en)}</textarea>
           <div class="auto-hint" id="hint_${key}"></div>
         </div>
         <div class="field-group">
           <div class="field-label" id="label_preview_${key}"></div>
-          <div class="preview-label-small">URDU PREVIEW</div>
+          <div class="preview-label-small">URDU</div>
           <div class="preview-box urdu-preview-box nastaliq" id="preview_ur_${key}">${escapeHtml(msg.ur) || '...'}</div>
-          <div class="preview-label-small">ENGLISH PREVIEW</div>
+          <div class="preview-label-small">ENGLISH</div>
           <div class="preview-box en-preview-box" id="preview_en_${key}">${escapeHtml(msg.en) || '...'}</div>
         </div>
         <button class="save-btn" id="btn_${key}" onclick="saveMessage('${prayer.key}', '${type.key}')"></button>
         <div class="status-msg" id="status_${key}"></div>
       `;
       container.appendChild(card);
-
       setTimeout(() => {
         const urInput = document.getElementById('ur_' + key);
         if (urInput) urInput.addEventListener('input', () => onUrduInput(key));
@@ -539,49 +358,42 @@ async function saveMessage(prayer, msgType) {
   const en = document.getElementById('en_' + key).value;
   const btn = document.getElementById('btn_' + key);
   const status = document.getElementById('status_' + key);
-
   btn.disabled = true;
-  btn.textContent = '⏳ Saving...';
-  status.textContent = '';
-
+  btn.textContent = '⏳...';
   try {
     const res = await fetch(API_BASE + '/api/save-prayer-message', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prayer, msg_type: msgType, message_ur: ur, message_en: en })
     });
     const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Save failed');
-
-    status.textContent = currentLang === 'ur' ? '✅ کامیابی سے محفوظ' : '✅ Saved successfully';
-    status.className = 'status-msg nastaliq success';
+    if (!data.success) throw new Error(data.error);
+    status.textContent = '✅ Saved'; status.className = 'status-msg nastaliq success';
     setTimeout(() => { status.textContent = ''; }, 3000);
   } catch (e) {
-    status.textContent = '❌ ' + e.message;
-    status.className = 'status-msg nastaliq error';
+    status.textContent = '❌ ' + e.message; status.className = 'status-msg nastaliq error';
   } finally {
-    btn.disabled = false;
-    updateAllLabels();
+    btn.disabled = false; updateAllLabels();
   }
 }
 
+// ============ PRAYER NAMES ============
 async function loadPrayerNames() {
   const container = document.getElementById('names-container');
   if (!container) return;
-
   try {
     const res = await fetch(API_BASE + '/api/get-prayer-names');
     const data = await res.json();
     if (!data.success) throw new Error(data.error);
-
+    namesData = data.names;
     container.innerHTML = '';
     data.names.forEach(n => {
       const row = document.createElement('div');
       row.className = 'name-row';
       row.innerHTML = `
         <div class="prayer-label">${n.prayer}</div>
-        <input class="name-ur nastaliq" id="name_ur_${n.prayer}" value="${escapeHtml(n.name_ur)}" placeholder="اردو نام">
-        <input class="name-en" id="name_en_${n.prayer}" value="${escapeHtml(n.name_en)}" placeholder="English name">
+        <input class="name-ur nastaliq" id="name_ur_${n.prayer}" value="${escapeHtml(n.name_ur)}" placeholder="اردو نام" oninput="onNameUrInput('${n.prayer}')">
+        <input class="name-en" id="name_en_${n.prayer}" value="${escapeHtml(n.name_en)}" placeholder="Type English → auto Urdu" oninput="onNameEnInput('${n.prayer}')">
+        <span class="name-hint" id="name_hint_${n.prayer}"></span>
       `;
       container.appendChild(row);
     });
@@ -592,21 +404,65 @@ async function loadPrayerNames() {
 
 async function saveAllNames() {
   const status = document.getElementById('names-status');
-  const prayers = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
   status.textContent = '⏳ Saving...';
   status.style.color = '#e65100';
-
   try {
-    for (const p of prayers) {
+    for (const p of ['Fajr','Dhuhr','Asr','Maghrib','Isha']) {
       const ur = document.getElementById('name_ur_' + p).value;
       const en = document.getElementById('name_en_' + p).value;
       await fetch(API_BASE + '/api/save-prayer-name', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prayer: p, name_ur: ur, name_en: en })
       });
     }
     status.textContent = currentLang === 'ur' ? '✅ تمام نام محفوظ' : '✅ All names saved';
+    status.style.color = '#1b5e20';
+    setTimeout(() => { status.textContent = ''; }, 3000);
+  } catch (e) {
+    status.textContent = '❌ ' + e.message;
+    status.style.color = '#c62828';
+  }
+}
+
+// ============ ALARM SETTINGS ============
+async function loadAlarmSettings() {
+  const container = document.getElementById('settings-container');
+  if (!container) return;
+  try {
+    const res = await fetch(API_BASE + '/api/get-alarm-settings');
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    settingsData = data.settings || {};
+    container.innerHTML = '';
+    SETTINGS_FIELDS.forEach(f => {
+      const row = document.createElement('div');
+      row.className = 'settings-row';
+      row.innerHTML = `
+        <label id="label_${f.key}"></label>
+        <input type="${f.type}" id="setting_${f.key}" value="${escapeHtml(settingsData[f.key] || '')}">
+      `;
+      container.appendChild(row);
+    });
+    updateAllLabels();
+  } catch (e) {
+    container.innerHTML = '<div style="color:#c62828;">❌ ' + e.message + '</div>';
+  }
+}
+
+async function saveAlarmSettings() {
+  const status = document.getElementById('settings-status');
+  status.textContent = '⏳ Saving...';
+  status.style.color = '#0d47a1';
+  const payload = {};
+  SETTINGS_FIELDS.forEach(f => { payload[f.key] = document.getElementById('setting_' + f.key).value; });
+  try {
+    const res = await fetch(API_BASE + '/api/save-alarm-settings', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    status.textContent = currentLang === 'ur' ? '✅ ترتیبات محفوظ' : '✅ Settings saved';
     status.style.color = '#1b5e20';
     setTimeout(() => { status.textContent = ''; }, 3000);
   } catch (e) {
@@ -623,8 +479,7 @@ function escapeHtml(text) {
 
 window.onload = () => {
   setLang(localStorage.getItem('msg_admin_lang') || 'ur');
-  loadMessages();
-  loadPrayerNames();
+  loadAll();
 };
 </script>
 
