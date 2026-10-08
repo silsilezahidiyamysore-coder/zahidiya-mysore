@@ -3,224 +3,385 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Menu Manager — Admin</title>
+<title>Menu Manager</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #f0f5f0; color: #1a1a1a; padding: 16px; line-height: 1.5;
-  }
+
   .nastaliq {
     font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
-    direction: rtl; line-height: 2.4;
+    direction: rtl;
+    line-height: 2.2;
   }
 
-  /* Header */
-  .header {
-    background: #1b5e20; color: white; padding: 14px; border-radius: 12px;
-    margin-bottom: 14px; display: flex; justify-content: space-between;
-    align-items: center; flex-wrap: wrap; gap: 10px;
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f5f0;
+    color: #1a1a1a;
+    padding: 16px;
   }
-  .header h1 { font-size: 18px; font-weight: 700; }
-  .header h1.nastaliq { font-size: 20px; line-height: 2.8; }
+
+  .header {
+    background: #1b5e20;
+    color: white;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .header h1 { font-size: 20px; font-weight: 700; }
+
   .lang-toggle { display: flex; gap: 8px; }
   .lang-btn {
-    padding: 6px 16px; border: 2px solid white; background: transparent;
-    color: white; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px;
+    padding: 6px 16px;
+    border: 2px solid white;
+    background: transparent;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 13px;
   }
   .lang-btn.active { background: white; color: #1b5e20; }
-  .lang-btn.nastaliq { font-size: 15px; padding: 6px 20px; }
 
-  /* Nav */
   .top-nav {
-    text-align: center; margin-bottom: 14px; display: flex; gap: 8px;
-    justify-content: center; flex-wrap: wrap;
+    text-align: center;
+    margin-bottom: 14px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
   }
   .top-nav a {
-    color: #1b5e20; text-decoration: none; font-weight: bold;
-    padding: 8px 18px; border: 2px solid #1b5e20; border-radius: 8px;
-    display: inline-block; background: white; font-size: 13px;
+    color: #1b5e20;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 18px;
+    border: 2px solid #1b5e20;
+    border-radius: 8px;
+    background: white;
+    font-size: 13px;
   }
 
-  /* Add button */
   .add-btn {
-    background: #1b5e20; color: white; border: none; padding: 14px 20px;
-    border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;
-    width: 100%; margin-bottom: 14px;
+    background: #1b5e20;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 14px;
   }
-  .add-btn:hover { background: #2e7d32; }
 
-  /* Cards */
   .items-list { display: grid; gap: 12px; }
-  .menu-card {
-    background: white; border-radius: 12px; padding: 14px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-    border-left: 5px solid #1b5e20;
-    display: flex; flex-direction: column; gap: 10px;
-  }
-  .menu-card.inactive { opacity: 0.6; border-left-color: #999; }
 
-  /* Row 1: badges */
+  .menu-card {
+    background: white;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    border-left: 5px solid #1b5e20;
+  }
+  .menu-card.inactive {
+    opacity: 0.6;
+    border-left-color: #999;
+  }
+
+  /* Top row: badges */
   .menu-badges {
-    display: flex; gap: 6px; flex-wrap: wrap;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
   }
   .menu-badge {
-    display: inline-block; font-size: 11px; padding: 3px 10px;
-    border-radius: 10px; font-weight: 600;
+    display: inline-block;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    direction: rtl;
+    line-height: 2;
   }
   .badge-active { background: #e8f5e9; color: #1b5e20; }
   .badge-inactive { background: #ffebee; color: #c62828; }
   .badge-type { background: #e3f2fd; color: #0d47a1; }
-  .badge-order { background: #f0f0f0; color: #666; }
+  .badge-order { background: #f0f0f0; color: #666; font-family: inherit !important; direction: ltr; }
 
-  /* Row 2: icon + labels */
+  /* Middle: icon + names */
   .menu-main {
-    display: flex; gap: 14px; align-items: flex-start;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 12px;
   }
+
   .menu-icon {
-    font-size: 38px; min-width: 60px; text-align: center;
-    background: #f5f9f5; border-radius: 10px; padding: 8px 4px;
+    font-size: 42px;
+    min-width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f9f5;
+    border-radius: 10px;
+    flex-shrink: 0;
   }
-  .menu-labels { flex: 1; min-width: 0; }
+
+  .menu-labels {
+    flex: 1;
+    min-width: 0;
+  }
+
   .menu-label-ur {
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 22px; line-height: 2.6; font-weight: 700;
-    color: #1b5e20; direction: rtl; text-align: right;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1b5e20;
+    direction: rtl;
+    text-align: right;
+    line-height: 2.4;
     word-wrap: break-word;
+    overflow-wrap: break-word;
   }
+
   .menu-label-en {
-    font-size: 15px; font-weight: 600; color: #444;
-    margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e0e0e0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    margin-top: 4px;
+    text-align: right;
   }
+
   .menu-url {
-    font-size: 12px; color: #888; margin-top: 4px;
+    font-size: 11px;
+    color: #999;
+    margin-top: 4px;
+    text-align: right;
     word-break: break-all;
   }
 
-  /* Row 3: action buttons */
+  /* Bottom: buttons side by side */
   .menu-actions {
-    display: flex; gap: 10px; padding-top: 8px;
-    border-top: 1px solid #f0f0f0;
+    display: flex;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
   }
+
   .action-btn {
-    flex: 1; padding: 10px; border-radius: 8px; border: none;
-    cursor: pointer; font-weight: bold; font-size: 14px;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 15px;
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    direction: rtl;
+    line-height: 2;
+    transition: opacity 0.2s;
   }
+  .action-btn:hover { opacity: 0.85; }
   .btn-edit { background: #ff9800; color: white; }
-  .btn-edit:hover { background: #f57c00; }
   .btn-delete { background: #f44336; color: white; }
-  .btn-delete:hover { background: #d32f2f; }
 
   /* Modal */
   .modal-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5); display: none; align-items: center;
-    justify-content: center; padding: 16px; z-index: 100;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 100;
   }
   .modal-overlay.open { display: flex; }
+
   .modal {
-    background: white; border-radius: 14px; padding: 20px;
-    max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto;
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
   }
-  .modal h2 { font-size: 18px; color: #1b5e20; margin-bottom: 16px; }
-  .modal h2.nastaliq { font-size: 20px; line-height: 2.4; }
+  .modal h2 {
+    font-size: 20px;
+    color: #1b5e20;
+    margin-bottom: 16px;
+    text-align: center;
+  }
 
   .field { margin-bottom: 14px; }
+
   .field label {
-    display: block; font-size: 13px; font-weight: 600;
-    color: #333; margin-bottom: 6px;
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1b5e20;
+    margin-bottom: 6px;
+    text-align: right;
   }
-  .field label.nastaliq {
-    font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 16px; line-height: 2.2; color: #1b5e20;
-  }
+
   .field input[type="text"],
   .field input[type="number"],
   .field select {
-    width: 100%; padding: 10px 12px; border: 2px solid #e0e0e0;
-    border-radius: 8px; font-size: 14px; font-family: inherit;
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
     background: white;
+    font-family: inherit;
   }
+
   .field input.urdu-input {
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 18px; line-height: 2.4; text-align: right;
+    font-size: 20px;
+    line-height: 2.6;
+    text-align: right;
+    direction: rtl;
+    padding: 8px 12px;
   }
   .field input.urdu-input.auto-filled {
-    background: #f1f8e9; border-color: #66bb6a;
+    background: #f1f8e9;
+    border-color: #66bb6a;
   }
   .field input:focus, .field select:focus {
-    outline: none; border-color: #1b5e20;
+    outline: none;
+    border-color: #1b5e20;
   }
+
   .auto-hint {
-    font-size: 11px; margin-top: 4px; padding: 3px 8px;
-    border-radius: 4px; display: none;
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    direction: rtl; text-align: right;
+    font-size: 14px;
+    line-height: 2;
+    direction: rtl;
+    text-align: right;
+    margin-top: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: none;
   }
   .auto-hint.show { display: block; }
   .auto-hint.loading { background: #fff3e0; color: #e65100; }
   .auto-hint.success { background: #e8f5e9; color: #2e7d32; }
   .auto-hint.error { background: #ffebee; color: #c62828; }
 
-  .field-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .field-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
   .field-row > * { flex: 1; min-width: 120px; }
 
   .emoji-row {
-    display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
   }
   .emoji-btn {
-    font-size: 22px; padding: 6px 10px; background: #f5f5f5;
-    border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;
+    font-size: 22px;
+    padding: 6px 10px;
+    background: #f5f5f5;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
   }
   .emoji-btn:hover { background: #e8f5e9; border-color: #1b5e20; }
 
   .checkbox-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px; background: #f9f9f9; border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 8px;
   }
-  .checkbox-row input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+  .checkbox-row input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+  }
   .checkbox-row label {
-    margin: 0; cursor: pointer; font-size: 14px;
+    margin: 0;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    direction: rtl;
+    line-height: 2;
   }
 
   .modal-actions {
-    display: flex; gap: 10px; margin-top: 16px;
-    position: sticky; bottom: 0; background: white; padding-top: 12px;
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
   }
   .modal-btn {
-    flex: 1; padding: 13px; border: none; border-radius: 8px;
-    font-weight: bold; font-size: 15px; cursor: pointer;
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    direction: rtl;
+    line-height: 2;
   }
   .btn-cancel { background: #e0e0e0; color: #333; }
   .btn-save { background: #1b5e20; color: white; }
   .btn-save:disabled { background: #999; }
 
   .empty-state {
-    text-align: center; padding: 40px; color: #888;
-    background: white; border-radius: 12px;
+    text-align: center;
+    padding: 40px;
+    color: #888;
+    background: white;
+    border-radius: 12px;
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 16px; direction: rtl;
+    font-size: 18px;
+    direction: rtl;
+    line-height: 2.4;
   }
 
-  /* Toast */
   .toast {
-    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-    background: #323232; color: white; padding: 12px 24px;
-    border-radius: 8px; font-weight: bold; opacity: 0;
-    transition: opacity 0.3s; pointer-events: none; z-index: 200;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #323232;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 200;
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    direction: rtl;
+    font-size: 16px;
+    line-height: 2;
     max-width: 90%;
   }
   .toast.show { opacity: 1; }
   .toast.success { background: #1b5e20; }
   .toast.error { background: #c62828; }
-  .toast.nastaliq {
-    font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 16px; direction: rtl;
-  }
 </style>
 </head>
 <body>
@@ -242,28 +403,24 @@
 
 <div id="items-container" class="items-list"></div>
 
-<!-- Modal -->
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeForm()">
   <div class="modal">
     <h2 id="modalTitle" class="nastaliq">نیا مینو آئٹم</h2>
 
     <div class="field">
-      <label id="lbl_en" class="nastaliq">انگریزی نام (رومن اردو)</label>
-      <input type="text" id="f_label_en" placeholder="Sawal-Jawab"
-             oninput="onEnglishInput()">
+      <label id="lbl_en" class="nastaliq">انگریزی نام (رومن اردو — یہاں لکھیں)</label>
+      <input type="text" id="f_label_en" placeholder="Sawal-Jawab" oninput="onEnglishInput()">
       <div class="auto-hint" id="name_hint"></div>
     </div>
 
     <div class="field">
-      <label id="lbl_ur" class="nastaliq">اردو نام</label>
-      <input type="text" id="f_label_ur" class="urdu-input"
-             placeholder="سوال و جواب" oninput="onUrduManual()">
+      <label id="lbl_ur" class="nastaliq">اردو نام (خودکار)</label>
+      <input type="text" id="f_label_ur" class="urdu-input" placeholder="سوال و جواب" oninput="onUrduManual()">
     </div>
 
     <div class="field">
       <label id="lbl_icon" class="nastaliq">آئیکن</label>
-      <input type="text" id="f_icon" placeholder="📖" maxlength="4"
-             style="font-size:22px; text-align:center;">
+      <input type="text" id="f_icon" placeholder="📖" maxlength="4" style="font-size:24px; text-align:center;">
       <div class="emoji-row">
         <button class="emoji-btn" onclick="setEmoji('📖')">📖</button>
         <button class="emoji-btn" onclick="setEmoji('📚')">📚</button>
@@ -281,8 +438,8 @@
     </div>
 
     <div class="field">
-      <label id="lbl_url" class="nastaliq">لنک / یو آر ایل</label>
-      <input type="text" id="f_url" placeholder="/quran or https://...">
+      <label id="lbl_url" class="nastaliq">لنک</label>
+      <input type="text" id="f_url" placeholder="/quran  یا  https://...">
     </div>
 
     <div class="field-row">
@@ -302,15 +459,13 @@
     <div class="field">
       <div class="checkbox-row">
         <input type="checkbox" id="f_active" checked>
-        <label for="f_active" id="lbl_active" class="nastaliq">فعال (ایپ میں دکھائیں)</label>
+        <label for="f_active" id="lbl_active">فعال (ایپ میں دکھائیں)</label>
       </div>
     </div>
 
     <div class="modal-actions">
-      <button class="modal-btn btn-cancel nastaliq" onclick="closeForm()"
-              id="cancelBtn">منسوخ کریں</button>
-      <button class="modal-btn btn-save nastaliq" onclick="saveItem()"
-              id="saveBtn">💾 محفوظ کریں</button>
+      <button class="modal-btn btn-cancel" onclick="closeForm()" id="cancelBtn">منسوخ کریں</button>
+      <button class="modal-btn btn-save" onclick="saveItem()" id="saveBtn">💾 محفوظ کریں</button>
     </div>
   </div>
 </div>
@@ -337,8 +492,8 @@ const STR = {
     lblOrder: 'Order',
     lblOpenIn: 'Open In',
     lblActive: 'Active (Show in app)',
-    optInApp: 'In App (WebView)',
-    optExternal: 'External Browser / App',
+    optInApp: 'In App',
+    optExternal: 'External',
     cancel: 'Cancel',
     save: '💾 Save',
     edit: 'Edit',
@@ -354,17 +509,17 @@ const STR = {
     saveFail: '❌ Save failed',
     deleteFail: '❌ Delete failed',
     urlRequired: '⚠️ URL is required',
-    typing: '✍️ Typing... translating in 1.5s',
-    translating: '⏳ Translating to Urdu...',
-    translated: '✅ Auto-translated. You can edit Urdu if needed.',
-    transFail: '⚠️ Could not translate — please type Urdu manually.',
+    typing: '✍️ Typing...',
+    translating: '⏳ Translating...',
+    translated: '✅ Auto-translated',
+    transFail: '⚠️ Could not translate — please type manually',
     netErr: '❌ Network error',
   },
   ur: {
     title: '🎛️ مینو مینیجر',
     addBtn: '➕ نیا مینو آئٹم شامل کریں',
     modalAdd: 'نیا مینو آئٹم',
-    modalEdit: 'مینو آئٹم میں تبدیلی',
+    modalEdit: 'مینو میں تبدیلی',
     lblUr: 'اردو نام (خودکار)',
     lblEn: 'انگریزی / رومن اردو (یہاں لکھیں)',
     lblIcon: 'آئیکن',
@@ -389,8 +544,8 @@ const STR = {
     saveFail: '❌ محفوظ نہیں ہوا',
     deleteFail: '❌ حذف نہیں ہوا',
     urlRequired: '⚠️ لنک ضروری ہے',
-    typing: '✍️ ٹائپ کر رہے ہیں... 1.5 سیکنڈ میں اردو',
-    translating: '⏳ اردو میں تبدیل ہو رہا ہے...',
+    typing: '✍️ ٹائپ کر رہے ہیں...',
+    translating: '⏳ اردو میں ہو رہا ہے...',
     translated: '✅ خودکار اردو ہو گیا',
     transFail: '⚠️ اردو نہیں ہو سکا — خود لکھیں',
     netErr: '❌ نیٹ ورک مسئلہ',
@@ -411,13 +566,8 @@ function setLang(lang) {
 function updateLabels() {
   const ur = currentLang === 'ur';
 
-  const titleEl = document.getElementById('pageTitle');
-  titleEl.textContent = t('title');
-  titleEl.classList.toggle('nastaliq', ur);
-
-  const addBtn = document.getElementById('addBtn');
-  addBtn.textContent = t('addBtn');
-  addBtn.classList.toggle('nastaliq', ur);
+  document.getElementById('pageTitle').textContent = t('title');
+  document.getElementById('addBtn').textContent = t('addBtn');
 
   document.getElementById('lbl_ur').textContent = t('lblUr');
   document.getElementById('lbl_en').textContent = t('lblEn');
@@ -435,9 +585,9 @@ function updateLabels() {
   document.getElementById('modalTitle').textContent =
     editingId ? t('modalEdit') : t('modalAdd');
 
-  // Apply Nastaliq class to Urdu labels
-  ['lbl_ur', 'lbl_en', 'lbl_icon', 'lbl_url', 'lbl_order',
-   'lbl_open_in', 'lbl_active', 'cancelBtn', 'saveBtn', 'modalTitle']
+  // Nastaliq on/off toggle for Urdu mode
+  ['pageTitle', 'addBtn', 'lbl_ur', 'lbl_en', 'lbl_icon', 'lbl_url',
+   'lbl_order', 'lbl_open_in', 'lbl_active', 'modalTitle', 'cancelBtn', 'saveBtn']
     .forEach(id => {
       const el = document.getElementById(id);
       if (el) el.classList.toggle('nastaliq', ur);
@@ -447,7 +597,6 @@ function updateLabels() {
 // ========== AUTO TRANSLITERATE ==========
 function onEnglishInput() {
   const enVal = document.getElementById('f_label_en').value.trim();
-  const urInput = document.getElementById('f_label_ur');
   const hint = document.getElementById('name_hint');
 
   if (autoTransTimer) clearTimeout(autoTransTimer);
@@ -500,7 +649,7 @@ function onUrduManual() {
   document.getElementById('f_label_ur').classList.remove('auto-filled');
 }
 
-// ========== LOAD / RENDER ==========
+// ========== LOAD & RENDER ==========
 async function loadItems() {
   try {
     const res = await fetch(API_BASE + '/api/get-menu-items');
@@ -539,19 +688,15 @@ function renderItems() {
       <div class="menu-main">
         <div class="menu-icon">${item.icon || '📌'}</div>
         <div class="menu-labels">
-          <div class="menu-label-ur">${escapeHtml(item.label_ur || '')}</div>
+          <div class="menu-label-ur">${escapeHtml(item.label_ur || '—')}</div>
           <div class="menu-label-en">${escapeHtml(item.label_en || '')}</div>
           <div class="menu-url">🔗 ${escapeHtml(item.url || '')}</div>
         </div>
       </div>
 
       <div class="menu-actions">
-        <button class="action-btn btn-edit" onclick="editItem(${item.id})">
-          ✏️ ${t('edit')}
-        </button>
-        <button class="action-btn btn-delete" onclick="deleteItem(${item.id})">
-          🗑️ ${t('delete')}
-        </button>
+        <button class="action-btn btn-edit" onclick="editItem(${item.id})">✏️ ${t('edit')}</button>
+        <button class="action-btn btn-delete" onclick="deleteItem(${item.id})">🗑️ ${t('delete')}</button>
       </div>
     `;
     container.appendChild(card);
@@ -661,7 +806,7 @@ async function deleteItem(id) {
 function showToast(msg, type) {
   const toast = document.getElementById('toast');
   toast.textContent = msg;
-  toast.className = 'toast show ' + (type || '') + ' nastaliq';
+  toast.className = 'toast show ' + (type || '');
   setTimeout(() => { toast.className = 'toast'; }, 2500);
 }
 
@@ -675,7 +820,3 @@ window.onload = () => {
   setLang(localStorage.getItem('menu_admin_lang') || 'ur');
   loadItems();
 };
-</script>
-
-</body>
-</html>
