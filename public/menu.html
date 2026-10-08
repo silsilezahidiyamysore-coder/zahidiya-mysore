@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu Manager — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f5f0; color: #1a1a1a; padding: 16px; line-height: 1.5; }
+  .nastaliq, .urdu-text { font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important; direction: rtl; line-height: 2.4; }
+
+  .header { background: #1b5e20; color: white; padding: 14px; border-radius: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .header h1 { font-size: 18px; font-weight: 700; }
+  .header h1.nastaliq { font-size: 20px; line-height: 2.8; }
+  .lang-toggle { display: flex; gap: 8px; }
+  .lang-btn { padding: 6px 16px; border: 2px solid white; background: transparent; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
+  .lang-btn.active { background: white; color: #1b5e20; }
+  .lang-btn.nastaliq { font-size: 15px; padding: 6px 20px; }
+
+  .top-nav { text-align: center; margin-bottom: 14px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .top-nav a { color: #1b5e20; text-decoration: none; font-weight: bold; padding: 8px 18px; border: 2px solid #1b5e20; border-radius: 8px; display: inline-block; background: white; font-size: 13px; }
+
+  .add-btn { background: #1b5e20; color: white; border: none; padding: 14px 20px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 14px; }
+  .add-btn:hover { background: #2e7d32; }
+
+  .items-list { display: grid; gap: 10px; }
+  .menu-card { background: white; border-radius: 12px; padding: 14px; display: flex; gap: 12px; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border-left: 4px solid #1b5e20; }
+  .menu-card.inactive { opacity: 0.55; border-left-color: #999; }
+  .menu-icon { font-size: 32px; min-width: 50px; text-align: center; }
+  .menu-info { flex: 1; min-width: 0; }
+  .menu-label-ur { font-family: 'Noto Nastaliq Urdu', serif !important; font-size: 18px; line-height: 2.4; font-weight: 700; color: #1b5e20; direction: rtl; text-align: right; }
+  .menu-label-en { font-size: 14px; font-weight: 600; color: #333; margin-top: 2px; }
+  .menu-url { font-size: 11px; color: #888; margin-top: 4px; word-break: break-all; }
+  .menu-badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-right: 6px; }
+  .badge-active { background: #e8f5e9; color: #1b5e20; }
+  .badge-inactive { background: #ffebee; color: #c62828; }
+  .badge-type { background: #e3f2fd; color: #0d47a1; }
+
+  .menu-actions { display: flex; flex-direction: column; gap: 6px; }
+  .action-btn { padding: 8px 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 13px; white-space: nowrap; }
+  .btn-edit { background: #ff9800; color: white; }
+  .btn-delete { background: #f44336; color: white; }
+
+  /* Modal */
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 100; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 14px; padding: 20px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; }
+  .modal h2 { font-size: 18px; color: #1b5e20; margin-bottom: 16px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px; }
+  .field label.urdu-label { font-family: 'Noto Nastaliq Urdu', serif !important; font-size: 16px; direction: rtl; text-align: right; line-height: 2.2; color: #1b5e20; }
+  .field input[type="text"], .field input[type="number"], .field select {
+    width: 100%; padding: 10px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-family: inherit;
+  }
+  .field input.urdu-input { font-family: 'Noto Nastaliq Urdu', serif !important; font-size: 18px; direction: rtl; text-align: right; line-height: 2.4; }
+  .field input:focus, .field select:focus { outline: none; border-color: #1b5e20; }
+  .field-row { display: flex; gap: 10px; }
+  .field-row > * { flex: 1; }
+  .emoji-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .emoji-btn { font-size: 22px; padding: 6px 10px; background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; }
+  .emoji-btn:hover { background: #e8f5e9; border-color: #1b5e20; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; }
+  .checkbox-row input[type="checkbox"] { width: 20px; height: 20px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .modal-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; }
+  .btn-cancel { background: #e0e0e0; color: #333; }
+  .btn-save { background: #1b5e20; color: white; }
+
+  .empty-state { text-align: center; padding: 40px; color: #888; background: white; border-radius: 12px; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #323232; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200; }
+  .toast.show { opacity: 1; }
+  .toast.success { background: #1b5e20; }
+  .toast.error { background: #c62828; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1 id="pageTitle">🎛️ Menu Manager</h1>
+  <div class="lang-toggle">
+    <button class="lang-btn nastaliq active" id="btn-ur" onclick="setLang('ur')">اردو</button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+</div>
+
+<div class="top-nav">
+  <a href="/admin.html">← Admin Panel</a>
+  <a href="/messages.html">📿 Namaz Messages</a>
+</div>
+
+<button class="add-btn" id="addBtn" onclick="openForm()">➕ Add New Menu Item</button>
+
+<div id="items-container" class="items-list"></div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeForm()">
+  <div class="modal">
+    <h2 id="modalTitle">Add Menu Item</h2>
+
+    <div class="field">
+      <label id="lbl_ur">اردو نام</label>
+      <input type="text" id="f_label_ur" class="urdu-input" placeholder="قرآن">
+    </div>
+
+    <div class="field">
+      <label id="lbl_en">English Label</label>
+      <input type="text" id="f_label_en" placeholder="Quran">
+    </div>
+
+    <div class="field">
+      <label id="lbl_icon">Icon (Emoji)</label>
+      <input type="text" id="f_icon" placeholder="📖" maxlength="4" style="font-size:22px; text-align:center;">
+      <div class="emoji-row">
+        <button class="emoji-btn" onclick="setEmoji('📖')">📖</button>
+        <button class="emoji-btn" onclick="setEmoji('📚')">📚</button>
+        <button class="emoji-btn" onclick="setEmoji('❓')">❓</button>
+        <button class="emoji-btn" onclick="setEmoji('🎥')">🎥</button>
+        <button class="emoji-btn" onclick="setEmoji('💬')">💬</button>
+        <button class="emoji-btn" onclick="setEmoji('🕌')">🕌</button>
+        <button class="emoji-btn" onclick="setEmoji('📞')">📞</button>
+        <button class="emoji-btn" onclick="setEmoji('🔗')">🔗</button>
+        <button class="emoji-btn" onclick="setEmoji('📌')">📌</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label id="lbl_url">URL / Link</label>
+      <input type="text" id="f_url" placeholder="/quran  or  https://...">
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label id="lbl_order">Order</label>
+        <input type="number" id="f_order" value="0" min="0">
+      </div>
+      <div class="field">
+        <label id="lbl_open_in">Open In</label>
+        <select id="f_open_in">
+          <option value="webview">In App (WebView)</option>
+          <option value="external">External Browser / App</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="checkbox-row">
+        <input type="checkbox" id="f_active" checked>
+        <label for="f_active" id="lbl_active" style="margin:0;">Active (Show in app)</label>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn btn-cancel" onclick="closeForm()" id="cancelBtn">Cancel</button>
+      <button class="modal-btn btn-save" onclick="saveItem()" id="saveBtn">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_BASE = 'https://zahidiya-mysore.pages.dev';
+let items = [];
+let editingId = null;
+let currentLang = 'ur';
+
+const STR = {
+  en: {
+    title: '🎛️ Menu Manager',
+    addBtn: '➕ Add New Menu Item',
+    modalAdd: 'Add Menu Item',
+    modalEdit: 'Edit Menu Item',
+    lblUr: 'Urdu Label',
+    lblEn: 'English Label',
+    lblIcon: 'Icon (Emoji)',
+    lblUrl: 'URL / Link',
+    lblOrder: 'Order',
+    lblOpenIn: 'Open In',
+    lblActive: 'Active (Show in app)',
+    cancel: 'Cancel',
+    save: '💾 Save',
+    edit: 'Edit',
+    delete: 'Delete',
+    confirmDelete: 'Delete this item?',
+    active: 'Active',
+    inactive: 'Inactive',
+    inApp: 'In App',
+    external: 'External',
+    empty: 'No menu items yet. Click "Add New Menu Item" to start.',
+    saved: '✅ Saved successfully',
+    deleted: '✅ Deleted',
+    saveFail: '❌ Save failed',
+    deleteFail: '❌ Delete failed',
+  },
+  ur: {
+    title: '🎛️ مینو مینیجر',
+    addBtn: '➕ نیا مینو آئٹم شامل کریں',
+    modalAdd: 'نیا مینو آئٹم',
+    modalEdit: 'مینو آئٹم میں تبدیلی',
+    lblUr: 'اردو نام',
+    lblEn: 'انگریزی نام',
+    lblIcon: 'آئیکن',
+    lblUrl: 'لنک',
+    lblOrder: 'ترتیب',
+    lblOpenIn: 'کہاں کھلے',
+    lblActive: 'فعال (ایپ میں دکھائیں)',
+    cancel: 'منسوخ',
+    save: '💾 محفوظ',
+    edit: 'تبدیلی',
+    delete: 'حذف',
+    confirmDelete: 'یہ آئٹم حذف کریں؟',
+    active: 'فعال',
+    inactive: 'غیر فعال',
+    inApp: 'ایپ میں',
+    external: 'باہر',
+    empty: 'کوئی مینو آئٹم نہیں۔ "نیا شامل کریں" پر کلک کریں۔',
+    saved: '✅ محفوظ ہو گیا',
+    deleted: '✅ حذف ہو گیا',
+    saveFail: '❌ محفوظ نہیں ہوا',
+    deleteFail: '❌ حذف نہیں ہوا',
+  }
+};
+
+function t(key) { return STR[currentLang][key] || key; }
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('menu_admin_lang', lang);
+  document.getElementById('btn-ur').classList.toggle('active', lang === 'ur');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  updateLabels();
+  renderItems();
+}
+
+function updateLabels() {
+  const ur = currentLang === 'ur';
+  const titleEl = document.getElementById('pageTitle');
+  titleEl.textContent = t('title');
+  titleEl.classList.toggle('nastaliq', ur);
+
+  document.getElementById('addBtn').textContent = t('addBtn');
+  document.getElementById('lbl_ur').textContent = t('lblUr');
+  document.getElementById('lbl_en').textContent = t('lblEn');
+  document.getElementById('lbl_icon').textContent = t('lblIcon');
+  document.getElementById('lbl_url').textContent = t('lblUrl');
+  document.getElementById('lbl_order').textContent = t('lblOrder');
+  document.getElementById('lbl_open_in').textContent = t('lblOpenIn');
+  document.getElementById('lbl_active').textContent = t('lblActive');
+  document.getElementById('cancelBtn').textContent = t('cancel');
+  document.getElementById('saveBtn').textContent = t('save');
+  document.getElementById('modalTitle').textContent = editingId ? t('modalEdit') : t('modalAdd');
+
+  // Urdu labels Nastaliq
+  ['lbl_ur', 'lbl_url', 'lbl_active', 'lbl_order'].forEach(id => {
+    document.getElementById(id).classList.toggle('urdu-label', ur);
+  });
+}
+
+async function loadItems() {
+  try {
+    const res = await fetch(API_BASE + '/api/get-menu-items');
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    items = data.items || [];
+    renderItems();
+  } catch (e) {
+    document.getElementById('items-container').innerHTML =
+      '<div class="empty-state">❌ ' + e.message + '</div>';
+  }
+}
+
+function renderItems() {
+  const container = document.getElementById('items-container');
+  if (!items.length) {
+    container.innerHTML = '<div class="empty-state">' + t('empty') + '</div>';
+    return;
+  }
+  container.innerHTML = '';
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'menu-card' + (item.is_active ? '' : ' inactive');
+    const typeBadge = item.open_in === 'external' ? t('external') : t('inApp');
+    const activeBadge = item.is_active ? t('active') : t('inactive');
+    card.innerHTML = `
+      <div class="menu-icon">${item.icon || '📌'}</div>
+      <div class="menu-info">
+        <div>
+          <span class="menu-badge ${item.is_active ? 'badge-active' : 'badge-inactive'}">${activeBadge}</span>
+          <span class="menu-badge badge-type">${typeBadge}</span>
+          <span class="menu-badge" style="background:#f0f0f0; color:#666;">#${item.sort_order}</span>
+        </div>
+        <div class="menu-label-ur nastaliq">${escapeHtml(item.label_ur || '')}</div>
+        <div class="menu-label-en">${escapeHtml(item.label_en || '')}</div>
+        <div class="menu-url">🔗 ${escapeHtml(item.url || '')}</div>
+      </div>
+      <div class="menu-actions">
+        <button class="action-btn btn-edit" onclick="editItem(${item.id})">✏️ ${t('edit')}</button>
+        <button class="action-btn btn-delete" onclick="deleteItem(${item.id})">🗑️ ${t('delete')}</button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function openForm() {
+  editingId = null;
+  document.getElementById('f_label_ur').value = '';
+  document.getElementById('f_label_en').value = '';
+  document.getElementById('f_icon').value = '📌';
+  document.getElementById('f_url').value = '';
+  document.getElementById('f_order').value = items.length + 1;
+  document.getElementById('f_open_in').value = 'webview';
+  document.getElementById('f_active').checked = true;
+  document.getElementById('modalTitle').textContent = t('modalAdd');
+  document.getElementById('modal').classList.add('open');
+}
+
+function editItem(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  editingId = id;
+  document.getElementById('f_label_ur').value = item.label_ur || '';
+  document.getElementById('f_label_en').value = item.label_en || '';
+  document.getElementById('f_icon').value = item.icon || '📌';
+  document.getElementById('f_url').value = item.url || '';
+  document.getElementById('f_order').value = item.sort_order || 0;
+  document.getElementById('f_open_in').value = item.open_in || 'webview';
+  document.getElementById('f_active').checked = !!item.is_active;
+  document.getElementById('modalTitle').textContent = t('modalEdit');
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeForm() {
+  document.getElementById('modal').classList.remove('open');
+  editingId = null;
+}
+
+function setEmoji(emoji) {
+  document.getElementById('f_icon').value = emoji;
+}
+
+async function saveItem() {
+  const payload = {
+    label_ur: document.getElementById('f_label_ur').value.trim(),
+    label_en: document.getElementById('f_label_en').value.trim(),
+    icon: document.getElementById('f_icon').value.trim() || '📌',
+    url: document.getElementById('f_url').value.trim(),
+    sort_order: parseInt(document.getElementById('f_order').value) || 0,
+    open_in: document.getElementById('f_open_in').value,
+    is_active: document.getElementById('f_active').checked,
+  };
+  if (editingId) payload.id = editingId;
+
+  if (!payload.url) {
+    showToast('⚠️ URL required', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(API_BASE + '/api/save-menu-item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Save failed');
+    showToast(t('saved'), 'success');
+    closeForm();
+    await loadItems();
+  } catch (e) {
+    showToast(t('saveFail') + ': ' + e.message, 'error');
+  }
+}
+
+async function deleteItem(id) {
+  if (!confirm(t('confirmDelete'))) return;
+  try {
+    const res = await fetch(API_BASE + '/api/delete-menu-item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Delete failed');
+    showToast(t('deleted'), 'success');
+    await loadItems();
+  } catch (e) {
+    showToast(t('deleteFail') + ': ' + e.message, 'error');
+  }
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type || '');
+  setTimeout(() => { t.className = 'toast'; }, 2500);
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+window.onload = () => {
+  setLang(localStorage.getItem('menu_admin_lang') || 'ur');
+  loadItems();
+};
+</script>
+
+</body>
+</html>
