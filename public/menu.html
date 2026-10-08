@@ -13,44 +13,44 @@
   .urdu {
     font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
     direction: rtl;
-    line-height: 2.2;
   }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #f0f5f0;
     color: #1a1a1a;
-    padding: 16px;
+    padding: 14px;
+    font-size: 14px;
   }
 
   .header {
     background: #1b5e20;
     color: white;
-    padding: 14px;
-    border-radius: 12px;
-    margin-bottom: 14px;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 10px;
   }
-  .header h1 { font-size: 20px; font-weight: 700; }
-  .lang-toggle { display: flex; gap: 8px; }
+  .header h1 { font-size: 17px; font-weight: 700; line-height: 2; }
+  .lang-toggle { display: flex; gap: 6px; }
   .lang-btn {
-    padding: 6px 16px;
+    padding: 5px 14px;
     border: 2px solid white;
     background: transparent;
     color: white;
-    border-radius: 8px;
+    border-radius: 7px;
     cursor: pointer;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 13px;
   }
   .lang-btn.active { background: white; color: #1b5e20; }
 
   .top-nav {
     text-align: center;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     display: flex;
     gap: 8px;
     justify-content: center;
@@ -59,48 +59,49 @@
     color: #1b5e20;
     text-decoration: none;
     font-weight: bold;
-    padding: 8px 18px;
+    padding: 6px 14px;
     border: 2px solid #1b5e20;
-    border-radius: 8px;
+    border-radius: 7px;
     background: white;
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .add-btn {
     background: #1b5e20;
     color: white;
     border: none;
-    padding: 14px;
-    border-radius: 10px;
-    font-size: 17px;
+    padding: 11px;
+    border-radius: 9px;
+    font-size: 15px;
     font-weight: bold;
     cursor: pointer;
     width: 100%;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
+    line-height: 2;
   }
 
   .menu-card {
     background: white;
-    border-radius: 12px;
-    padding: 14px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    border-left: 5px solid #1b5e20;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+    border-left: 4px solid #1b5e20;
     display: flex;
-    gap: 14px;
-    align-items: center;
+    gap: 10px;
+    align-items: flex-start;
   }
   .menu-card.inactive { opacity: 0.55; border-left-color: #999; }
 
   .menu-icon {
-    font-size: 40px;
-    width: 60px;
-    height: 60px;
+    font-size: 30px;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #f5f9f5;
-    border-radius: 10px;
+    border-radius: 8px;
     flex-shrink: 0;
   }
 
@@ -112,40 +113,45 @@
 
   .menu-label-ur {
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 24px;
+    font-size: 19px;
     font-weight: 700;
     color: #1b5e20;
     direction: rtl;
-    line-height: 2.4;
-    word-wrap: break-word;
+    line-height: 2;
   }
 
   .menu-label-en {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     color: #666;
-    margin-top: 4px;
+    margin-top: 2px;
   }
 
   .menu-url {
-    font-size: 11px;
+    font-size: 10px;
     color: #999;
-    margin-top: 4px;
+    margin-top: 2px;
     word-break: break-all;
   }
 
+  /* Badges — chhote, side by side, overlap nahi */
   .menu-badges {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     margin-top: 6px;
     justify-content: flex-end;
     flex-wrap: wrap;
   }
   .badge {
+    display: inline-block;
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    direction: rtl;
     font-size: 11px;
-    padding: 2px 10px;
+    line-height: 1.4;
+    padding: 3px 8px;
     border-radius: 10px;
     font-weight: 600;
+    white-space: nowrap;
   }
   .badge-active { background: #e8f5e9; color: #1b5e20; }
   .badge-inactive { background: #ffebee; color: #c62828; }
@@ -154,24 +160,25 @@
   .menu-actions {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
     flex-shrink: 0;
   }
   .action-btn {
-    padding: 8px 14px;
-    border-radius: 8px;
+    padding: 6px 10px;
+    border-radius: 7px;
     border: none;
     cursor: pointer;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 13px;
     font-family: 'Noto Nastaliq Urdu', serif !important;
     direction: rtl;
-    line-height: 2;
+    line-height: 1.6;
     white-space: nowrap;
   }
   .btn-edit { background: #ff9800; color: white; }
   .btn-delete { background: #f44336; color: white; }
 
+  /* Modal */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -179,7 +186,7 @@
     display: none;
     align-items: center;
     justify-content: center;
-    padding: 16px;
+    padding: 14px;
     z-index: 100;
     overflow-y: auto;
   }
@@ -187,51 +194,52 @@
 
   .modal {
     background: white;
-    border-radius: 14px;
-    padding: 20px;
-    max-width: 500px;
+    border-radius: 12px;
+    padding: 16px;
+    max-width: 480px;
     width: 100%;
     max-height: 92vh;
     overflow-y: auto;
   }
   .modal h2 {
-    font-size: 20px;
+    font-size: 17px;
     color: #1b5e20;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     text-align: center;
     font-family: 'Noto Nastaliq Urdu', serif !important;
     direction: rtl;
-    line-height: 2.4;
+    line-height: 2;
   }
 
-  .field { margin-bottom: 14px; }
+  .field { margin-bottom: 12px; }
   .field label {
     display: block;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     color: #1b5e20;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     text-align: right;
     font-family: 'Noto Nastaliq Urdu', serif !important;
     direction: rtl;
-    line-height: 2.2;
+    line-height: 1.9;
   }
   .field input[type="text"],
   .field input[type="number"],
   .field select {
     width: 100%;
-    padding: 10px 12px;
+    padding: 8px 10px;
     border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 7px;
+    font-size: 13px;
     background: white;
   }
   .field input.urdu-input {
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 20px;
-    line-height: 2.6;
+    font-size: 17px;
+    line-height: 2.2;
     text-align: right;
     direction: rtl;
+    padding: 6px 10px;
   }
   .field input.urdu-input.auto-filled {
     background: #f1f8e9;
@@ -244,13 +252,13 @@
 
   .auto-hint {
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 14px;
-    line-height: 2;
+    font-size: 12px;
+    line-height: 1.8;
     direction: rtl;
     text-align: right;
-    margin-top: 4px;
-    padding: 4px 10px;
-    border-radius: 6px;
+    margin-top: 3px;
+    padding: 3px 8px;
+    border-radius: 5px;
     display: none;
   }
   .auto-hint.show { display: block; }
@@ -258,21 +266,21 @@
   .auto-hint.success { background: #e8f5e9; color: #2e7d32; }
   .auto-hint.error { background: #ffebee; color: #c62828; }
 
-  .field-row { display: flex; gap: 10px; }
+  .field-row { display: flex; gap: 8px; }
   .field-row > * { flex: 1; }
 
   .emoji-row {
     display: flex;
-    gap: 6px;
+    gap: 5px;
     flex-wrap: wrap;
-    margin-top: 8px;
+    margin-top: 6px;
   }
   .emoji-btn {
-    font-size: 22px;
-    padding: 6px 10px;
+    font-size: 18px;
+    padding: 4px 8px;
     background: #f5f5f5;
     border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    border-radius: 7px;
     cursor: pointer;
   }
   .emoji-btn:hover { background: #e8f5e9; border-color: #1b5e20; }
@@ -280,40 +288,37 @@
   .checkbox-row {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px;
+    gap: 8px;
+    padding: 8px;
     background: #f9f9f9;
-    border-radius: 8px;
+    border-radius: 7px;
   }
-  .checkbox-row input[type="checkbox"] {
-    width: 22px;
-    height: 22px;
-  }
+  .checkbox-row input[type="checkbox"] { width: 18px; height: 18px; }
   .checkbox-row label {
     margin: 0;
     cursor: pointer;
     font-family: 'Noto Nastaliq Urdu', serif !important;
     direction: rtl;
-    font-size: 16px;
-    line-height: 2;
+    font-size: 14px;
+    line-height: 1.8;
   }
 
   .modal-actions {
     display: flex;
-    gap: 10px;
-    margin-top: 16px;
+    gap: 8px;
+    margin-top: 14px;
   }
   .modal-btn {
     flex: 1;
-    padding: 12px;
+    padding: 10px;
     border: none;
-    border-radius: 8px;
+    border-radius: 7px;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
     font-family: 'Noto Nastaliq Urdu', serif !important;
     direction: rtl;
-    line-height: 2;
+    line-height: 1.8;
   }
   .btn-cancel { background: #e0e0e0; color: #333; }
   .btn-save { background: #1b5e20; color: white; }
@@ -321,14 +326,14 @@
 
   .empty-state {
     text-align: center;
-    padding: 40px;
+    padding: 30px;
     color: #888;
     background: white;
-    border-radius: 12px;
+    border-radius: 10px;
     font-family: 'Noto Nastaliq Urdu', serif !important;
-    font-size: 18px;
+    font-size: 15px;
     direction: rtl;
-    line-height: 2.4;
+    line-height: 2;
   }
 
   .toast {
@@ -338,8 +343,8 @@
     transform: translateX(-50%);
     background: #323232;
     color: white;
-    padding: 12px 24px;
-    border-radius: 8px;
+    padding: 10px 20px;
+    border-radius: 7px;
     font-weight: bold;
     opacity: 0;
     transition: opacity 0.3s;
@@ -347,8 +352,8 @@
     z-index: 200;
     font-family: 'Noto Nastaliq Urdu', serif !important;
     direction: rtl;
-    font-size: 16px;
-    line-height: 2;
+    font-size: 14px;
+    line-height: 1.9;
   }
   .toast.show { opacity: 1; }
   .toast.success { background: #1b5e20; }
@@ -385,13 +390,13 @@
     </div>
 
     <div class="field">
-      <label id="lbl_ur">اردو نام (خودکار بھر جائے گا)</label>
+      <label id="lbl_ur">اردو نام (خودکار)</label>
       <input type="text" id="f_label_ur" class="urdu-input" placeholder="سوال و جواب" oninput="onUrduManual()">
     </div>
 
     <div class="field">
       <label id="lbl_icon">آئیکن</label>
-      <input type="text" id="f_icon" placeholder="📖" maxlength="4" style="font-size:24px; text-align:center;">
+      <input type="text" id="f_icon" placeholder="📖" maxlength="4" style="font-size:20px; text-align:center;">
       <div class="emoji-row">
         <button class="emoji-btn" onclick="setEmoji('📖')">📖</button>
         <button class="emoji-btn" onclick="setEmoji('📚')">📚</button>
@@ -408,7 +413,7 @@
 
     <div class="field">
       <label id="lbl_url">لنک</label>
-      <input type="text" id="f_url" placeholder="/quran  یا  https://...">
+      <input type="text" id="f_url" placeholder="/quran">
     </div>
 
     <div class="field-row">
@@ -428,7 +433,7 @@
     <div class="field">
       <div class="checkbox-row">
         <input type="checkbox" id="f_active" checked>
-        <label for="f_active" id="lbl_active">فعال (ایپ میں دکھائیں)</label>
+        <label for="f_active" id="lbl_active">فعال</label>
       </div>
     </div>
 
@@ -465,11 +470,11 @@ function updateLabels() {
       modalAdd: 'Add Menu Item', modalEdit: 'Edit Menu Item',
       lblUr: 'Urdu Label (auto)', lblEn: 'English / Roman Urdu (type here)',
       lblIcon: 'Icon', lblUrl: 'URL', lblOrder: 'Order', lblOpenIn: 'Open In',
-      lblActive: 'Active (Show in app)',
+      lblActive: 'Active',
       optIn: 'In App', optExt: 'External',
       cancel: 'Cancel', save: '💾 Save', edit: 'Edit', del: 'Delete',
       confirmDel: 'Delete this item?',
-      active: 'Active', inactive: 'Inactive', inApp: 'In App', ext: 'External',
+      active: 'Active', inactive: 'Off', inApp: 'In App', ext: 'External',
       empty: 'No menu items yet.',
       saved: '✅ Saved', deleted: '✅ Deleted', fail: '❌ Failed',
       urlReq: '⚠️ URL required',
@@ -482,13 +487,13 @@ function updateLabels() {
       modalAdd: 'نیا مینو آئٹم', modalEdit: 'مینو میں تبدیلی',
       lblUr: 'اردو نام (خودکار)', lblEn: 'انگریزی / رومن اردو — یہاں لکھیں',
       lblIcon: 'آئیکن', lblUrl: 'لنک', lblOrder: 'ترتیب', lblOpenIn: 'کہاں کھلے',
-      lblActive: 'فعال (ایپ میں دکھائیں)',
+      lblActive: 'فعال',
       optIn: 'ایپ میں', optExt: 'باہر',
-      cancel: 'منسوخ کریں', save: '💾 محفوظ کریں', edit: 'تبدیلی', del: 'حذف',
+      cancel: 'منسوخ', save: '💾 محفوظ', edit: 'تبدیلی', del: 'حذف',
       confirmDel: 'یہ آئٹم حذف کریں؟',
-      active: 'فعال', inactive: 'غیر فعال', inApp: 'ایپ میں', ext: 'باہر',
+      active: 'فعال', inactive: 'بند', inApp: 'ایپ میں', ext: 'باہر',
       empty: 'کوئی مینو آئٹم نہیں۔',
-      saved: '✅ محفوظ ہو گیا', deleted: '✅ حذف ہو گیا', fail: '❌ ناکام',
+      saved: '✅ محفوظ', deleted: '✅ حذف', fail: '❌ ناکام',
       urlReq: '⚠️ لنک ضروری ہے',
       typing: '✍️ ٹائپ کر رہے ہیں...', translating: '⏳ اردو میں ہو رہا ہے...',
       translated: '✅ خودکار اردو ہو گیا', transFail: '⚠️ اردو نہیں ہو سکا',
