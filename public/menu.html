@@ -10,7 +10,7 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .nastaliq {
+  .urdu {
     font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
     direction: rtl;
     line-height: 2.2;
@@ -32,11 +32,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
     gap: 10px;
   }
   .header h1 { font-size: 20px; font-weight: 700; }
-
   .lang-toggle { display: flex; gap: 8px; }
   .lang-btn {
     padding: 6px 16px;
@@ -46,7 +44,7 @@
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
-    font-size: 13px;
+    font-size: 14px;
   }
   .lang-btn.active { background: white; color: #1b5e20; }
 
@@ -56,7 +54,6 @@
     display: flex;
     gap: 8px;
     justify-content: center;
-    flex-wrap: wrap;
   }
   .top-nav a {
     color: #1b5e20;
@@ -82,53 +79,22 @@
     margin-bottom: 14px;
   }
 
-  .items-list { display: grid; gap: 12px; }
-
   .menu-card {
     background: white;
     border-radius: 12px;
     padding: 14px;
+    margin-bottom: 12px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     border-left: 5px solid #1b5e20;
-  }
-  .menu-card.inactive {
-    opacity: 0.6;
-    border-left-color: #999;
-  }
-
-  /* Top row: badges */
-  .menu-badges {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-  }
-  .menu-badge {
-    display: inline-block;
-    font-size: 12px;
-    padding: 3px 10px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-family: 'Noto Nastaliq Urdu', serif !important;
-    direction: rtl;
-    line-height: 2;
-  }
-  .badge-active { background: #e8f5e9; color: #1b5e20; }
-  .badge-inactive { background: #ffebee; color: #c62828; }
-  .badge-type { background: #e3f2fd; color: #0d47a1; }
-  .badge-order { background: #f0f0f0; color: #666; font-family: inherit !important; direction: ltr; }
-
-  /* Middle: icon + names */
-  .menu-main {
     display: flex;
     gap: 14px;
     align-items: center;
-    margin-bottom: 12px;
   }
+  .menu-card.inactive { opacity: 0.55; border-left-color: #999; }
 
   .menu-icon {
-    font-size: 42px;
-    min-width: 60px;
+    font-size: 40px;
+    width: 60px;
     height: 60px;
     display: flex;
     align-items: center;
@@ -138,9 +104,10 @@
     flex-shrink: 0;
   }
 
-  .menu-labels {
+  .menu-info {
     flex: 1;
     min-width: 0;
+    text-align: right;
   }
 
   .menu-label-ur {
@@ -149,10 +116,8 @@
     font-weight: 700;
     color: #1b5e20;
     direction: rtl;
-    text-align: right;
     line-height: 2.4;
     word-wrap: break-word;
-    overflow-wrap: break-word;
   }
 
   .menu-label-en {
@@ -160,52 +125,63 @@
     font-weight: 600;
     color: #666;
     margin-top: 4px;
-    text-align: right;
   }
 
   .menu-url {
     font-size: 11px;
     color: #999;
     margin-top: 4px;
-    text-align: right;
     word-break: break-all;
   }
 
-  /* Bottom: buttons side by side */
+  .menu-badges {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .badge {
+    font-size: 11px;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .badge-active { background: #e8f5e9; color: #1b5e20; }
+  .badge-inactive { background: #ffebee; color: #c62828; }
+  .badge-type { background: #e3f2fd; color: #0d47a1; }
+
   .menu-actions {
     display: flex;
-    gap: 8px;
-    padding-top: 10px;
-    border-top: 1px solid #eee;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
   }
-
   .action-btn {
-    flex: 1;
-    padding: 10px;
+    padding: 8px 14px;
     border-radius: 8px;
     border: none;
     cursor: pointer;
     font-weight: bold;
-    font-size: 15px;
+    font-size: 14px;
     font-family: 'Noto Nastaliq Urdu', serif !important;
     direction: rtl;
     line-height: 2;
-    transition: opacity 0.2s;
+    white-space: nowrap;
   }
-  .action-btn:hover { opacity: 0.85; }
   .btn-edit { background: #ff9800; color: white; }
   .btn-delete { background: #f44336; color: white; }
 
-  /* Modal */
   .modal-overlay {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    inset: 0;
     background: rgba(0,0,0,0.5);
     display: none;
     align-items: center;
     justify-content: center;
     padding: 16px;
     z-index: 100;
+    overflow-y: auto;
   }
   .modal-overlay.open { display: flex; }
 
@@ -223,19 +199,23 @@
     color: #1b5e20;
     margin-bottom: 16px;
     text-align: center;
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    direction: rtl;
+    line-height: 2.4;
   }
 
   .field { margin-bottom: 14px; }
-
   .field label {
     display: block;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     color: #1b5e20;
     margin-bottom: 6px;
     text-align: right;
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    direction: rtl;
+    line-height: 2.2;
   }
-
   .field input[type="text"],
   .field input[type="number"],
   .field select {
@@ -245,16 +225,13 @@
     border-radius: 8px;
     font-size: 14px;
     background: white;
-    font-family: inherit;
   }
-
   .field input.urdu-input {
     font-family: 'Noto Nastaliq Urdu', serif !important;
     font-size: 20px;
     line-height: 2.6;
     text-align: right;
     direction: rtl;
-    padding: 8px 12px;
   }
   .field input.urdu-input.auto-filled {
     background: #f1f8e9;
@@ -281,12 +258,8 @@
   .auto-hint.success { background: #e8f5e9; color: #2e7d32; }
   .auto-hint.error { background: #ffebee; color: #c62828; }
 
-  .field-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .field-row > * { flex: 1; min-width: 120px; }
+  .field-row { display: flex; gap: 10px; }
+  .field-row > * { flex: 1; }
 
   .emoji-row {
     display: flex;
@@ -315,14 +288,13 @@
   .checkbox-row input[type="checkbox"] {
     width: 22px;
     height: 22px;
-    cursor: pointer;
   }
   .checkbox-row label {
     margin: 0;
     cursor: pointer;
-    font-size: 16px;
     font-family: 'Noto Nastaliq Urdu', serif !important;
     direction: rtl;
+    font-size: 16px;
     line-height: 2;
   }
 
@@ -377,7 +349,6 @@
     direction: rtl;
     font-size: 16px;
     line-height: 2;
-    max-width: 90%;
   }
   .toast.show { opacity: 1; }
   .toast.success { background: #1b5e20; }
@@ -387,9 +358,9 @@
 <body>
 
 <div class="header">
-  <h1 id="pageTitle" class="nastaliq">🎛️ مینو مینیجر</h1>
+  <h1 id="pageTitle" class="urdu">🎛️ مینو مینیجر</h1>
   <div class="lang-toggle">
-    <button class="lang-btn nastaliq active" id="btn-ur" onclick="setLang('ur')">اردو</button>
+    <button class="lang-btn urdu active" id="btn-ur" onclick="setLang('ur')">اردو</button>
     <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
   </div>
 </div>
@@ -399,27 +370,27 @@
   <a href="/messages.html">📿 Namaz Messages</a>
 </div>
 
-<button class="add-btn nastaliq" id="addBtn" onclick="openForm()">➕ نیا مینو آئٹم شامل کریں</button>
+<button class="add-btn urdu" id="addBtn" onclick="openForm()">➕ نیا مینو آئٹم شامل کریں</button>
 
-<div id="items-container" class="items-list"></div>
+<div id="items-container"></div>
 
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeForm()">
   <div class="modal">
-    <h2 id="modalTitle" class="nastaliq">نیا مینو آئٹم</h2>
+    <h2 id="modalTitle">نیا مینو آئٹم</h2>
 
     <div class="field">
-      <label id="lbl_en" class="nastaliq">انگریزی نام (رومن اردو — یہاں لکھیں)</label>
+      <label id="lbl_en">انگریزی / رومن اردو — یہاں لکھیں</label>
       <input type="text" id="f_label_en" placeholder="Sawal-Jawab" oninput="onEnglishInput()">
       <div class="auto-hint" id="name_hint"></div>
     </div>
 
     <div class="field">
-      <label id="lbl_ur" class="nastaliq">اردو نام (خودکار)</label>
+      <label id="lbl_ur">اردو نام (خودکار بھر جائے گا)</label>
       <input type="text" id="f_label_ur" class="urdu-input" placeholder="سوال و جواب" oninput="onUrduManual()">
     </div>
 
     <div class="field">
-      <label id="lbl_icon" class="nastaliq">آئیکن</label>
+      <label id="lbl_icon">آئیکن</label>
       <input type="text" id="f_icon" placeholder="📖" maxlength="4" style="font-size:24px; text-align:center;">
       <div class="emoji-row">
         <button class="emoji-btn" onclick="setEmoji('📖')">📖</button>
@@ -432,23 +403,21 @@
         <button class="emoji-btn" onclick="setEmoji('🔗')">🔗</button>
         <button class="emoji-btn" onclick="setEmoji('📌')">📌</button>
         <button class="emoji-btn" onclick="setEmoji('🌐')">🌐</button>
-        <button class="emoji-btn" onclick="setEmoji('📢')">📢</button>
-        <button class="emoji-btn" onclick="setEmoji('🎧')">🎧</button>
       </div>
     </div>
 
     <div class="field">
-      <label id="lbl_url" class="nastaliq">لنک</label>
+      <label id="lbl_url">لنک</label>
       <input type="text" id="f_url" placeholder="/quran  یا  https://...">
     </div>
 
     <div class="field-row">
       <div class="field">
-        <label id="lbl_order" class="nastaliq">ترتیب</label>
+        <label id="lbl_order">ترتیب</label>
         <input type="number" id="f_order" value="0" min="0">
       </div>
       <div class="field">
-        <label id="lbl_open_in" class="nastaliq">کہاں کھلے</label>
+        <label id="lbl_open_in">کہاں کھلے</label>
         <select id="f_open_in">
           <option value="webview">ایپ میں</option>
           <option value="external">باہر</option>
@@ -479,81 +448,6 @@ let editingId = null;
 let currentLang = 'ur';
 let autoTransTimer = null;
 
-const STR = {
-  en: {
-    title: '🎛️ Menu Manager',
-    addBtn: '➕ Add New Menu Item',
-    modalAdd: 'Add Menu Item',
-    modalEdit: 'Edit Menu Item',
-    lblUr: 'Urdu Label (auto-translated)',
-    lblEn: 'English / Roman Urdu (type here)',
-    lblIcon: 'Icon (Emoji)',
-    lblUrl: 'URL / Link',
-    lblOrder: 'Order',
-    lblOpenIn: 'Open In',
-    lblActive: 'Active (Show in app)',
-    optInApp: 'In App',
-    optExternal: 'External',
-    cancel: 'Cancel',
-    save: '💾 Save',
-    edit: 'Edit',
-    delete: 'Delete',
-    confirmDelete: 'Delete this item?',
-    active: 'Active',
-    inactive: 'Inactive',
-    inApp: 'In App',
-    external: 'External',
-    empty: 'No menu items yet. Click "Add New Menu Item" to start.',
-    saved: '✅ Saved successfully',
-    deleted: '✅ Deleted',
-    saveFail: '❌ Save failed',
-    deleteFail: '❌ Delete failed',
-    urlRequired: '⚠️ URL is required',
-    typing: '✍️ Typing...',
-    translating: '⏳ Translating...',
-    translated: '✅ Auto-translated',
-    transFail: '⚠️ Could not translate — please type manually',
-    netErr: '❌ Network error',
-  },
-  ur: {
-    title: '🎛️ مینو مینیجر',
-    addBtn: '➕ نیا مینو آئٹم شامل کریں',
-    modalAdd: 'نیا مینو آئٹم',
-    modalEdit: 'مینو میں تبدیلی',
-    lblUr: 'اردو نام (خودکار)',
-    lblEn: 'انگریزی / رومن اردو (یہاں لکھیں)',
-    lblIcon: 'آئیکن',
-    lblUrl: 'لنک',
-    lblOrder: 'ترتیب',
-    lblOpenIn: 'کہاں کھلے',
-    lblActive: 'فعال (ایپ میں دکھائیں)',
-    optInApp: 'ایپ میں',
-    optExternal: 'باہر',
-    cancel: 'منسوخ کریں',
-    save: '💾 محفوظ کریں',
-    edit: 'تبدیلی',
-    delete: 'حذف',
-    confirmDelete: 'یہ آئٹم حذف کریں؟',
-    active: 'فعال',
-    inactive: 'غیر فعال',
-    inApp: 'ایپ میں',
-    external: 'باہر',
-    empty: 'کوئی مینو آئٹم نہیں۔ "نیا شامل کریں" پر کلک کریں۔',
-    saved: '✅ محفوظ ہو گیا',
-    deleted: '✅ حذف ہو گیا',
-    saveFail: '❌ محفوظ نہیں ہوا',
-    deleteFail: '❌ حذف نہیں ہوا',
-    urlRequired: '⚠️ لنک ضروری ہے',
-    typing: '✍️ ٹائپ کر رہے ہیں...',
-    translating: '⏳ اردو میں ہو رہا ہے...',
-    translated: '✅ خودکار اردو ہو گیا',
-    transFail: '⚠️ اردو نہیں ہو سکا — خود لکھیں',
-    netErr: '❌ نیٹ ورک مسئلہ',
-  }
-};
-
-function t(key) { return STR[currentLang][key] || key; }
-
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('menu_admin_lang', lang);
@@ -565,82 +459,93 @@ function setLang(lang) {
 
 function updateLabels() {
   const ur = currentLang === 'ur';
+  const m = {
+    en: {
+      title: '🎛️ Menu Manager', addBtn: '➕ Add New Menu Item',
+      modalAdd: 'Add Menu Item', modalEdit: 'Edit Menu Item',
+      lblUr: 'Urdu Label (auto)', lblEn: 'English / Roman Urdu (type here)',
+      lblIcon: 'Icon', lblUrl: 'URL', lblOrder: 'Order', lblOpenIn: 'Open In',
+      lblActive: 'Active (Show in app)',
+      optIn: 'In App', optExt: 'External',
+      cancel: 'Cancel', save: '💾 Save', edit: 'Edit', del: 'Delete',
+      confirmDel: 'Delete this item?',
+      active: 'Active', inactive: 'Inactive', inApp: 'In App', ext: 'External',
+      empty: 'No menu items yet.',
+      saved: '✅ Saved', deleted: '✅ Deleted', fail: '❌ Failed',
+      urlReq: '⚠️ URL required',
+      typing: '✍️ Typing...', translating: '⏳ Translating...',
+      translated: '✅ Auto-translated', transFail: '⚠️ Could not translate',
+      netErr: '❌ Network error',
+    },
+    ur: {
+      title: '🎛️ مینو مینیجر', addBtn: '➕ نیا مینو آئٹم شامل کریں',
+      modalAdd: 'نیا مینو آئٹم', modalEdit: 'مینو میں تبدیلی',
+      lblUr: 'اردو نام (خودکار)', lblEn: 'انگریزی / رومن اردو — یہاں لکھیں',
+      lblIcon: 'آئیکن', lblUrl: 'لنک', lblOrder: 'ترتیب', lblOpenIn: 'کہاں کھلے',
+      lblActive: 'فعال (ایپ میں دکھائیں)',
+      optIn: 'ایپ میں', optExt: 'باہر',
+      cancel: 'منسوخ کریں', save: '💾 محفوظ کریں', edit: 'تبدیلی', del: 'حذف',
+      confirmDel: 'یہ آئٹم حذف کریں؟',
+      active: 'فعال', inactive: 'غیر فعال', inApp: 'ایپ میں', ext: 'باہر',
+      empty: 'کوئی مینو آئٹم نہیں۔',
+      saved: '✅ محفوظ ہو گیا', deleted: '✅ حذف ہو گیا', fail: '❌ ناکام',
+      urlReq: '⚠️ لنک ضروری ہے',
+      typing: '✍️ ٹائپ کر رہے ہیں...', translating: '⏳ اردو میں ہو رہا ہے...',
+      translated: '✅ خودکار اردو ہو گیا', transFail: '⚠️ اردو نہیں ہو سکا',
+      netErr: '❌ نیٹ ورک مسئلہ',
+    }
+  };
+  window.T = m[ur ? 'ur' : 'en'];
 
-  document.getElementById('pageTitle').textContent = t('title');
-  document.getElementById('addBtn').textContent = t('addBtn');
-
-  document.getElementById('lbl_ur').textContent = t('lblUr');
-  document.getElementById('lbl_en').textContent = t('lblEn');
-  document.getElementById('lbl_icon').textContent = t('lblIcon');
-  document.getElementById('lbl_url').textContent = t('lblUrl');
-  document.getElementById('lbl_order').textContent = t('lblOrder');
-  document.getElementById('lbl_open_in').textContent = t('lblOpenIn');
-  document.getElementById('lbl_active').textContent = t('lblActive');
-
-  document.getElementById('f_open_in').options[0].text = t('optInApp');
-  document.getElementById('f_open_in').options[1].text = t('optExternal');
-
-  document.getElementById('cancelBtn').textContent = t('cancel');
-  document.getElementById('saveBtn').textContent = t('save');
-  document.getElementById('modalTitle').textContent =
-    editingId ? t('modalEdit') : t('modalAdd');
-
-  // Nastaliq on/off toggle for Urdu mode
-  ['pageTitle', 'addBtn', 'lbl_ur', 'lbl_en', 'lbl_icon', 'lbl_url',
-   'lbl_order', 'lbl_open_in', 'lbl_active', 'modalTitle', 'cancelBtn', 'saveBtn']
-    .forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.classList.toggle('nastaliq', ur);
-    });
+  document.getElementById('pageTitle').textContent = T.title;
+  document.getElementById('addBtn').textContent = T.addBtn;
+  document.getElementById('lbl_ur').textContent = T.lblUr;
+  document.getElementById('lbl_en').textContent = T.lblEn;
+  document.getElementById('lbl_icon').textContent = T.lblIcon;
+  document.getElementById('lbl_url').textContent = T.lblUrl;
+  document.getElementById('lbl_order').textContent = T.lblOrder;
+  document.getElementById('lbl_open_in').textContent = T.lblOpenIn;
+  document.getElementById('lbl_active').textContent = T.lblActive;
+  document.getElementById('f_open_in').options[0].text = T.optIn;
+  document.getElementById('f_open_in').options[1].text = T.optExt;
+  document.getElementById('cancelBtn').textContent = T.cancel;
+  document.getElementById('saveBtn').textContent = T.save;
+  document.getElementById('modalTitle').textContent = editingId ? T.modalEdit : T.modalAdd;
 }
 
-// ========== AUTO TRANSLITERATE ==========
 function onEnglishInput() {
   const enVal = document.getElementById('f_label_en').value.trim();
   const hint = document.getElementById('name_hint');
-
   if (autoTransTimer) clearTimeout(autoTransTimer);
-
-  if (!enVal) {
-    hint.classList.remove('show');
-    return;
-  }
-
-  hint.textContent = t('typing');
+  if (!enVal) { hint.classList.remove('show'); return; }
+  hint.textContent = T.typing;
   hint.className = 'auto-hint show loading';
-
   autoTransTimer = setTimeout(() => autoTransliterate(enVal), 1500);
 }
 
 async function autoTransliterate(text) {
   const urInput = document.getElementById('f_label_ur');
   const hint = document.getElementById('name_hint');
-
-  hint.textContent = t('translating');
+  hint.textContent = T.translating;
   hint.className = 'auto-hint show loading';
-
   try {
     const url = `${API_BASE}/api/transliterate?text=${encodeURIComponent(text)}`;
     const res = await fetch(url);
     const proxyData = await res.json();
-
     if (!proxyData.success) throw new Error('Proxy fail');
     const data = proxyData.data;
-
-    if (data && data[0] === 'SUCCESS' && data[1] && data[1][0] &&
-        data[1][0][1] && data[1][0][1].length > 0) {
-      const urduText = data[1][0][1][0];
-      urInput.value = urduText;
+    if (data && data[0] === 'SUCCESS' && data[1] && data[1][0] && data[1][0][1] && data[1][0][1].length > 0) {
+      urInput.value = data[1][0][1][0];
       urInput.classList.add('auto-filled');
-      hint.textContent = t('translated');
+      hint.textContent = T.translated;
       hint.className = 'auto-hint show success';
       setTimeout(() => hint.classList.remove('show'), 2500);
     } else {
-      hint.textContent = t('transFail');
+      hint.textContent = T.transFail;
       hint.className = 'auto-hint show error';
     }
   } catch (e) {
-    hint.textContent = t('netErr');
+    hint.textContent = T.netErr;
     hint.className = 'auto-hint show error';
   }
 }
@@ -649,7 +554,6 @@ function onUrduManual() {
   document.getElementById('f_label_ur').classList.remove('auto-filled');
 }
 
-// ========== LOAD & RENDER ==========
 async function loadItems() {
   try {
     const res = await fetch(API_BASE + '/api/get-menu-items');
@@ -666,44 +570,35 @@ async function loadItems() {
 function renderItems() {
   const container = document.getElementById('items-container');
   if (!items.length) {
-    container.innerHTML = '<div class="empty-state">' + t('empty') + '</div>';
+    container.innerHTML = '<div class="empty-state">' + T.empty + '</div>';
     return;
   }
   container.innerHTML = '';
-
   items.forEach(item => {
     const card = document.createElement('div');
     card.className = 'menu-card' + (item.is_active ? '' : ' inactive');
-
-    const typeBadge = item.open_in === 'external' ? t('external') : t('inApp');
-    const activeBadge = item.is_active ? t('active') : t('inactive');
-
+    const typeBadge = item.open_in === 'external' ? T.ext : T.inApp;
+    const activeBadge = item.is_active ? T.active : T.inactive;
     card.innerHTML = `
-      <div class="menu-badges">
-        <span class="menu-badge ${item.is_active ? 'badge-active' : 'badge-inactive'}">${activeBadge}</span>
-        <span class="menu-badge badge-type">${typeBadge}</span>
-        <span class="menu-badge badge-order">#${item.sort_order}</span>
-      </div>
-
-      <div class="menu-main">
-        <div class="menu-icon">${item.icon || '📌'}</div>
-        <div class="menu-labels">
-          <div class="menu-label-ur">${escapeHtml(item.label_ur || '—')}</div>
-          <div class="menu-label-en">${escapeHtml(item.label_en || '')}</div>
-          <div class="menu-url">🔗 ${escapeHtml(item.url || '')}</div>
+      <div class="menu-icon">${item.icon || '📌'}</div>
+      <div class="menu-info">
+        <div class="menu-label-ur">${escapeHtml(item.label_ur || '—')}</div>
+        <div class="menu-label-en">${escapeHtml(item.label_en || '')}</div>
+        <div class="menu-url">🔗 ${escapeHtml(item.url || '')}</div>
+        <div class="menu-badges">
+          <span class="badge ${item.is_active ? 'badge-active' : 'badge-inactive'}">${activeBadge}</span>
+          <span class="badge badge-type">${typeBadge}</span>
         </div>
       </div>
-
       <div class="menu-actions">
-        <button class="action-btn btn-edit" onclick="editItem(${item.id})">✏️ ${t('edit')}</button>
-        <button class="action-btn btn-delete" onclick="deleteItem(${item.id})">🗑️ ${t('delete')}</button>
+        <button class="action-btn btn-edit" onclick="editItem(${item.id})">✏️ ${T.edit}</button>
+        <button class="action-btn btn-delete" onclick="deleteItem(${item.id})">🗑️ ${T.del}</button>
       </div>
     `;
     container.appendChild(card);
   });
 }
 
-// ========== FORM ==========
 function openForm() {
   editingId = null;
   document.getElementById('f_label_en').value = '';
@@ -715,7 +610,7 @@ function openForm() {
   document.getElementById('f_active').checked = true;
   document.getElementById('name_hint').classList.remove('show');
   document.getElementById('f_label_ur').classList.remove('auto-filled');
-  document.getElementById('modalTitle').textContent = t('modalAdd');
+  document.getElementById('modalTitle').textContent = T.modalAdd;
   document.getElementById('modal').classList.add('open');
 }
 
@@ -731,7 +626,7 @@ function editItem(id) {
   document.getElementById('f_open_in').value = item.open_in || 'webview';
   document.getElementById('f_active').checked = !!item.is_active;
   document.getElementById('name_hint').classList.remove('show');
-  document.getElementById('modalTitle').textContent = t('modalEdit');
+  document.getElementById('modalTitle').textContent = T.modalEdit;
   document.getElementById('modal').classList.add('open');
 }
 
@@ -744,7 +639,6 @@ function setEmoji(emoji) {
   document.getElementById('f_icon').value = emoji;
 }
 
-// ========== SAVE ==========
 async function saveItem() {
   const payload = {
     label_ur: document.getElementById('f_label_ur').value.trim(),
@@ -756,16 +650,9 @@ async function saveItem() {
     is_active: document.getElementById('f_active').checked,
   };
   if (editingId) payload.id = editingId;
-
-  if (!payload.url) {
-    showToast(t('urlRequired'), 'error');
-    return;
-  }
-
+  if (!payload.url) { showToast(T.urlReq, 'error'); return; }
   const btn = document.getElementById('saveBtn');
   btn.disabled = true;
-  btn.textContent = '⏳...';
-
   try {
     const res = await fetch(API_BASE + '/api/save-menu-item', {
       method: 'POST',
@@ -773,20 +660,19 @@ async function saveItem() {
       body: JSON.stringify(payload)
     });
     const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Save failed');
-    showToast(t('saved'), 'success');
+    if (!data.success) throw new Error(data.error);
+    showToast(T.saved, 'success');
     closeForm();
     await loadItems();
   } catch (e) {
-    showToast(t('saveFail') + ': ' + e.message, 'error');
+    showToast(T.fail + ': ' + e.message, 'error');
   } finally {
     btn.disabled = false;
-    btn.textContent = t('save');
   }
 }
 
 async function deleteItem(id) {
-  if (!confirm(t('confirmDelete'))) return;
+  if (!confirm(T.confirmDel)) return;
   try {
     const res = await fetch(API_BASE + '/api/delete-menu-item', {
       method: 'POST',
@@ -794,15 +680,14 @@ async function deleteItem(id) {
       body: JSON.stringify({ id })
     });
     const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Delete failed');
-    showToast(t('deleted'), 'success');
+    if (!data.success) throw new Error(data.error);
+    showToast(T.deleted, 'success');
     await loadItems();
   } catch (e) {
-    showToast(t('deleteFail') + ': ' + e.message, 'error');
+    showToast(T.fail + ': ' + e.message, 'error');
   }
 }
 
-// ========== TOAST ==========
 function showToast(msg, type) {
   const toast = document.getElementById('toast');
   toast.textContent = msg;
@@ -820,3 +705,7 @@ window.onload = () => {
   setLang(localStorage.getItem('menu_admin_lang') || 'ur');
   loadItems();
 };
+</script>
+
+</body>
+</html>
