@@ -9,77 +9,224 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f5f0; color: #1a1a1a; padding: 16px; line-height: 1.5; }
-  .nastaliq, .urdu-text { font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important; direction: rtl; line-height: 2.4; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f5f0; color: #1a1a1a; padding: 16px; line-height: 1.5;
+  }
+  .nastaliq {
+    font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif !important;
+    direction: rtl; line-height: 2.4;
+  }
 
-  .header { background: #1b5e20; color: white; padding: 14px; border-radius: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  /* Header */
+  .header {
+    background: #1b5e20; color: white; padding: 14px; border-radius: 12px;
+    margin-bottom: 14px; display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 10px;
+  }
   .header h1 { font-size: 18px; font-weight: 700; }
   .header h1.nastaliq { font-size: 20px; line-height: 2.8; }
   .lang-toggle { display: flex; gap: 8px; }
-  .lang-btn { padding: 6px 16px; border: 2px solid white; background: transparent; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
+  .lang-btn {
+    padding: 6px 16px; border: 2px solid white; background: transparent;
+    color: white; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px;
+  }
   .lang-btn.active { background: white; color: #1b5e20; }
   .lang-btn.nastaliq { font-size: 15px; padding: 6px 20px; }
 
-  .top-nav { text-align: center; margin-bottom: 14px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-  .top-nav a { color: #1b5e20; text-decoration: none; font-weight: bold; padding: 8px 18px; border: 2px solid #1b5e20; border-radius: 8px; display: inline-block; background: white; font-size: 13px; }
+  /* Nav */
+  .top-nav {
+    text-align: center; margin-bottom: 14px; display: flex; gap: 8px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .top-nav a {
+    color: #1b5e20; text-decoration: none; font-weight: bold;
+    padding: 8px 18px; border: 2px solid #1b5e20; border-radius: 8px;
+    display: inline-block; background: white; font-size: 13px;
+  }
 
-  .add-btn { background: #1b5e20; color: white; border: none; padding: 14px 20px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 14px; }
+  /* Add button */
+  .add-btn {
+    background: #1b5e20; color: white; border: none; padding: 14px 20px;
+    border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;
+    width: 100%; margin-bottom: 14px;
+  }
   .add-btn:hover { background: #2e7d32; }
 
-  .items-list { display: grid; gap: 10px; }
-  .menu-card { background: white; border-radius: 12px; padding: 14px; display: flex; gap: 12px; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border-left: 4px solid #1b5e20; }
-  .menu-card.inactive { opacity: 0.55; border-left-color: #999; }
-  .menu-icon { font-size: 32px; min-width: 50px; text-align: center; }
-  .menu-info { flex: 1; min-width: 0; }
-  .menu-label-ur { font-family: 'Noto Nastaliq Urdu', serif !important; font-size: 18px; line-height: 2.4; font-weight: 700; color: #1b5e20; direction: rtl; text-align: right; }
-  .menu-label-en { font-size: 14px; font-weight: 600; color: #333; margin-top: 2px; }
-  .menu-url { font-size: 11px; color: #888; margin-top: 4px; word-break: break-all; }
-  .menu-badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-right: 6px; }
+  /* Cards */
+  .items-list { display: grid; gap: 12px; }
+  .menu-card {
+    background: white; border-radius: 12px; padding: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    border-left: 5px solid #1b5e20;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .menu-card.inactive { opacity: 0.6; border-left-color: #999; }
+
+  /* Row 1: badges */
+  .menu-badges {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .menu-badge {
+    display: inline-block; font-size: 11px; padding: 3px 10px;
+    border-radius: 10px; font-weight: 600;
+  }
   .badge-active { background: #e8f5e9; color: #1b5e20; }
   .badge-inactive { background: #ffebee; color: #c62828; }
   .badge-type { background: #e3f2fd; color: #0d47a1; }
+  .badge-order { background: #f0f0f0; color: #666; }
 
-  .menu-actions { display: flex; flex-direction: column; gap: 6px; }
-  .action-btn { padding: 8px 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 13px; white-space: nowrap; }
+  /* Row 2: icon + labels */
+  .menu-main {
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .menu-icon {
+    font-size: 38px; min-width: 60px; text-align: center;
+    background: #f5f9f5; border-radius: 10px; padding: 8px 4px;
+  }
+  .menu-labels { flex: 1; min-width: 0; }
+  .menu-label-ur {
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    font-size: 22px; line-height: 2.6; font-weight: 700;
+    color: #1b5e20; direction: rtl; text-align: right;
+    word-wrap: break-word;
+  }
+  .menu-label-en {
+    font-size: 15px; font-weight: 600; color: #444;
+    margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e0e0e0;
+  }
+  .menu-url {
+    font-size: 12px; color: #888; margin-top: 4px;
+    word-break: break-all;
+  }
+
+  /* Row 3: action buttons */
+  .menu-actions {
+    display: flex; gap: 10px; padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+  }
+  .action-btn {
+    flex: 1; padding: 10px; border-radius: 8px; border: none;
+    cursor: pointer; font-weight: bold; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
   .btn-edit { background: #ff9800; color: white; }
+  .btn-edit:hover { background: #f57c00; }
   .btn-delete { background: #f44336; color: white; }
+  .btn-delete:hover { background: #d32f2f; }
 
   /* Modal */
-  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 100; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: white; border-radius: 14px; padding: 20px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; }
-  .modal h2 { font-size: 18px; color: #1b5e20; margin-bottom: 16px; }
-  .field { margin-bottom: 14px; }
-  .field label { display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px; }
-  .field label.urdu-label { font-family: 'Noto Nastaliq Urdu', serif !important; font-size: 16px; direction: rtl; text-align: right; line-height: 2.2; color: #1b5e20; }
-  .field input[type="text"], .field input[type="number"], .field select {
-    width: 100%; padding: 10px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-family: inherit;
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); display: none; align-items: center;
+    justify-content: center; padding: 16px; z-index: 100;
   }
-  .field input.urdu-input { font-family: 'Noto Nastaliq Urdu', serif !important; font-size: 18px; direction: rtl; text-align: right; line-height: 2.4; }
-  .field input:focus, .field select:focus { outline: none; border-color: #1b5e20; }
-  .field-row { display: flex; gap: 10px; }
-  .field-row > * { flex: 1; }
-  .emoji-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-  .emoji-btn { font-size: 22px; padding: 6px 10px; background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white; border-radius: 14px; padding: 20px;
+    max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto;
+  }
+  .modal h2 { font-size: 18px; color: #1b5e20; margin-bottom: 16px; }
+  .modal h2.nastaliq { font-size: 20px; line-height: 2.4; }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block; font-size: 13px; font-weight: 600;
+    color: #333; margin-bottom: 6px;
+  }
+  .field label.nastaliq {
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    font-size: 16px; line-height: 2.2; color: #1b5e20;
+  }
+  .field input[type="text"],
+  .field input[type="number"],
+  .field select {
+    width: 100%; padding: 10px 12px; border: 2px solid #e0e0e0;
+    border-radius: 8px; font-size: 14px; font-family: inherit;
+    background: white;
+  }
+  .field input.urdu-input {
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    font-size: 18px; line-height: 2.4; text-align: right;
+  }
+  .field input.urdu-input.auto-filled {
+    background: #f1f8e9; border-color: #66bb6a;
+  }
+  .field input:focus, .field select:focus {
+    outline: none; border-color: #1b5e20;
+  }
+  .auto-hint {
+    font-size: 11px; margin-top: 4px; padding: 3px 8px;
+    border-radius: 4px; display: none;
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    direction: rtl; text-align: right;
+  }
+  .auto-hint.show { display: block; }
+  .auto-hint.loading { background: #fff3e0; color: #e65100; }
+  .auto-hint.success { background: #e8f5e9; color: #2e7d32; }
+  .auto-hint.error { background: #ffebee; color: #c62828; }
+
+  .field-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .field-row > * { flex: 1; min-width: 120px; }
+
+  .emoji-row {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;
+  }
+  .emoji-btn {
+    font-size: 22px; padding: 6px 10px; background: #f5f5f5;
+    border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;
+  }
   .emoji-btn:hover { background: #e8f5e9; border-color: #1b5e20; }
-  .checkbox-row { display: flex; align-items: center; gap: 8px; }
-  .checkbox-row input[type="checkbox"] { width: 20px; height: 20px; }
-  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
-  .modal-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; }
+
+  .checkbox-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px; background: #f9f9f9; border-radius: 8px;
+  }
+  .checkbox-row input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+  .checkbox-row label {
+    margin: 0; cursor: pointer; font-size: 14px;
+  }
+
+  .modal-actions {
+    display: flex; gap: 10px; margin-top: 16px;
+    position: sticky; bottom: 0; background: white; padding-top: 12px;
+  }
+  .modal-btn {
+    flex: 1; padding: 13px; border: none; border-radius: 8px;
+    font-weight: bold; font-size: 15px; cursor: pointer;
+  }
   .btn-cancel { background: #e0e0e0; color: #333; }
   .btn-save { background: #1b5e20; color: white; }
+  .btn-save:disabled { background: #999; }
 
-  .empty-state { text-align: center; padding: 40px; color: #888; background: white; border-radius: 12px; }
-  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #323232; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200; }
+  .empty-state {
+    text-align: center; padding: 40px; color: #888;
+    background: white; border-radius: 12px;
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    font-size: 16px; direction: rtl;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #323232; color: white; padding: 12px 24px;
+    border-radius: 8px; font-weight: bold; opacity: 0;
+    transition: opacity 0.3s; pointer-events: none; z-index: 200;
+    max-width: 90%;
+  }
   .toast.show { opacity: 1; }
   .toast.success { background: #1b5e20; }
   .toast.error { background: #c62828; }
+  .toast.nastaliq {
+    font-family: 'Noto Nastaliq Urdu', serif !important;
+    font-size: 16px; direction: rtl;
+  }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1 id="pageTitle">🎛️ Menu Manager</h1>
+  <h1 id="pageTitle" class="nastaliq">🎛️ مینو مینیجر</h1>
   <div class="lang-toggle">
     <button class="lang-btn nastaliq active" id="btn-ur" onclick="setLang('ur')">اردو</button>
     <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
@@ -91,28 +238,32 @@
   <a href="/messages.html">📿 Namaz Messages</a>
 </div>
 
-<button class="add-btn" id="addBtn" onclick="openForm()">➕ Add New Menu Item</button>
+<button class="add-btn nastaliq" id="addBtn" onclick="openForm()">➕ نیا مینو آئٹم شامل کریں</button>
 
 <div id="items-container" class="items-list"></div>
 
 <!-- Modal -->
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeForm()">
   <div class="modal">
-    <h2 id="modalTitle">Add Menu Item</h2>
+    <h2 id="modalTitle" class="nastaliq">نیا مینو آئٹم</h2>
 
     <div class="field">
-      <label id="lbl_ur">اردو نام</label>
-      <input type="text" id="f_label_ur" class="urdu-input" placeholder="قرآن">
+      <label id="lbl_en" class="nastaliq">انگریزی نام (رومن اردو)</label>
+      <input type="text" id="f_label_en" placeholder="Sawal-Jawab"
+             oninput="onEnglishInput()">
+      <div class="auto-hint" id="name_hint"></div>
     </div>
 
     <div class="field">
-      <label id="lbl_en">English Label</label>
-      <input type="text" id="f_label_en" placeholder="Quran">
+      <label id="lbl_ur" class="nastaliq">اردو نام</label>
+      <input type="text" id="f_label_ur" class="urdu-input"
+             placeholder="سوال و جواب" oninput="onUrduManual()">
     </div>
 
     <div class="field">
-      <label id="lbl_icon">Icon (Emoji)</label>
-      <input type="text" id="f_icon" placeholder="📖" maxlength="4" style="font-size:22px; text-align:center;">
+      <label id="lbl_icon" class="nastaliq">آئیکن</label>
+      <input type="text" id="f_icon" placeholder="📖" maxlength="4"
+             style="font-size:22px; text-align:center;">
       <div class="emoji-row">
         <button class="emoji-btn" onclick="setEmoji('📖')">📖</button>
         <button class="emoji-btn" onclick="setEmoji('📚')">📚</button>
@@ -123,24 +274,27 @@
         <button class="emoji-btn" onclick="setEmoji('📞')">📞</button>
         <button class="emoji-btn" onclick="setEmoji('🔗')">🔗</button>
         <button class="emoji-btn" onclick="setEmoji('📌')">📌</button>
+        <button class="emoji-btn" onclick="setEmoji('🌐')">🌐</button>
+        <button class="emoji-btn" onclick="setEmoji('📢')">📢</button>
+        <button class="emoji-btn" onclick="setEmoji('🎧')">🎧</button>
       </div>
     </div>
 
     <div class="field">
-      <label id="lbl_url">URL / Link</label>
-      <input type="text" id="f_url" placeholder="/quran  or  https://...">
+      <label id="lbl_url" class="nastaliq">لنک / یو آر ایل</label>
+      <input type="text" id="f_url" placeholder="/quran or https://...">
     </div>
 
     <div class="field-row">
       <div class="field">
-        <label id="lbl_order">Order</label>
+        <label id="lbl_order" class="nastaliq">ترتیب</label>
         <input type="number" id="f_order" value="0" min="0">
       </div>
       <div class="field">
-        <label id="lbl_open_in">Open In</label>
+        <label id="lbl_open_in" class="nastaliq">کہاں کھلے</label>
         <select id="f_open_in">
-          <option value="webview">In App (WebView)</option>
-          <option value="external">External Browser / App</option>
+          <option value="webview">ایپ میں</option>
+          <option value="external">باہر</option>
         </select>
       </div>
     </div>
@@ -148,13 +302,15 @@
     <div class="field">
       <div class="checkbox-row">
         <input type="checkbox" id="f_active" checked>
-        <label for="f_active" id="lbl_active" style="margin:0;">Active (Show in app)</label>
+        <label for="f_active" id="lbl_active" class="nastaliq">فعال (ایپ میں دکھائیں)</label>
       </div>
     </div>
 
     <div class="modal-actions">
-      <button class="modal-btn btn-cancel" onclick="closeForm()" id="cancelBtn">Cancel</button>
-      <button class="modal-btn btn-save" onclick="saveItem()" id="saveBtn">💾 Save</button>
+      <button class="modal-btn btn-cancel nastaliq" onclick="closeForm()"
+              id="cancelBtn">منسوخ کریں</button>
+      <button class="modal-btn btn-save nastaliq" onclick="saveItem()"
+              id="saveBtn">💾 محفوظ کریں</button>
     </div>
   </div>
 </div>
@@ -166,6 +322,7 @@ const API_BASE = 'https://zahidiya-mysore.pages.dev';
 let items = [];
 let editingId = null;
 let currentLang = 'ur';
+let autoTransTimer = null;
 
 const STR = {
   en: {
@@ -173,13 +330,15 @@ const STR = {
     addBtn: '➕ Add New Menu Item',
     modalAdd: 'Add Menu Item',
     modalEdit: 'Edit Menu Item',
-    lblUr: 'Urdu Label',
-    lblEn: 'English Label',
+    lblUr: 'Urdu Label (auto-translated)',
+    lblEn: 'English / Roman Urdu (type here)',
     lblIcon: 'Icon (Emoji)',
     lblUrl: 'URL / Link',
     lblOrder: 'Order',
     lblOpenIn: 'Open In',
     lblActive: 'Active (Show in app)',
+    optInApp: 'In App (WebView)',
+    optExternal: 'External Browser / App',
     cancel: 'Cancel',
     save: '💾 Save',
     edit: 'Edit',
@@ -194,21 +353,29 @@ const STR = {
     deleted: '✅ Deleted',
     saveFail: '❌ Save failed',
     deleteFail: '❌ Delete failed',
+    urlRequired: '⚠️ URL is required',
+    typing: '✍️ Typing... translating in 1.5s',
+    translating: '⏳ Translating to Urdu...',
+    translated: '✅ Auto-translated. You can edit Urdu if needed.',
+    transFail: '⚠️ Could not translate — please type Urdu manually.',
+    netErr: '❌ Network error',
   },
   ur: {
     title: '🎛️ مینو مینیجر',
     addBtn: '➕ نیا مینو آئٹم شامل کریں',
     modalAdd: 'نیا مینو آئٹم',
     modalEdit: 'مینو آئٹم میں تبدیلی',
-    lblUr: 'اردو نام',
-    lblEn: 'انگریزی نام',
+    lblUr: 'اردو نام (خودکار)',
+    lblEn: 'انگریزی / رومن اردو (یہاں لکھیں)',
     lblIcon: 'آئیکن',
     lblUrl: 'لنک',
     lblOrder: 'ترتیب',
     lblOpenIn: 'کہاں کھلے',
     lblActive: 'فعال (ایپ میں دکھائیں)',
-    cancel: 'منسوخ',
-    save: '💾 محفوظ',
+    optInApp: 'ایپ میں',
+    optExternal: 'باہر',
+    cancel: 'منسوخ کریں',
+    save: '💾 محفوظ کریں',
     edit: 'تبدیلی',
     delete: 'حذف',
     confirmDelete: 'یہ آئٹم حذف کریں؟',
@@ -221,6 +388,12 @@ const STR = {
     deleted: '✅ حذف ہو گیا',
     saveFail: '❌ محفوظ نہیں ہوا',
     deleteFail: '❌ حذف نہیں ہوا',
+    urlRequired: '⚠️ لنک ضروری ہے',
+    typing: '✍️ ٹائپ کر رہے ہیں... 1.5 سیکنڈ میں اردو',
+    translating: '⏳ اردو میں تبدیل ہو رہا ہے...',
+    translated: '✅ خودکار اردو ہو گیا',
+    transFail: '⚠️ اردو نہیں ہو سکا — خود لکھیں',
+    netErr: '❌ نیٹ ورک مسئلہ',
   }
 };
 
@@ -237,11 +410,15 @@ function setLang(lang) {
 
 function updateLabels() {
   const ur = currentLang === 'ur';
+
   const titleEl = document.getElementById('pageTitle');
   titleEl.textContent = t('title');
   titleEl.classList.toggle('nastaliq', ur);
 
-  document.getElementById('addBtn').textContent = t('addBtn');
+  const addBtn = document.getElementById('addBtn');
+  addBtn.textContent = t('addBtn');
+  addBtn.classList.toggle('nastaliq', ur);
+
   document.getElementById('lbl_ur').textContent = t('lblUr');
   document.getElementById('lbl_en').textContent = t('lblEn');
   document.getElementById('lbl_icon').textContent = t('lblIcon');
@@ -249,16 +426,81 @@ function updateLabels() {
   document.getElementById('lbl_order').textContent = t('lblOrder');
   document.getElementById('lbl_open_in').textContent = t('lblOpenIn');
   document.getElementById('lbl_active').textContent = t('lblActive');
+
+  document.getElementById('f_open_in').options[0].text = t('optInApp');
+  document.getElementById('f_open_in').options[1].text = t('optExternal');
+
   document.getElementById('cancelBtn').textContent = t('cancel');
   document.getElementById('saveBtn').textContent = t('save');
-  document.getElementById('modalTitle').textContent = editingId ? t('modalEdit') : t('modalAdd');
+  document.getElementById('modalTitle').textContent =
+    editingId ? t('modalEdit') : t('modalAdd');
 
-  // Urdu labels Nastaliq
-  ['lbl_ur', 'lbl_url', 'lbl_active', 'lbl_order'].forEach(id => {
-    document.getElementById(id).classList.toggle('urdu-label', ur);
-  });
+  // Apply Nastaliq class to Urdu labels
+  ['lbl_ur', 'lbl_en', 'lbl_icon', 'lbl_url', 'lbl_order',
+   'lbl_open_in', 'lbl_active', 'cancelBtn', 'saveBtn', 'modalTitle']
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('nastaliq', ur);
+    });
 }
 
+// ========== AUTO TRANSLITERATE ==========
+function onEnglishInput() {
+  const enVal = document.getElementById('f_label_en').value.trim();
+  const urInput = document.getElementById('f_label_ur');
+  const hint = document.getElementById('name_hint');
+
+  if (autoTransTimer) clearTimeout(autoTransTimer);
+
+  if (!enVal) {
+    hint.classList.remove('show');
+    return;
+  }
+
+  hint.textContent = t('typing');
+  hint.className = 'auto-hint show loading';
+
+  autoTransTimer = setTimeout(() => autoTransliterate(enVal), 1500);
+}
+
+async function autoTransliterate(text) {
+  const urInput = document.getElementById('f_label_ur');
+  const hint = document.getElementById('name_hint');
+
+  hint.textContent = t('translating');
+  hint.className = 'auto-hint show loading';
+
+  try {
+    const url = `${API_BASE}/api/transliterate?text=${encodeURIComponent(text)}`;
+    const res = await fetch(url);
+    const proxyData = await res.json();
+
+    if (!proxyData.success) throw new Error('Proxy fail');
+    const data = proxyData.data;
+
+    if (data && data[0] === 'SUCCESS' && data[1] && data[1][0] &&
+        data[1][0][1] && data[1][0][1].length > 0) {
+      const urduText = data[1][0][1][0];
+      urInput.value = urduText;
+      urInput.classList.add('auto-filled');
+      hint.textContent = t('translated');
+      hint.className = 'auto-hint show success';
+      setTimeout(() => hint.classList.remove('show'), 2500);
+    } else {
+      hint.textContent = t('transFail');
+      hint.className = 'auto-hint show error';
+    }
+  } catch (e) {
+    hint.textContent = t('netErr');
+    hint.className = 'auto-hint show error';
+  }
+}
+
+function onUrduManual() {
+  document.getElementById('f_label_ur').classList.remove('auto-filled');
+}
+
+// ========== LOAD / RENDER ==========
 async function loadItems() {
   try {
     const res = await fetch(API_BASE + '/api/get-menu-items');
@@ -279,41 +521,55 @@ function renderItems() {
     return;
   }
   container.innerHTML = '';
+
   items.forEach(item => {
     const card = document.createElement('div');
     card.className = 'menu-card' + (item.is_active ? '' : ' inactive');
+
     const typeBadge = item.open_in === 'external' ? t('external') : t('inApp');
     const activeBadge = item.is_active ? t('active') : t('inactive');
+
     card.innerHTML = `
-      <div class="menu-icon">${item.icon || '📌'}</div>
-      <div class="menu-info">
-        <div>
-          <span class="menu-badge ${item.is_active ? 'badge-active' : 'badge-inactive'}">${activeBadge}</span>
-          <span class="menu-badge badge-type">${typeBadge}</span>
-          <span class="menu-badge" style="background:#f0f0f0; color:#666;">#${item.sort_order}</span>
-        </div>
-        <div class="menu-label-ur nastaliq">${escapeHtml(item.label_ur || '')}</div>
-        <div class="menu-label-en">${escapeHtml(item.label_en || '')}</div>
-        <div class="menu-url">🔗 ${escapeHtml(item.url || '')}</div>
+      <div class="menu-badges">
+        <span class="menu-badge ${item.is_active ? 'badge-active' : 'badge-inactive'}">${activeBadge}</span>
+        <span class="menu-badge badge-type">${typeBadge}</span>
+        <span class="menu-badge badge-order">#${item.sort_order}</span>
       </div>
+
+      <div class="menu-main">
+        <div class="menu-icon">${item.icon || '📌'}</div>
+        <div class="menu-labels">
+          <div class="menu-label-ur">${escapeHtml(item.label_ur || '')}</div>
+          <div class="menu-label-en">${escapeHtml(item.label_en || '')}</div>
+          <div class="menu-url">🔗 ${escapeHtml(item.url || '')}</div>
+        </div>
+      </div>
+
       <div class="menu-actions">
-        <button class="action-btn btn-edit" onclick="editItem(${item.id})">✏️ ${t('edit')}</button>
-        <button class="action-btn btn-delete" onclick="deleteItem(${item.id})">🗑️ ${t('delete')}</button>
+        <button class="action-btn btn-edit" onclick="editItem(${item.id})">
+          ✏️ ${t('edit')}
+        </button>
+        <button class="action-btn btn-delete" onclick="deleteItem(${item.id})">
+          🗑️ ${t('delete')}
+        </button>
       </div>
     `;
     container.appendChild(card);
   });
 }
 
+// ========== FORM ==========
 function openForm() {
   editingId = null;
-  document.getElementById('f_label_ur').value = '';
   document.getElementById('f_label_en').value = '';
+  document.getElementById('f_label_ur').value = '';
   document.getElementById('f_icon').value = '📌';
   document.getElementById('f_url').value = '';
   document.getElementById('f_order').value = items.length + 1;
   document.getElementById('f_open_in').value = 'webview';
   document.getElementById('f_active').checked = true;
+  document.getElementById('name_hint').classList.remove('show');
+  document.getElementById('f_label_ur').classList.remove('auto-filled');
   document.getElementById('modalTitle').textContent = t('modalAdd');
   document.getElementById('modal').classList.add('open');
 }
@@ -322,13 +578,14 @@ function editItem(id) {
   const item = items.find(i => i.id === id);
   if (!item) return;
   editingId = id;
-  document.getElementById('f_label_ur').value = item.label_ur || '';
   document.getElementById('f_label_en').value = item.label_en || '';
+  document.getElementById('f_label_ur').value = item.label_ur || '';
   document.getElementById('f_icon').value = item.icon || '📌';
   document.getElementById('f_url').value = item.url || '';
   document.getElementById('f_order').value = item.sort_order || 0;
   document.getElementById('f_open_in').value = item.open_in || 'webview';
   document.getElementById('f_active').checked = !!item.is_active;
+  document.getElementById('name_hint').classList.remove('show');
   document.getElementById('modalTitle').textContent = t('modalEdit');
   document.getElementById('modal').classList.add('open');
 }
@@ -342,6 +599,7 @@ function setEmoji(emoji) {
   document.getElementById('f_icon').value = emoji;
 }
 
+// ========== SAVE ==========
 async function saveItem() {
   const payload = {
     label_ur: document.getElementById('f_label_ur').value.trim(),
@@ -355,9 +613,13 @@ async function saveItem() {
   if (editingId) payload.id = editingId;
 
   if (!payload.url) {
-    showToast('⚠️ URL required', 'error');
+    showToast(t('urlRequired'), 'error');
     return;
   }
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳...';
 
   try {
     const res = await fetch(API_BASE + '/api/save-menu-item', {
@@ -372,6 +634,9 @@ async function saveItem() {
     await loadItems();
   } catch (e) {
     showToast(t('saveFail') + ': ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = t('save');
   }
 }
 
@@ -392,11 +657,12 @@ async function deleteItem(id) {
   }
 }
 
+// ========== TOAST ==========
 function showToast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + (type || '');
-  setTimeout(() => { t.className = 'toast'; }, 2500);
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show ' + (type || '') + ' nastaliq';
+  setTimeout(() => { toast.className = 'toast'; }, 2500);
 }
 
 function escapeHtml(text) {
