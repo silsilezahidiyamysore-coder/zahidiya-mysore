@@ -9,7 +9,15 @@
 <title>Silsila-e-Zahidiya Mysore</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0f3d2e; color: #fff; min-height: 100vh; }
+ body { 
+  font-family: 'Segoe UI', Tahoma, sans-serif; 
+  background: #0f3d2e; 
+  color: #fff; 
+  min-height: 100vh;
+  padding-top: env(safe-area-inset-top, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+}
   html[lang="ur"] body, html[lang="ur"] * {
     font-family: 'Noto Nastaliq Urdu', 'Segoe UI', Tahoma, sans-serif;
     line-height: 2.1;
