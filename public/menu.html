@@ -656,7 +656,13 @@ function closeForm() {
   document.getElementById('modal').classList.remove('open');
   editingId = null;
 }
-
+ 
+function addCustomEmoji() {
+  const emoji = prompt('Koi bhi emoji paste karo ya type karo:\n\n(Misal: 🕋 ☪️ 🎁 🦁 🌸)', '');
+  if (emoji && emoji.trim()) {
+    document.getElementById('f_icon').value = emoji.trim();
+  }
+}
 function setEmoji(emoji) {
   document.getElementById('f_icon').value = emoji;
 }
