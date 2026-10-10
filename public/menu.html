@@ -658,10 +658,29 @@ function closeForm() {
 }
  
 function addCustomEmoji() {
-  const emoji = prompt('Koi bhi emoji paste karo ya type karo:\n\n(Misal: 🕋 ☪️ 🎁 🦁 🌸)', '');
-  if (emoji && emoji.trim()) {
-    document.getElementById('f_icon').value = emoji.trim();
+  const box = document.getElementById('customEmojiBox');
+  if (box) {
+    box.classList.add('open');
+    setTimeout(() => {
+      const inp = document.getElementById('customEmojiInput');
+      if (inp) { inp.value = ''; inp.focus(); }
+    }, 100);
   }
+}
+
+function closeCustomEmoji() {
+  const box = document.getElementById('customEmojiBox');
+  if (box) box.classList.remove('open');
+}
+
+function applyCustomEmoji() {
+  const inp = document.getElementById('customEmojiInput');
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (val) {
+    document.getElementById('f_icon').value = val;
+  }
+  closeCustomEmoji();
 }
 function setEmoji(emoji) {
   document.getElementById('f_icon').value = emoji;
