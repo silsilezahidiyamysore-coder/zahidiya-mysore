@@ -2200,6 +2200,31 @@ async function tryAutoLogin() {
   if (!savedMobile || !savedPassword) return;
   try { const res = await fetch(API + '/api/state?mobile=' + encodeURIComponent(savedMobile) + '&password=' + encodeURIComponent(savedPassword)); const data = await res.json(); if (res.ok && data.user && !['pending','rejected','blocked'].includes(data.user.status)) { currentUser = data.user; loginSuccess(); } else { localStorage.removeItem('zahidiya_mobile'); localStorage.removeItem('zahidiya_password'); } } catch(e) {}
 }
+ // ============ URL ?screen= Handling ============
+function checkScreenParam() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const screen = params.get('screen');
+    if (!screen) return;
+    
+    // Agar user login nahi hua, 1 sec baad try karo
+    if (!currentUser) {
+      setTimeout(checkScreenParam, 1000);
+      return;
+    }
+    
+    if (screen === 'quran') showScreen('quran');
+    else if (screen === 'sawal' || screen === 'sawal-jawab') showScreen('qa');
+    else if (screen === 'admin') showScreen('admin');
+    else if (screen === 'home') showScreen('home');
+    else if (screen === 'notifications') showScreen('notifications');
+  } catch (e) {}
+}
+window.addEventListener('DOMContentLoaded', () => setTimeout(checkScreenParam, 1500));
+
+// ============ Old checkUrlAutoLogin DELETE ============
+// (Aapne jo bekaar function add kiya tha, wo hata do)
+
 window.addEventListener('DOMContentLoaded', tryAutoLogin);
 window.addEventListener('DOMContentLoaded', showIslamicDate);
 ['click', 'touchstart', 'keydown'].forEach(evt => { document.addEventListener(evt, unlockAudio); });
