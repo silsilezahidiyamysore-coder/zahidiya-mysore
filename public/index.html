@@ -2177,6 +2177,24 @@ async function downloadQaHistoryPdf() {
 }
 
 // ===== AUTO LOGIN + KEYBOARD + AUTO REFRESH =====
+ // URL se auto-login check
+function checkUrlAutoLogin() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const autoMobile = params.get('auto_mobile');
+    if (autoMobile && autoMobile.trim().length >= 10) {
+      // Agar already logged in nahi hai to set karo
+      if (!localStorage.getItem('zahidiya_mobile')) {
+        localStorage.setItem('zahidiya_mobile', autoMobile.trim());
+        // page reload for auto-login
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, '', cleanUrl);
+      }
+    }
+  } catch (e) {}
+}
+checkUrlAutoLogin();
+
 async function tryAutoLogin() {
   const savedMobile = localStorage.getItem('zahidiya_mobile'); const savedPassword = localStorage.getItem('zahidiya_password');
   if (!savedMobile || !savedPassword) return;
