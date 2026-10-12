@@ -42,7 +42,7 @@
   .stat-box { flex: 1; background: #1c6b4f; border-radius: 10px; padding: 14px; text-align: center; }
   .stat-box .num { font-size: 24px; font-weight: bold; color: #ffd700; }
   #notifBadge { background: red; border-radius: 50%; padding: 2px 7px; font-size: 11px; margin-left: 6px; }
- .content-area { padding-bottom: 220px; }
+ .content-area { padding-bottom: 320px; padding-bottom: calc(320px + env(safe-area-inset-bottom, 0px)); }
   .quran-ayah-card { transition: all 0.3s; }
   .quran-ayah-card.highlight { background: #1f5a1f !important; box-shadow: 0 0 15px rgba(255,215,0,0.7) !important; }
   #qaScreen, #quranScreen { padding-bottom: 130px; padding-left: 16px; padding-right: 16px; }
