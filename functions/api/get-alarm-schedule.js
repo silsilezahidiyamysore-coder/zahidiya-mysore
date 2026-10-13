@@ -127,6 +127,15 @@ export async function onRequestGet(context) {
     const extraAlarms = [];
 
     const alarmSettings = await db.prepare(`SELECT * FROM alarm_settings WHERE id = 1`).first();
+    // Override with new app_settings table (from messages.html admin panel)
+try {
+  const { results: newSettings } = await db.prepare(
+    `SELECT key, value FROM app_settings WHERE key IN ('start_alarm_duration_seconds','end_reminder_minutes_before','end_reminder_beep_seconds','end_reminder_beep_count')`
+  ).all();
+  newSettings.forEach(row => {
+    alarmSettings[row.key] = parseInt(row.value) || 0;
+  });
+} catch (e) {}
 
     // ---------- 1) NAMAZ TIMES ----------
     if (alarmSettings && Number(alarmSettings.start_alarm_enabled) !== 0) {
