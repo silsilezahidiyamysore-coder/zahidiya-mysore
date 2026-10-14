@@ -1476,14 +1476,9 @@ function get24HourFromFields(prefix) {
 async function loadAlarmSettings() {
   try {
     populate12HourDropdowns();
-    const res = await fetch(API + '/api/get-alarm-settings'); const data = await res.json();
-  if (data.settings) {
-    alarmSettings = data.settings;              ← ye upar
-    Object.keys(alarmSettings).forEach(k => {   ← loop neeche
-      if (typeof alarmSettings[k] === 'string' && /^\d+$/.test(alarmSettings[k])) {
-        alarmSettings[k] = parseInt(alarmSettings[k]);
-      }
-    });
+    const res = await fetch(API + '/api/alarm-settings'); const data = await res.json();
+    if (data.settings) {
+      alarmSettings = data.settings;
       const s = document.getElementById('startAlarmEnabled'); const su = document.getElementById('startAlarmDuration'); const e = document.getElementById('endReminderEnabled'); const em = document.getElementById('endReminderMinutesBefore'); const er = document.getElementById('endReminderRepeatCount'); const eb = document.getElementById('endReminderBeepSeconds');
       if (s) s.checked = !!alarmSettings.start_alarm_enabled; if (su) su.value = alarmSettings.start_alarm_duration_seconds; if (e) e.checked = !!alarmSettings.end_reminder_enabled; if (em) em.value = alarmSettings.end_reminder_minutes_before; if (er) er.value = alarmSettings.end_reminder_repeat_count; if (eb) eb.value = alarmSettings.end_reminder_beep_seconds;
       const ce = document.getElementById('customAlarmEnabled'); const ct = document.getElementById('customAlarmTitleInput'); const ctUr = document.getElementById('customAlarmTitleInputUr');
