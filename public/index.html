@@ -1476,7 +1476,7 @@ function get24HourFromFields(prefix) {
 async function loadAlarmSettings() {
   try {
     populate12HourDropdowns();
-    const res = await fetch(API + '/api/alarm-settings'); const data = await res.json();
+    const res = await fetch(API + '/api/get-alarm-settings'); const data = await res.json();
     if (data.settings) {
       alarmSettings = data.settings;
       const s = document.getElementById('startAlarmEnabled'); const su = document.getElementById('startAlarmDuration'); const e = document.getElementById('endReminderEnabled'); const em = document.getElementById('endReminderMinutesBefore'); const er = document.getElementById('endReminderRepeatCount'); const eb = document.getElementById('endReminderBeepSeconds');
