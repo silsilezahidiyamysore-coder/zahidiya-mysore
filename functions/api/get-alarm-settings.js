@@ -2,7 +2,9 @@ export async function onRequestGet({ env }) {
   try {
     const { results } = await env.DB.prepare(
       `SELECT key, value FROM app_settings
-       WHERE key IN ('start_alarm_duration_seconds','end_reminder_minutes_before','end_reminder_beep_seconds','end_reminder_beep_count')`
+       WHERE key IN ('start_alarm_enabled','start_alarm_duration_seconds',
+                     'end_reminder_enabled','end_reminder_minutes_before',
+                     'end_reminder_repeat_count','end_reminder_beep_seconds')`
     ).all();
     const settings = {};
     results.forEach(r => { settings[r.key] = r.value; });
