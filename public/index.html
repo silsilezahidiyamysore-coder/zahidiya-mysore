@@ -1644,8 +1644,24 @@ function changeCalendarMonth(direction) {
 function closeCalendarGrid() { document.getElementById('calendarGridCard').classList.add('hidden'); }
 
 async function saveAlarmSettings() {
-  const body = { start_alarm_enabled: document.getElementById('startAlarmEnabled').checked, start_alarm_duration_seconds: parseInt(document.getElementById('startAlarmDuration').value) || 60, end_reminder_enabled: document.getElementById('endReminderEnabled').checked, end_reminder_minutes_before: parseInt(document.getElementById('endReminderMinutesBefore').value) || 10, end_reminder_repeat_count: parseInt(document.getElementById('endReminderRepeatCount').value) || 3, end_reminder_beep_seconds: parseInt(document.getElementById('endReminderBeepSeconds').value) || 2 };
-  try { const res = await fetch(API + '/api/alarm-settings', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) }); const data = await res.json(); alert(data.message || 'Settings saved'); loadAlarmSettings(); } catch (e) { alert('Error'); }
+  const body = {
+    start_alarm_enabled: document.getElementById('startAlarmEnabled').checked ? 1 : 0,
+    start_alarm_duration_seconds: parseInt(document.getElementById('startAlarmDuration').value) || 12,
+    end_reminder_enabled: document.getElementById('endReminderEnabled').checked ? 1 : 0,
+    end_reminder_minutes_before: parseInt(document.getElementById('endReminderMinutesBefore').value) || 10,
+    end_reminder_repeat_count: parseInt(document.getElementById('endReminderRepeatCount').value) || 1,
+    end_reminder_beep_seconds: parseInt(document.getElementById('endReminderBeepSeconds').value) || 12
+  };
+  try {
+    const res = await fetch(API + '/api/save-alarm-settings', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.success) { alert('✅ Save ho gaya'); loadAlarmSettings(); }
+    else alert('❌ ' + (data.error || 'Save failed'));
+  } catch(e) { alert('❌ ' + e.message); }
 }
 
 let sharedAudioCtx = null;
