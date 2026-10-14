@@ -1,7 +1,14 @@
 export async function onRequestPost({ request, env }) {
   try {
     const body = await request.json();
-    const allowed = ['start_alarm_duration_seconds','end_reminder_minutes_before','end_reminder_beep_seconds','end_reminder_beep_count'];
+    const allowed = [
+      'start_alarm_enabled',
+      'start_alarm_duration_seconds',
+      'end_reminder_enabled',
+      'end_reminder_minutes_before',
+      'end_reminder_repeat_count',
+      'end_reminder_beep_seconds'
+    ];
     for (const key of allowed) {
       if (body[key] !== undefined) {
         await env.DB.prepare(
