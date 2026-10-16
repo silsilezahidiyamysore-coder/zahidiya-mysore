@@ -363,6 +363,48 @@ a { color: #ffd700; }
       <textarea id="customAlarmTextContent" oninput="window.customContentDirty = true" data-i18n-placeholder="event_text_content_ph" placeholder="Yahan likho jo mureedon ko dikhna hai..." style="display:none; min-height:70px;"></textarea>
       <div id="customAlarmTextUrWrap" style="display:none;">
         <textarea id="customAlarmTextContentUr" oninput="window.customContentDirty = true" placeholder="اردو متن (اختیاری)" dir="rtl" style="display:block; min-height:70px; font-family:'Noto Nastaliq Urdu','Segoe UI',sans-serif;"></textarea>
+        <button type="button" class="secondary" style="width:auto; margin:6px 0;" onclick="autoTranslateField('customAlarmTextContent','customAlarmTextContentUr', this)" data-i18n="auto_urdu_btn">🌐 Auto
+    <div class="card">
+      <h3 data-i18n="custom_alarm_heading">🔔 Custom Alarm (Start Time / End Time)</h3>
+      <p style="font-size:12px; color:#ffd700; margin-bottom:6px;" data-i18n="custom_alarm_note">Koi khaas alarm/reminder banane ke liye — jaise kisi event ka time. Jab start-end ke beech ka waqt chalega, sabhi mureedon ke home screen par yeh dikhega.</p>
+      <div class="row">
+        <input type="checkbox" id="customAlarmEnabled" style="width:auto;">
+        <span style="font-size:13px;" data-i18n="on_off_label">On/Off</span>
+      </div>
+      <input type="text" id="customAlarmTitleInput" data-i18n-placeholder="custom_alarm_title_ph" placeholder="Alarm ka naam (jaise: Ijtema Time)">
+      <input type="text" id="customAlarmTitleInputUr" data-i18n-placeholder="custom_alarm_title_ur_ph" placeholder="اردو نام (اختیاری)" dir="rtl" style="font-family:'Noto Nastaliq Urdu','Segoe UI',sans-serif;">
+      <button type="button" class="secondary" style="width:auto; margin:6px 0;" onclick="autoTranslateField('customAlarmTitleInput','customAlarmTitleInputUr', this)" data-i18n="auto_urdu_btn">🌐 Auto Urdu Banao</button>
+      <p style="font-size:11px; color:#cde; margin:0 0 8px;" data-i18n="bilingual_name_note">Dono bhar do to English/Urdu dono mein sahi naam dikhega. Sirf ek bhi chalega.</p>
+      <label style="font-size:13px;" data-i18n="label_start_time">Start Time</label>
+      <div class="row" style="gap:6px;">
+        <select id="customAlarmStartHour" style="margin:0;"></select>
+        <select id="customAlarmStartMin" style="margin:0;"></select>
+        <select id="customAlarmStartAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
+      </div>
+      <label style="font-size:13px; margin-top:8px;" data-i18n="label_end_time">End Time</label>
+      <div class="row" style="gap:6px;">
+        <select id="customAlarmEndHour" style="margin:0;"></select>
+        <select id="customAlarmEndMin" style="margin:0;"></select>
+        <select id="customAlarmEndAmPm" style="margin:0;"><option value="AM">AM</option><option value="PM">PM</option></select>
+      </div>
+      <label style="font-size:13px; margin-top:12px; display:block;" data-i18n="custom_group_label">👥 Ye alarm kis ko jaye?</label>
+      <select id="customAlarmGroup" onchange="window.customContentDirty = true">
+        <option value="both" data-i18n="opt_both">Both</option>
+        <option value="mardana" data-i18n="group_mardana">Mardana</option>
+        <option value="zanana" data-i18n="group_zanana">Zanana</option>
+      </select>
+      <label style="font-size:13px; margin-top:12px; display:block;" data-i18n="custom_content_label">📎 Is alarm ke saath dikhane wala content (optional)</label>
+      <select id="customAlarmContentType" onchange="window.customContentDirty = true; toggleCustomContentFields()">
+        <option value="none" data-i18n="opt_no_reminder">Kuch nahi, sirf reminder</option>
+        <option value="text" data-i18n="opt_content_text">Text (khud likh kar)</option>
+        <option value="image" data-i18n="opt_image">Image</option>
+        <option value="pdf" data-i18n="opt_pdf">PDF</option>
+        <option value="video" data-i18n="opt_video_upload">Video (upload karo)</option>
+        <option value="audio" data-i18n="opt_content_audio">Audio (record ya upload)</option>
+      </select>
+      <textarea id="customAlarmTextContent" oninput="window.customContentDirty = true" data-i18n-placeholder="event_text_content_ph" placeholder="Yahan likho jo mureedon ko dikhna hai..." style="display:none; min-height:70px;"></textarea>
+      <div id="customAlarmTextUrWrap" style="display:none;">
+        <textarea id="customAlarmTextContentUr" oninput="window.customContentDirty = true" placeholder="اردو متن (اختیاری)" dir="rtl" style="display:block; min-height:70px; font-family:'Noto Nastaliq Urdu','Segoe UI',sans-serif;"></textarea>
         <button type="button" class="secondary" style="width:auto; margin:6px 0;" onclick="autoTranslateField('customAlarmTextContent','customAlarmTextContentUr', this)" data-i18n="auto_urdu_btn">🌐 Auto Urdu Banao</button>
       </div>
       <input type="file" id="customAlarmFileInput" accept="image/*" style="display:none;" onchange="onCustomFileChosen(this)">
@@ -648,7 +690,8 @@ const TRANSLATIONS = {
     bulk_add_note: "Har row mein ek mureed ki details bharo. Zaroorat ho to '+ Row Add Karo' se aur row badha sakte ho.",
     new_file_note: "Naya file sirf tab choose karo agar file badalni ho, warna purani file wahi rahegi.",
     live_tone_note: "Jab koi class Live shuru hoti hai to yeh tone bajegi. Kuch upload nahi karoge to default Alarm Tone use hoga.",
-    hijri_adjust_note: "Agar Hijri tareekh Google Calendar se 1-2 din alag dikhe, to yahan se match kar lo (chaand dikhne ki wajah se yeh jagah-jagah alag hoti hai).",    old_alarm_warning: '⚠️ This is an old page — please do not use',
+    hijri_adjust_note: "Agar Hijri tareekh Google Calendar se 1-2 din alag dikhe, to yahan se match kar lo (chaand dikhne ki wajah se yeh jagah-jagah alag hoti hai).",
+    old_alarm_warning: '⚠️ This is an old page — please do not use',
     old_alarm_link: 'Click here to change alarm settings →',
     hijri_days_label: "Kitne din aage/peeche karna hai",
     hijri_days_ph: "jaise: 2 ya -1",
@@ -709,7 +752,7 @@ const TRANSLATIONS = {
     upload_class_btn: "کلاس اپلوڈ", cancel_edit_btn: "منسوخ", save_karo_btn: "محفوظ",
     label_start_alarm: "شروع کا الارم", label_alarm_seconds: "کتنے سیکنڈ",
     label_end_reminder: "اختتامی یاد دہانی", label_reminder_minutes: "کتنے منٹ پہلے",
-    label_beep_count: "کتنی بار بیپ", label_beep_seconds: "ہر بار کتنے سیکنڈ",
+    label_beep_count: "الارم کتنی بار بجے گا", label_beep_seconds: "ہر بار کتنے سیکنڈ",
     save_alarm_settings_btn: "محفوظ کریں", save_custom_alarm_btn: "کسٹم الارم محفوظ",
     label_start_time: "شروع کا وقت", label_end_time: "ختم کا وقت",
     opt_weekly: "ہر ہفتے", opt_monthly: "ہر مہینے", opt_once: "ایک بار",
@@ -756,8 +799,7 @@ const TRANSLATIONS = {
     new_file_note: "نئی فائل صرف اس وقت چنیں جب فائل بدلنی ہو، ورنہ پرانی فائل ہی رہے گی۔",
     live_tone_note: "جب کوئی کلاس لائیو شروع ہوتی ہے تو یہ ٹون بجے گی۔ کچھ اپلوڈ نہ کریں تو ڈیفالٹ ٹون استعمال ہو گی۔",
     hijri_adjust_note: "اگر ہجری تاریخ گوگل کیلنڈر سے 1-2 دن الگ ہو تو یہاں سے ملائیں (چاند دیکھنے کی وجہ سے یہ جگہ جگہ الگ ہوتی ہے)۔",
-    hijri_days_label: "کتنے دن آگے/پیچھے کرنا ہے",    old_alarm_warning: '⚠️ یہ پرانا صفحہ ہے — اب استعمال نہ کریں',
-    old_alarm_link: 'الارم کی ترتیبات یہاں سے تبدیل کریں →',
+    hijri_days_label: "کتنے دن آگے/پیچھے کرنا ہے",
     hijri_days_ph: "جیسے: 2 یا -1",
     alarm_settings_note: "نماز شروع ہونے پر الارم، اور ختم ہونے سے پہلے یاد دہانی — یہاں کنٹرول کریں۔",
     eg_60_ph: "مثلاً 60",
@@ -2196,43 +2238,13 @@ async function downloadQaHistoryPdf() {
   try { const canvas = await html2canvas(container, { scale: 2 }); document.body.removeChild(container); const imgData = canvas.toDataURL('image/png'); const { jsPDF } = window.jspdf; const pdf = new jsPDF('p', 'mm', 'a4'); const pageWidth = 210, pageHeight = 297; const imgWidth = pageWidth; const imgHeight = (canvas.height * imgWidth) / canvas.width; let heightLeft = imgHeight; let position = 0; pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pageHeight; while (heightLeft > 0) { position = heightLeft - imgHeight; pdf.addPage(); pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pageHeight; } pdf.save('mere-sawal-jawab.pdf'); } catch (e) { document.body.removeChild(container); alert('PDF error: ' + e.message); }
 }
 
-// ===== AUTO LOGIN + KEYBOARD + AUTO REFRESH =====
- // URL se auto-login check
-function checkUrlAutoLogin() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const autoMobile = params.get('auto_mobile');
-    if (autoMobile && autoMobile.trim().length >= 10) {
-      // Agar already logged in nahi hai to set karo
-      if (!localStorage.getItem('zahidiya_mobile')) {
-        localStorage.setItem('zahidiya_mobile', autoMobile.trim());
-        // page reload for auto-login
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, '', cleanUrl);
-      }
-    }
-  } catch (e) {}
-}
-checkUrlAutoLogin();
-
-async function tryAutoLogin() {
-  const savedMobile = localStorage.getItem('zahidiya_mobile'); const savedPassword = localStorage.getItem('zahidiya_password');
-  if (!savedMobile || !savedPassword) return;
-  try { const res = await fetch(API + '/api/state?mobile=' + encodeURIComponent(savedMobile) + '&password=' + encodeURIComponent(savedPassword)); const data = await res.json(); if (res.ok && data.user && !['pending','rejected','blocked'].includes(data.user.status)) { currentUser = data.user; loginSuccess(); } else { localStorage.removeItem('zahidiya_mobile'); localStorage.removeItem('zahidiya_password'); } } catch(e) {}
-}
- // ============ URL ?screen= Handling ============
+// ===== URL SCREEN PARAM HANDLING =====
 function checkScreenParam() {
   try {
     const params = new URLSearchParams(window.location.search);
     const screen = params.get('screen');
     if (!screen) return;
-    
-    // Agar user login nahi hua, 1 sec baad try karo
-    if (!currentUser) {
-      setTimeout(checkScreenParam, 1000);
-      return;
-    }
-    
+    if (!currentUser) { setTimeout(checkScreenParam, 1000); return; }
     if (screen === 'quran') showScreen('quran');
     else if (screen === 'sawal' || screen === 'sawal-jawab') showScreen('qa');
     else if (screen === 'admin') showScreen('admin');
@@ -2242,9 +2254,12 @@ function checkScreenParam() {
 }
 window.addEventListener('DOMContentLoaded', () => setTimeout(checkScreenParam, 1500));
 
-// ============ Old checkUrlAutoLogin DELETE ============
-// (Aapne jo bekaar function add kiya tha, wo hata do)
-
+// ===== AUTO LOGIN + KEYBOARD + AUTO REFRESH =====
+async function tryAutoLogin() {
+  const savedMobile = localStorage.getItem('zahidiya_mobile'); const savedPassword = localStorage.getItem('zahidiya_password');
+  if (!savedMobile || !savedPassword) return;
+  try { const res = await fetch(API + '/api/state?mobile=' + encodeURIComponent(savedMobile) + '&password=' + encodeURIComponent(savedPassword)); const data = await res.json(); if (res.ok && data.user && !['pending','rejected','blocked'].includes(data.user.status)) { currentUser = data.user; loginSuccess(); } else { localStorage.removeItem('zahidiya_mobile'); localStorage.removeItem('zahidiya_password'); } } catch(e) {}
+}
 window.addEventListener('DOMContentLoaded', tryAutoLogin);
 window.addEventListener('DOMContentLoaded', showIslamicDate);
 ['click', 'touchstart', 'keydown'].forEach(evt => { document.addEventListener(evt, unlockAudio); });
