@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zahidiya Alarm - Admin Panel</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; }
+        label { font-weight: bold; margin-top: 10px; display: block; }
+        input[type="number"], input[type="text"] { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .urdu-input { text-align: right; direction: rtl; font-size: 18px; }
+        button { width: 100%; padding: 12px; background-color: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        button:hover { background-color: #219150; }
+        .status { text-align: center; margin-top: 15px; font-weight: bold; color: green; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Zahidiya Alarm Control Panel</h2>
+    
+    <label>Isha Reminder (Minutes Before):</label>
+    <input type="number" id="ishaMins" placeholder="e.g. 20">
+
+    <label>Fajr Reminder (Minutes Before):</label>
+    <input type="number" id="fajrMins" placeholder="e.g. 15">
+
+    <label>Reminders ON/OFF:</label>
+    <select id="remindersEnabled" style="width:100%; padding:10px; margin-bottom:15px; border-radius:5px;">
+        <option value="true">ON (Chalu)</option>
+        <option value="false">OFF (Band)</option>
+    </select>
+
+    <label>English Title:</label>
+    <input type="text" id="enTitle" placeholder="Isha Reminder">
+
+    <label>English Message:</label>
+    <input type="text" id="enMsg" placeholder="Isha time is approaching in 20 minutes.">
+
+    <label>Urdu Title (اردو عنوان):</label>
+    <input type="text" id="urTitle" class="urdu-input" placeholder="عشاء کی یاد دہانی">
+
+    <label>Urdu Message (اردو پیغام):</label>
+    <input type="text" id="urMsg" class="urdu-input" placeholder="عشاء کا وقت 20 منٹ میں ہونے والا ہے۔">
+
+    <button onclick="saveData()">Save / Update (Blackboard par likho)</button>
+    <div id="statusMsg" class="status"></div>
+</div>
+
+<script>
+    const GITHUB_TOKEN = "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"; // Aapko ye token generate karna hoga (Niche bataya hai)
+    const REPO = "silsilezahidiyamysore-coder/zahidiya-mysore";
+    const FILE_PATH = "public/config.json";
+
+    // Jab page load ho toh purana data fetch karke boxes me bhardo
+    window.onload = async function() {
+        try {
+            let res = await fetch("https://zahidiya-mysore.pages.dev/config.json");
+            let data = await res.json();
+            
+            document.getElementById('ishaMins').value = data.ishaEndReminderMinutes;
+            document.getElementById('fajrMins').value = data.fajrStartReminderMinutes;
+            document.getElementById('remindersEnabled').value = data.remindersEnabled.toString();
+            document.getElementById('enTitle').value = data.texts.english.isha_reminder_title;
+            document.getElementById('enMsg').value = data.texts.english.isha_reminder_message;
+            document.getElementById('urTitle').value = data.texts.urdu.isha_reminder_title;
+            document.getElementById('urMsg').value = data.texts.urdu.isha_reminder_message;
+        } catch(e) { console.log("Data load nahi hua"); }
+    };
+
+    async function saveData() {
+        document.getElementById('statusMsg').innerText = "Saving... Please wait...";
+        
+        // Naya data tayyar karo
+        const newData = {
+            "remindersEnabled": document.getElementById('remindersEnabled').value === 'true',
+            "ishaEndReminderMinutes": parseInt(document.getElementById('ishaMins').value),
+            "fajrStartReminderMinutes": parseInt(document.getElementById('fajrMins').value),
+            "texts": {
+                "english": {
+                    "isha_reminder_title": document.getElementById('enTitle').value,
+                    "isha_reminder_message": document.getElementById('enMsg').value
+                },
+                "urdu": {
+                    "isha_reminder_title": document.getElementById('urTitle').value,
+                    "isha_reminder_message": document.getElementById('urMsg').value
+                }
+            }
+        };
+
+        try {
+            // Pehle current file ka sha (ID) nikalna padega update karne ke liye
+            let getRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`, {
+                headers: { "Authorization": `token ${GITHUB_TOKEN}` }
+            });
+            let getData = await getRes.json();
+
+            // Ab naya data GitHub par save karo
+            let putRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `token ${GITHUB_TOKEN}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: "Admin Panel Update: Config Changed",
+                    content: btoa(unescape(encodeURIComponent(JSON.stringify(newData, null, 2)))),
+                    sha: getData.sha
+                })
+            });
+
+            if(putRes.ok) {
+                document.getElementById('statusMsg').innerText = "✅ Successfully Saved! App me update ho jayega.";
+            } else {
+                document.getElementById('statusMsg').innerText = "❌ Error aaya, Token check karein.";
+            }
+        } catch(e) {
+            document.getElementById('statusMsg').innerText = "❌ Internet ya Token Error!";
+        }
+    }
+</script>
+
+</body>
+</html>
