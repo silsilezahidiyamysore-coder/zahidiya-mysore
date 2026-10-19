@@ -1,0 +1,15 @@
+{
+  "remindersEnabled": true,
+  "ishaEndReminderMinutes": 20,
+  "fajrStartReminderMinutes": 15,
+  "texts": {
+    "english": {
+      "isha_reminder_title": "Isha Reminder",
+      "isha_reminder_message": "Isha time is approaching in 20 minutes."
+    },
+    "urdu": {
+      "isha_reminder_title": "عشاء کی یاد دہانی",
+      "isha_reminder_message": "عشاء کا وقت 20 منٹ میں ہونے والا ہے۔"
+    }
+  }
+}
