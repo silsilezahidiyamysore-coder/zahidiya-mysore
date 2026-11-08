@@ -127,6 +127,25 @@ async function handle(context) {
     let sentCount = 0;
 
     const alarmSettings = await db.prepare(`SELECT * FROM alarm_settings WHERE id = 1`).first();
+
+    // ---- ADMIN PANEL (app_settings) ki value use karo ----
+try {
+  const { results: newSettings } = await db.prepare(
+    `SELECT key, value FROM app_settings WHERE key IN (
+      'start_alarm_duration_seconds',
+      'end_reminder_minutes_before',
+      'end_reminder_beep_seconds',
+      'start_alarm_enabled',
+      'end_reminder_enabled'
+    )`
+  ).all();
+  if (alarmSettings) {
+    newSettings.forEach(row => {
+      const n = parseInt(row.value);
+      if (!isNaN(n)) alarmSettings[row.key] = n;
+    });
+  }
+} catch (e) {}
     const allSubs = (await db.prepare(`SELECT * FROM push_subscriptions`).all()).results || [];
     const allMureeds = (await db.prepare(`SELECT id, mobile, group_type, role FROM mureeds`).all()).results || [];
     const mureedByMobile = {};
