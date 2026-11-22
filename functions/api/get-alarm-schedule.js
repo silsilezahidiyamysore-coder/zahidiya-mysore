@@ -190,9 +190,10 @@ try {
             const mm = String(((nextTMin % 60) + 60) % 60).padStart(2, '0');
             dt = buildISTDateTime(todayISO, hh + ':' + mm);
           } else {
-            // Isha — agle din ke asli Fajr time se
-            if (!tomorrowPrayerTimes) continue;
-            const nextFajrMin = toMinutes(tomorrowPrayerTimes.fajr);
+            // Isha — agle din ke Fajr se (na mile toh aaj ke Fajr se, skip mat karo)
+            // Date hamesha agla din (tomorrowISO) rehti hai: 18.11 shuru -> 19.11 subah khatam
+            const fajrSrc = (tomorrowPrayerTimes && tomorrowPrayerTimes.fajr) ? tomorrowPrayerTimes.fajr : prayerTimes.fajr;
+            const nextFajrMin = toMinutes(fajrSrc);
             if (nextFajrMin === null) continue;
             const hh = String(Math.floor(nextFajrMin / 60)).padStart(2, '0');
             const mm = String(nextFajrMin % 60).padStart(2, '0');
